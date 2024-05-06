@@ -5,7 +5,7 @@ use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use redis::Client;
 use crate::database::{establish_pool, PgPooledConnection};
-use crate::services::echo::{EchoService, get_connection};
+use crate::services::booking::{EchoService, get_connection};
 
 // const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 

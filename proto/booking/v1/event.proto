@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package booking.v1;
+
+service BookingService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+//  rpc CreateEvents(CreateEventsRequest) returns (CreateEventsResponse);
+//  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+//  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+//  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
+//  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
+//  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+//  rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
+//  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+}
+
+enum EventStatus {
+  EVENT_STATUS_UNSPECIFIED = 0;
+  EVENT_STATUS_ACTIVE = 1;
+  EVENT_STATUS_CANCELED = 2;
+  EVENT_STATUS_FULL = 3;
+}
+
+enum LocationType {
+  LOCATION_TYPE_LOCATION_UNSPECIFIED = 0;
+  LOCATION_TYPE_PHYSICAL = 1;
+  LOCATION_TYPE_ONLINE = 2;
+}
+
+enum EventType {
+  EVENT_TYPE_LOCATION_UNSPECIFIED = 0;
+  EVENT_TYPE_EVENT = 1;
+  EVENT_TYPE_TASK = 2;
+  EVENT_TYPE_MEETING = 3;
+}
+
+message TimeData {
+  string timezone = 1;
+  string date_time = 2;
+}
+
+message Event {
+  string id = 1;
+  string name = 2;
+  EventType type = 3;
+  EventStatus status = 4;
+  TimeData start = 5;
+  TimeData end = 6;
+  string recurrence_rule = 7;
+  Location location = 8;
+  Organizer organizer = 9;
+  Cancellation cancellation = 10;
+  repeated Slot slots = 11;
+  int32 slot_duration = 12;
+  int32 max_guests = 13;
+  int64 created_at = 14;
+  int64 updated_at = 15;
+}
+
+message Slot {
+  string id = 1;
+  string event_id = 2;
+  TimeData start = 3;
+  TimeData end = 4;
+  int32 max_guests = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message Location {
+  LocationType type = 1;
+  string location = 2;
+  string additional_info = 3;
+}
+
+message Organizer {
+  string name = 1;
+  string email = 2;
+}
+
+message Cancellation {
+  string canceled_by = 1;
+  string reason = 2;
+  TimeData created_at = 3;
+}
+
+message CreateEventRequest {
+  string name = 1;
+  TimeData start = 2;
+  TimeData end = 3;
+  Location location = 4;
+  Organizer organizer = 5;
+  int32 slot_duration = 6;
+  int32 max_guests = 7;
+  string recurrence_rule = 8;
+}
+
+message CreateEventResponse {
+  Event event = 1;
+}
+
+message CreateEventsRequest {
+  repeated CreateEventRequest events = 1;
+}
+
+message CreateEventsResponse {
+  repeated Event events = 1;
+}

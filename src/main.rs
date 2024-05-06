@@ -5,7 +5,7 @@ use axum::{routing::get, Router};
 use autometrics::prometheus_exporter;
 use dotenvy::dotenv;
 use redis::Client;
-use rust_server::{create_socket_addr, init_service_logging};
+use poc_booking_ms::{create_socket_addr, init_service_logging};
 use crate::server::start_server;
 
 mod services;
@@ -14,6 +14,8 @@ mod server;
 mod database;
 mod rpcs;
 mod errors;
+mod models;
+mod schema;
 #[cfg(test)]
 mod tests;
 

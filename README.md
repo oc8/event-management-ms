@@ -1,4 +1,4 @@
-# rust-grpc-quickstart-template
+# poc-booking-ms
 
 # CLIs
 

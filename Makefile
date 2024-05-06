@@ -1,4 +1,4 @@
-prog := rust-server
+prog := poc-booking-ms
 
 debug ?= 0
 
@@ -25,6 +25,12 @@ test:
 
 protos:
 	buf generate
+
+migration:
+	diesel migration run
+
+migration-revert:
+	diesel migration revert
 
 all: protos test build
 

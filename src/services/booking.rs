@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Code, Request, Response, Status};
 
-use protos::grpc::examples::echo::{echo_server::Echo, EchoRequest, EchoResponse};
+use protos::booking::v1::{booking_service_server::BookingService, booking_service_server::BookingServiceServer, CreateEventRequest, CreateEventResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 
@@ -14,14 +14,14 @@ const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
     .latency(ObjectiveLatency::Ms250, ObjectivePercentile::P99);
 
-pub struct EchoService {
+pub struct BookingServiceServerImpl {
     pub pool: Arc<PgPool>,
     pub r_client: redis::Client,
 }
 
-impl Clone for EchoService {
+impl Clone for BookingServiceServerImpl {
     fn clone(&self) -> Self {
-        EchoService {
+        BookingServiceServerImpl {
             pool: self.pool.clone(),
             r_client: self.r_client.clone(),
         }
@@ -30,14 +30,9 @@ impl Clone for EchoService {
 
 #[tonic::async_trait]
 #[autometrics(objective = API_SLO)]
-impl Echo for EchoService {
-    async fn unary_echo(
-        &self,
-        request: Request<EchoRequest>,
-    ) -> Result<Response<EchoResponse>, Status> {
-        let mut conn = get_connection(&self.pool)?;
-        let mut r_conn = get_redis_connection(&self.r_client)?;
-        rpcs::echo(request.into_inner(), &mut conn, &mut r_conn).map(Response::new)
+impl BookingService for BookingServiceServerImpl {
+    async fn create_event(&self, request: Request<CreateEventRequest>) -> Result<Response<CreateEventResponse>, Status> {
+        todo!()
     }
 }
 
