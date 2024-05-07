@@ -1056,7 +1056,7 @@ impl serde::Serialize for EventType {
         S: serde::Serializer,
     {
         let variant = match self {
-            Self::LocationUnspecified => "EVENT_TYPE_LOCATION_UNSPECIFIED",
+            Self::Unspecified => "EVENT_TYPE_UNSPECIFIED",
             Self::Event => "EVENT_TYPE_EVENT",
             Self::Task => "EVENT_TYPE_TASK",
             Self::Meeting => "EVENT_TYPE_MEETING",
@@ -1071,7 +1071,7 @@ impl<'de> serde::Deserialize<'de> for EventType {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "EVENT_TYPE_LOCATION_UNSPECIFIED",
+            "EVENT_TYPE_UNSPECIFIED",
             "EVENT_TYPE_EVENT",
             "EVENT_TYPE_TASK",
             "EVENT_TYPE_MEETING",
@@ -1115,7 +1115,7 @@ impl<'de> serde::Deserialize<'de> for EventType {
                 E: serde::de::Error,
             {
                 match value {
-                    "EVENT_TYPE_LOCATION_UNSPECIFIED" => Ok(EventType::LocationUnspecified),
+                    "EVENT_TYPE_UNSPECIFIED" => Ok(EventType::Unspecified),
                     "EVENT_TYPE_EVENT" => Ok(EventType::Event),
                     "EVENT_TYPE_TASK" => Ok(EventType::Task),
                     "EVENT_TYPE_MEETING" => Ok(EventType::Meeting),

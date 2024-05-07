@@ -16,7 +16,7 @@ class EventStatus(betterproto.Enum):
 
 
 class EventType(betterproto.Enum):
-    EVENT_TYPE_LOCATION_UNSPECIFIED = 0
+    EVENT_TYPE_UNSPECIFIED = 0
     EVENT_TYPE_EVENT = 1
     EVENT_TYPE_TASK = 2
     EVENT_TYPE_MEETING = 3
