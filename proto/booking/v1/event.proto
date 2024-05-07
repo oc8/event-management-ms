@@ -86,13 +86,14 @@ message Cancellation {
 
 message CreateEventRequest {
   string name = 1;
-  TimeData start = 2;
-  TimeData end = 3;
-  Location location = 4;
-  Organizer organizer = 5;
-  int32 slot_duration = 6;
-  int32 max_guests = 7;
-  string recurrence_rule = 8;
+  string start = 2;
+  string end = 3;
+  string timezone = 4;
+  Location location = 5;
+  Organizer organizer = 6;
+  int32 slot_duration = 7;
+  int32 max_guests = 8;
+  string recurrence_rule = 9;
 }
 
 message CreateEventResponse {

@@ -87,13 +87,14 @@ class Cancellation(betterproto.Message):
 @dataclass
 class CreateEventRequest(betterproto.Message):
     name: str = betterproto.string_field(1)
-    start: "TimeData" = betterproto.message_field(2)
-    end: "TimeData" = betterproto.message_field(3)
-    location: "Location" = betterproto.message_field(4)
-    organizer: "Organizer" = betterproto.message_field(5)
-    slot_duration: int = betterproto.int32_field(6)
-    max_guests: int = betterproto.int32_field(7)
-    recurrence_rule: str = betterproto.string_field(8)
+    start: str = betterproto.string_field(2)
+    end: str = betterproto.string_field(3)
+    timezone: str = betterproto.string_field(4)
+    location: "Location" = betterproto.message_field(5)
+    organizer: "Organizer" = betterproto.message_field(6)
+    slot_duration: int = betterproto.int32_field(7)
+    max_guests: int = betterproto.int32_field(8)
+    recurrence_rule: str = betterproto.string_field(9)
 
 
 @dataclass
@@ -116,8 +117,9 @@ class BookingServiceStub(betterproto.ServiceStub):
         self,
         *,
         name: str = "",
-        start: Optional["TimeData"] = None,
-        end: Optional["TimeData"] = None,
+        start: str = "",
+        end: str = "",
+        timezone: str = "",
         location: Optional["Location"] = None,
         organizer: Optional["Organizer"] = None,
         slot_duration: int = 0,
@@ -126,10 +128,9 @@ class BookingServiceStub(betterproto.ServiceStub):
     ) -> CreateEventResponse:
         request = CreateEventRequest()
         request.name = name
-        if start is not None:
-            request.start = start
-        if end is not None:
-            request.end = end
+        request.start = start
+        request.end = end
+        request.timezone = timezone
         if location is not None:
             request.location = location
         if organizer is not None:

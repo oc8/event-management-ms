@@ -32,7 +32,8 @@ impl Clone for BookingServiceServerImpl {
 #[autometrics(objective = API_SLO)]
 impl BookingService for BookingServiceServerImpl {
     async fn create_event(&self, request: Request<CreateEventRequest>) -> Result<Response<CreateEventResponse>, Status> {
-        todo!()
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::create_event(request.into_inner(), &mut conn).map(Response::new)
     }
 }
 

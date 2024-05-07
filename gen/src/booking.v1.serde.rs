@@ -137,10 +137,13 @@ impl serde::Serialize for CreateEventRequest {
         if !self.name.is_empty() {
             len += 1;
         }
-        if self.start.is_some() {
+        if !self.start.is_empty() {
             len += 1;
         }
-        if self.end.is_some() {
+        if !self.end.is_empty() {
+            len += 1;
+        }
+        if !self.timezone.is_empty() {
             len += 1;
         }
         if self.location.is_some() {
@@ -162,11 +165,14 @@ impl serde::Serialize for CreateEventRequest {
         if !self.name.is_empty() {
             struct_ser.serialize_field("name", &self.name)?;
         }
-        if let Some(v) = self.start.as_ref() {
-            struct_ser.serialize_field("start", v)?;
+        if !self.start.is_empty() {
+            struct_ser.serialize_field("start", &self.start)?;
         }
-        if let Some(v) = self.end.as_ref() {
-            struct_ser.serialize_field("end", v)?;
+        if !self.end.is_empty() {
+            struct_ser.serialize_field("end", &self.end)?;
+        }
+        if !self.timezone.is_empty() {
+            struct_ser.serialize_field("timezone", &self.timezone)?;
         }
         if let Some(v) = self.location.as_ref() {
             struct_ser.serialize_field("location", v)?;
@@ -196,6 +202,7 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             "name",
             "start",
             "end",
+            "timezone",
             "location",
             "organizer",
             "slot_duration",
@@ -211,6 +218,7 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             Name,
             Start,
             End,
+            Timezone,
             Location,
             Organizer,
             SlotDuration,
@@ -240,6 +248,7 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             "name" => Ok(GeneratedField::Name),
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
+                            "timezone" => Ok(GeneratedField::Timezone),
                             "location" => Ok(GeneratedField::Location),
                             "organizer" => Ok(GeneratedField::Organizer),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
@@ -267,6 +276,7 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                 let mut name__ = None;
                 let mut start__ = None;
                 let mut end__ = None;
+                let mut timezone__ = None;
                 let mut location__ = None;
                 let mut organizer__ = None;
                 let mut slot_duration__ = None;
@@ -284,13 +294,19 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             if start__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("start"));
                             }
-                            start__ = map_.next_value()?;
+                            start__ = Some(map_.next_value()?);
                         }
                         GeneratedField::End => {
                             if end__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("end"));
                             }
-                            end__ = map_.next_value()?;
+                            end__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Timezone => {
+                            if timezone__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("timezone"));
+                            }
+                            timezone__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Location => {
                             if location__.is_some() {
@@ -330,8 +346,9 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                 }
                 Ok(CreateEventRequest {
                     name: name__.unwrap_or_default(),
-                    start: start__,
-                    end: end__,
+                    start: start__.unwrap_or_default(),
+                    end: end__.unwrap_or_default(),
+                    timezone: timezone__.unwrap_or_default(),
                     location: location__,
                     organizer: organizer__,
                     slot_duration: slot_duration__.unwrap_or_default(),

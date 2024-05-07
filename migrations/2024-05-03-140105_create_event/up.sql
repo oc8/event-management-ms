@@ -12,12 +12,6 @@ CREATE TYPE event_status AS ENUM (
     'EVENT_STATUS_FULL'
 );
 
-CREATE TYPE location_type AS ENUM (
-    'LOCATION_TYPE_LOCATION_UNSPECIFIED',
-    'LOCATION_TYPE_PHYSICAL',
-    'LOCATION_TYPE_ONLINE'
-);
-
 CREATE TABLE events (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -27,11 +21,7 @@ CREATE TABLE events (
     end_time TIMESTAMP NOT NULL,
     recurrence_rule VARCHAR(255) DEFAULT NULL,
     timezone VARCHAR(255) NOT NULL,
-    location_type VARCHAR(255) DEFAULT 'LOCATION_TYPE_LOCATION_UNSPECIFIED' NOT NULL,
-    location VARCHAR(255) DEFAULT NULL,
-    location_infos JSONB DEFAULT NULL,
-    organizer_name VARCHAR(255) DEFAULT NULL,
-    organizer_email VARCHAR(255) DEFAULT NULL,
+    organizer_key VARCHAR(255) DEFAULT NULL,
     max_guests INT DEFAULT NULL,
     canceled_by VARCHAR(255) DEFAULT NULL,
     canceled_at TIMESTAMP DEFAULT NULL,
