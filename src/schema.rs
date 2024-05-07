@@ -37,8 +37,8 @@ diesel::table! {
         event_id -> Uuid,
         start_time -> Time,
         end_time -> Time,
-        created_at -> Nullable<Timestamp>,
-        updated_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 

@@ -1,10 +1,11 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest, EventType};
+use protos::booking::v1::{CreateEventRequest, EventType, GetEventRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
 use rrule::ParseError::MissingStartDate;
+use uuid::Uuid;
 use validator::{ValidateRange};
 
 fn validate_recurrence_rule(rule: &str) -> bool {
@@ -57,6 +58,14 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
     match EventType::try_from(req.event_type) {
         Ok(_) => {},
         Err(_) => return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_TYPE))
+    }
+
+    Ok(())
+}
+
+pub fn validate_get_event_request(req: &GetEventRequest) -> Result<(), Status> {
+    if Uuid::parse_str(&req.id).is_err() {
+        return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_ID))
     }
 
     Ok(())

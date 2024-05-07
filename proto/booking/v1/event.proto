@@ -4,8 +4,7 @@ package booking.v1;
 
 service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
-//  rpc CreateEvents(CreateEventsRequest) returns (CreateEventsResponse);
-//  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
 //  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
 //  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
 //  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
@@ -88,4 +87,12 @@ message CreateEventsRequest {
 
 message CreateEventsResponse {
   repeated Event events = 1;
+}
+
+message GetEventRequest {
+  string id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
 }

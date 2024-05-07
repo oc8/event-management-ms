@@ -1,10 +1,11 @@
 use diesel::data_types::PgInterval;
 use tonic::Status;
-use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType};
+use uuid::Uuid;
+use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::errors;
 use crate::models::event::{Event, NewEvent};
-use crate::validations::validate_create_event_request;
+use crate::validations::{validate_create_event_request, validate_get_event_request};
 
 pub fn create_event(
     request: CreateEventRequest,
@@ -56,5 +57,22 @@ pub fn create_event(
 
     Ok(CreateEventResponse{
         event: Some(event.into())
+    })
+}
+
+pub fn get_event_by_id(
+    request: GetEventRequest,
+    conn: &mut PgPooledConnection
+) -> Result<GetEventResponse, Status> {
+    validate_get_event_request(&request)?;
+
+    let event = Event::find_by_id(conn, Uuid::parse_str(&request.id).unwrap());
+
+    if event.is_none() {
+        return Err(Status::not_found(errors::EVENT_NOT_FOUND))
+    }
+
+    Ok(GetEventResponse{
+        event: Some(event.unwrap().into())
     })
 }

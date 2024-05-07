@@ -9,3 +9,5 @@ pub const INVALID_TIMEZONE: &str = "invalid_timezone";
 pub const INVALID_RECURRENCE_RULE: &str = "invalid_recurrence_rule";
 pub const INVALID_MAX_GUESTS: &str = "invalid_max_guests";
 pub const INVALID_EVENT_TYPE: &str = "invalid_event_type";
+pub const INVALID_EVENT_ID: &str = "invalid_event_id";
+pub const EVENT_NOT_FOUND: &str = "event_not_found";
