@@ -1,11 +1,11 @@
 use std::str::FromStr;
-use time::format_description::well_known::Rfc3339;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest};
+use protos::booking::v1::{CreateEventRequest, EventType};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
 use rrule::ParseError::MissingStartDate;
+use validator::{ValidateRange};
 
 fn validate_recurrence_rule(rule: &str) -> bool {
     if rule.is_empty() {
@@ -28,12 +28,12 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_NAME))
     }
 
-    let start = time::OffsetDateTime::parse(req.start.as_str(), &Rfc3339);
+    let start = chrono::NaiveDateTime::parse_from_str(&req.start, "%Y-%m-%dT%H:%M");
     if start.is_err() {
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_START_DATE))
     }
 
-    let end = time::OffsetDateTime::parse(req.end.as_str(), &Rfc3339);
+    let end = chrono::NaiveDateTime::parse_from_str(&req.end, "%Y-%m-%dT%H:%M");
     if end.is_err() {
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_END_DATE))
     }
@@ -42,12 +42,21 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_DATE_RANGE))
     }
 
-    if Tz::from_str(req.timezone.as_str()).is_err() {
+    if !req.timezone.is_empty() && Tz::from_str(req.timezone.as_str()).is_err() {
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_TIMEZONE))
     }
 
     if !validate_recurrence_rule(req.recurrence_rule.as_str()) {
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_RECURRENCE_RULE))
+    }
+
+    if !req.max_guests.validate_range(Option::from(0), Option::from(1000), Option::from(0), Option::from(1000)) {
+        return Err(Status::new(Code::InvalidArgument, errors::INVALID_MAX_GUESTS))
+    }
+
+    match EventType::try_from(req.event_type) {
+        Ok(_) => {},
+        Err(_) => return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_TYPE))
     }
 
     Ok(())

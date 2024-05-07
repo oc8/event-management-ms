@@ -2,7 +2,7 @@
 # sources: booking/v1/event.proto
 # plugin: python-betterproto
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 import betterproto
 import grpclib
@@ -13,12 +13,6 @@ class EventStatus(betterproto.Enum):
     EVENT_STATUS_ACTIVE = 1
     EVENT_STATUS_CANCELED = 2
     EVENT_STATUS_FULL = 3
-
-
-class LocationType(betterproto.Enum):
-    LOCATION_TYPE_LOCATION_UNSPECIFIED = 0
-    LOCATION_TYPE_PHYSICAL = 1
-    LOCATION_TYPE_ONLINE = 2
 
 
 class EventType(betterproto.Enum):
@@ -38,19 +32,18 @@ class TimeData(betterproto.Message):
 class Event(betterproto.Message):
     id: str = betterproto.string_field(1)
     name: str = betterproto.string_field(2)
-    type: "EventType" = betterproto.enum_field(3)
+    event_type: "EventType" = betterproto.enum_field(3)
     status: "EventStatus" = betterproto.enum_field(4)
     start: "TimeData" = betterproto.message_field(5)
     end: "TimeData" = betterproto.message_field(6)
     recurrence_rule: str = betterproto.string_field(7)
-    location: "Location" = betterproto.message_field(8)
-    organizer: "Organizer" = betterproto.message_field(9)
-    cancellation: "Cancellation" = betterproto.message_field(10)
-    slots: List["Slot"] = betterproto.message_field(11)
-    slot_duration: int = betterproto.int32_field(12)
-    max_guests: int = betterproto.int32_field(13)
-    created_at: int = betterproto.int64_field(14)
-    updated_at: int = betterproto.int64_field(15)
+    organizer_key: str = betterproto.string_field(8)
+    cancellation: "Cancellation" = betterproto.message_field(9)
+    slots: List["Slot"] = betterproto.message_field(10)
+    slot_duration: int = betterproto.int64_field(11)
+    max_guests: int = betterproto.int32_field(12)
+    created_at: int = betterproto.int64_field(13)
+    updated_at: int = betterproto.int64_field(14)
 
 
 @dataclass
@@ -62,19 +55,6 @@ class Slot(betterproto.Message):
     max_guests: int = betterproto.int32_field(5)
     created_at: int = betterproto.int64_field(6)
     updated_at: int = betterproto.int64_field(7)
-
-
-@dataclass
-class Location(betterproto.Message):
-    type: "LocationType" = betterproto.enum_field(1)
-    location: str = betterproto.string_field(2)
-    additional_info: str = betterproto.string_field(3)
-
-
-@dataclass
-class Organizer(betterproto.Message):
-    name: str = betterproto.string_field(1)
-    email: str = betterproto.string_field(2)
 
 
 @dataclass
@@ -90,11 +70,11 @@ class CreateEventRequest(betterproto.Message):
     start: str = betterproto.string_field(2)
     end: str = betterproto.string_field(3)
     timezone: str = betterproto.string_field(4)
-    location: "Location" = betterproto.message_field(5)
-    organizer: "Organizer" = betterproto.message_field(6)
-    slot_duration: int = betterproto.int32_field(7)
-    max_guests: int = betterproto.int32_field(8)
-    recurrence_rule: str = betterproto.string_field(9)
+    organizer_key: str = betterproto.string_field(5)
+    slot_duration: int = betterproto.int64_field(6)
+    max_guests: int = betterproto.int32_field(7)
+    recurrence_rule: str = betterproto.string_field(8)
+    event_type: "EventType" = betterproto.enum_field(9)
 
 
 @dataclass
@@ -120,24 +100,22 @@ class BookingServiceStub(betterproto.ServiceStub):
         start: str = "",
         end: str = "",
         timezone: str = "",
-        location: Optional["Location"] = None,
-        organizer: Optional["Organizer"] = None,
+        organizer_key: str = "",
         slot_duration: int = 0,
         max_guests: int = 0,
         recurrence_rule: str = "",
+        event_type: "EventType" = 0,
     ) -> CreateEventResponse:
         request = CreateEventRequest()
         request.name = name
         request.start = start
         request.end = end
         request.timezone = timezone
-        if location is not None:
-            request.location = location
-        if organizer is not None:
-            request.organizer = organizer
+        request.organizer_key = organizer_key
         request.slot_duration = slot_duration
         request.max_guests = max_guests
         request.recurrence_rule = recurrence_rule
+        request.event_type = event_type
 
         return await self._unary_unary(
             "/booking.v1.BookingService/CreateEvent",

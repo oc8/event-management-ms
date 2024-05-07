@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Code, Request, Response, Status};
 
-use protos::booking::v1::{booking_service_server::BookingService, booking_service_server::BookingServiceServer, CreateEventRequest, CreateEventResponse};
+use protos::booking::v1::{booking_service_server::BookingService, CreateEventRequest, CreateEventResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 

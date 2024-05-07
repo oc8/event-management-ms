@@ -21,12 +21,6 @@ enum EventStatus {
   EVENT_STATUS_FULL = 3;
 }
 
-enum LocationType {
-  LOCATION_TYPE_LOCATION_UNSPECIFIED = 0;
-  LOCATION_TYPE_PHYSICAL = 1;
-  LOCATION_TYPE_ONLINE = 2;
-}
-
 enum EventType {
   EVENT_TYPE_LOCATION_UNSPECIFIED = 0;
   EVENT_TYPE_EVENT = 1;
@@ -42,19 +36,18 @@ message TimeData {
 message Event {
   string id = 1;
   string name = 2;
-  EventType type = 3;
+  EventType event_type = 3;
   EventStatus status = 4;
   TimeData start = 5;
   TimeData end = 6;
   string recurrence_rule = 7;
-  Location location = 8;
-  Organizer organizer = 9;
-  Cancellation cancellation = 10;
-  repeated Slot slots = 11;
-  int32 slot_duration = 12;
-  int32 max_guests = 13;
-  int64 created_at = 14;
-  int64 updated_at = 15;
+  string organizer_key = 8;
+  Cancellation cancellation = 9;
+  repeated Slot slots = 10;
+  int64 slot_duration = 11;
+  int32 max_guests = 12;
+  int64 created_at = 13;
+  int64 updated_at = 14;
 }
 
 message Slot {
@@ -65,17 +58,6 @@ message Slot {
   int32 max_guests = 5;
   int64 created_at = 6;
   int64 updated_at = 7;
-}
-
-message Location {
-  LocationType type = 1;
-  string location = 2;
-  string additional_info = 3;
-}
-
-message Organizer {
-  string name = 1;
-  string email = 2;
 }
 
 message Cancellation {
@@ -89,11 +71,11 @@ message CreateEventRequest {
   string start = 2;
   string end = 3;
   string timezone = 4;
-  Location location = 5;
-  Organizer organizer = 6;
-  int32 slot_duration = 7;
-  int32 max_guests = 8;
-  string recurrence_rule = 9;
+  string organizer_key = 5;
+  int64 slot_duration = 6;
+  int32 max_guests = 7;
+  string recurrence_rule = 8;
+  EventType event_type = 9;
 }
 
 message CreateEventResponse {

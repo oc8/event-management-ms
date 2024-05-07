@@ -58,14 +58,7 @@ diesel::table! {
         #[max_length = 255]
         timezone -> Varchar,
         #[max_length = 255]
-        location_type -> Varchar,
-        #[max_length = 255]
-        location -> Nullable<Varchar>,
-        location_infos -> Nullable<Jsonb>,
-        #[max_length = 255]
-        organizer_name -> Nullable<Varchar>,
-        #[max_length = 255]
-        organizer_email -> Nullable<Varchar>,
+        organizer_key -> Varchar,
         max_guests -> Nullable<Int4>,
         #[max_length = 255]
         canceled_by -> Nullable<Varchar>,
@@ -74,8 +67,8 @@ diesel::table! {
         canceled_reason -> Nullable<Varchar>,
         slot_duration -> Nullable<Interval>,
         max_persons_per_slot -> Nullable<Int4>,
-        created_at -> Nullable<Timestamp>,
-        updated_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 

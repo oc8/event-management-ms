@@ -146,10 +146,7 @@ impl serde::Serialize for CreateEventRequest {
         if !self.timezone.is_empty() {
             len += 1;
         }
-        if self.location.is_some() {
-            len += 1;
-        }
-        if self.organizer.is_some() {
+        if !self.organizer_key.is_empty() {
             len += 1;
         }
         if self.slot_duration != 0 {
@@ -159,6 +156,9 @@ impl serde::Serialize for CreateEventRequest {
             len += 1;
         }
         if !self.recurrence_rule.is_empty() {
+            len += 1;
+        }
+        if self.event_type != 0 {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("booking.v1.CreateEventRequest", len)?;
@@ -174,20 +174,23 @@ impl serde::Serialize for CreateEventRequest {
         if !self.timezone.is_empty() {
             struct_ser.serialize_field("timezone", &self.timezone)?;
         }
-        if let Some(v) = self.location.as_ref() {
-            struct_ser.serialize_field("location", v)?;
-        }
-        if let Some(v) = self.organizer.as_ref() {
-            struct_ser.serialize_field("organizer", v)?;
+        if !self.organizer_key.is_empty() {
+            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
         }
         if self.slot_duration != 0 {
-            struct_ser.serialize_field("slotDuration", &self.slot_duration)?;
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
         if self.max_guests != 0 {
             struct_ser.serialize_field("maxGuests", &self.max_guests)?;
         }
         if !self.recurrence_rule.is_empty() {
             struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
+        }
+        if self.event_type != 0 {
+            let v = EventType::try_from(self.event_type)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.event_type)))?;
+            struct_ser.serialize_field("eventType", &v)?;
         }
         struct_ser.end()
     }
@@ -203,14 +206,16 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             "start",
             "end",
             "timezone",
-            "location",
-            "organizer",
+            "organizer_key",
+            "organizerKey",
             "slot_duration",
             "slotDuration",
             "max_guests",
             "maxGuests",
             "recurrence_rule",
             "recurrenceRule",
+            "event_type",
+            "eventType",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -219,11 +224,11 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             Start,
             End,
             Timezone,
-            Location,
-            Organizer,
+            OrganizerKey,
             SlotDuration,
             MaxGuests,
             RecurrenceRule,
+            EventType,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -249,11 +254,11 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
                             "timezone" => Ok(GeneratedField::Timezone),
-                            "location" => Ok(GeneratedField::Location),
-                            "organizer" => Ok(GeneratedField::Organizer),
+                            "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
                             "maxGuests" | "max_guests" => Ok(GeneratedField::MaxGuests),
                             "recurrenceRule" | "recurrence_rule" => Ok(GeneratedField::RecurrenceRule),
+                            "eventType" | "event_type" => Ok(GeneratedField::EventType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -277,11 +282,11 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                 let mut start__ = None;
                 let mut end__ = None;
                 let mut timezone__ = None;
-                let mut location__ = None;
-                let mut organizer__ = None;
+                let mut organizer_key__ = None;
                 let mut slot_duration__ = None;
                 let mut max_guests__ = None;
                 let mut recurrence_rule__ = None;
+                let mut event_type__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Name => {
@@ -308,17 +313,11 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             }
                             timezone__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Location => {
-                            if location__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("location"));
+                        GeneratedField::OrganizerKey => {
+                            if organizer_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("organizerKey"));
                             }
-                            location__ = map_.next_value()?;
-                        }
-                        GeneratedField::Organizer => {
-                            if organizer__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("organizer"));
-                            }
-                            organizer__ = map_.next_value()?;
+                            organizer_key__ = Some(map_.next_value()?);
                         }
                         GeneratedField::SlotDuration => {
                             if slot_duration__.is_some() {
@@ -342,6 +341,12 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             }
                             recurrence_rule__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::EventType => {
+                            if event_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("eventType"));
+                            }
+                            event_type__ = Some(map_.next_value::<EventType>()? as i32);
+                        }
                     }
                 }
                 Ok(CreateEventRequest {
@@ -349,11 +354,11 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                     start: start__.unwrap_or_default(),
                     end: end__.unwrap_or_default(),
                     timezone: timezone__.unwrap_or_default(),
-                    location: location__,
-                    organizer: organizer__,
+                    organizer_key: organizer_key__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
                     max_guests: max_guests__.unwrap_or_default(),
                     recurrence_rule: recurrence_rule__.unwrap_or_default(),
+                    event_type: event_type__.unwrap_or_default(),
                 })
             }
         }
@@ -647,7 +652,7 @@ impl serde::Serialize for Event {
         if !self.name.is_empty() {
             len += 1;
         }
-        if self.r#type != 0 {
+        if self.event_type != 0 {
             len += 1;
         }
         if self.status != 0 {
@@ -662,10 +667,7 @@ impl serde::Serialize for Event {
         if !self.recurrence_rule.is_empty() {
             len += 1;
         }
-        if self.location.is_some() {
-            len += 1;
-        }
-        if self.organizer.is_some() {
+        if !self.organizer_key.is_empty() {
             len += 1;
         }
         if self.cancellation.is_some() {
@@ -693,10 +695,10 @@ impl serde::Serialize for Event {
         if !self.name.is_empty() {
             struct_ser.serialize_field("name", &self.name)?;
         }
-        if self.r#type != 0 {
-            let v = EventType::try_from(self.r#type)
-                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.r#type)))?;
-            struct_ser.serialize_field("type", &v)?;
+        if self.event_type != 0 {
+            let v = EventType::try_from(self.event_type)
+                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.event_type)))?;
+            struct_ser.serialize_field("eventType", &v)?;
         }
         if self.status != 0 {
             let v = EventStatus::try_from(self.status)
@@ -712,11 +714,8 @@ impl serde::Serialize for Event {
         if !self.recurrence_rule.is_empty() {
             struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
         }
-        if let Some(v) = self.location.as_ref() {
-            struct_ser.serialize_field("location", v)?;
-        }
-        if let Some(v) = self.organizer.as_ref() {
-            struct_ser.serialize_field("organizer", v)?;
+        if !self.organizer_key.is_empty() {
+            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
         }
         if let Some(v) = self.cancellation.as_ref() {
             struct_ser.serialize_field("cancellation", v)?;
@@ -725,7 +724,8 @@ impl serde::Serialize for Event {
             struct_ser.serialize_field("slots", &self.slots)?;
         }
         if self.slot_duration != 0 {
-            struct_ser.serialize_field("slotDuration", &self.slot_duration)?;
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
         if self.max_guests != 0 {
             struct_ser.serialize_field("maxGuests", &self.max_guests)?;
@@ -750,14 +750,15 @@ impl<'de> serde::Deserialize<'de> for Event {
         const FIELDS: &[&str] = &[
             "id",
             "name",
-            "type",
+            "event_type",
+            "eventType",
             "status",
             "start",
             "end",
             "recurrence_rule",
             "recurrenceRule",
-            "location",
-            "organizer",
+            "organizer_key",
+            "organizerKey",
             "cancellation",
             "slots",
             "slot_duration",
@@ -774,13 +775,12 @@ impl<'de> serde::Deserialize<'de> for Event {
         enum GeneratedField {
             Id,
             Name,
-            Type,
+            EventType,
             Status,
             Start,
             End,
             RecurrenceRule,
-            Location,
-            Organizer,
+            OrganizerKey,
             Cancellation,
             Slots,
             SlotDuration,
@@ -810,13 +810,12 @@ impl<'de> serde::Deserialize<'de> for Event {
                         match value {
                             "id" => Ok(GeneratedField::Id),
                             "name" => Ok(GeneratedField::Name),
-                            "type" => Ok(GeneratedField::Type),
+                            "eventType" | "event_type" => Ok(GeneratedField::EventType),
                             "status" => Ok(GeneratedField::Status),
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
                             "recurrenceRule" | "recurrence_rule" => Ok(GeneratedField::RecurrenceRule),
-                            "location" => Ok(GeneratedField::Location),
-                            "organizer" => Ok(GeneratedField::Organizer),
+                            "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "cancellation" => Ok(GeneratedField::Cancellation),
                             "slots" => Ok(GeneratedField::Slots),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
@@ -844,13 +843,12 @@ impl<'de> serde::Deserialize<'de> for Event {
             {
                 let mut id__ = None;
                 let mut name__ = None;
-                let mut r#type__ = None;
+                let mut event_type__ = None;
                 let mut status__ = None;
                 let mut start__ = None;
                 let mut end__ = None;
                 let mut recurrence_rule__ = None;
-                let mut location__ = None;
-                let mut organizer__ = None;
+                let mut organizer_key__ = None;
                 let mut cancellation__ = None;
                 let mut slots__ = None;
                 let mut slot_duration__ = None;
@@ -871,11 +869,11 @@ impl<'de> serde::Deserialize<'de> for Event {
                             }
                             name__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Type => {
-                            if r#type__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("type"));
+                        GeneratedField::EventType => {
+                            if event_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("eventType"));
                             }
-                            r#type__ = Some(map_.next_value::<EventType>()? as i32);
+                            event_type__ = Some(map_.next_value::<EventType>()? as i32);
                         }
                         GeneratedField::Status => {
                             if status__.is_some() {
@@ -901,17 +899,11 @@ impl<'de> serde::Deserialize<'de> for Event {
                             }
                             recurrence_rule__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Location => {
-                            if location__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("location"));
+                        GeneratedField::OrganizerKey => {
+                            if organizer_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("organizerKey"));
                             }
-                            location__ = map_.next_value()?;
-                        }
-                        GeneratedField::Organizer => {
-                            if organizer__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("organizer"));
-                            }
-                            organizer__ = map_.next_value()?;
+                            organizer_key__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Cancellation => {
                             if cancellation__.is_some() {
@@ -962,13 +954,12 @@ impl<'de> serde::Deserialize<'de> for Event {
                 Ok(Event {
                     id: id__.unwrap_or_default(),
                     name: name__.unwrap_or_default(),
-                    r#type: r#type__.unwrap_or_default(),
+                    event_type: event_type__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
                     start: start__,
                     end: end__,
                     recurrence_rule: recurrence_rule__.unwrap_or_default(),
-                    location: location__,
-                    organizer: organizer__,
+                    organizer_key: organizer_key__.unwrap_or_default(),
                     cancellation: cancellation__,
                     slots: slots__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
@@ -1133,316 +1124,6 @@ impl<'de> serde::Deserialize<'de> for EventType {
             }
         }
         deserializer.deserialize_any(GeneratedVisitor)
-    }
-}
-impl serde::Serialize for Location {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.r#type != 0 {
-            len += 1;
-        }
-        if !self.location.is_empty() {
-            len += 1;
-        }
-        if !self.additional_info.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.Location", len)?;
-        if self.r#type != 0 {
-            let v = LocationType::try_from(self.r#type)
-                .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.r#type)))?;
-            struct_ser.serialize_field("type", &v)?;
-        }
-        if !self.location.is_empty() {
-            struct_ser.serialize_field("location", &self.location)?;
-        }
-        if !self.additional_info.is_empty() {
-            struct_ser.serialize_field("additionalInfo", &self.additional_info)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for Location {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "type",
-            "location",
-            "additional_info",
-            "additionalInfo",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Type,
-            Location,
-            AdditionalInfo,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "type" => Ok(GeneratedField::Type),
-                            "location" => Ok(GeneratedField::Location),
-                            "additionalInfo" | "additional_info" => Ok(GeneratedField::AdditionalInfo),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = Location;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.Location")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Location, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut r#type__ = None;
-                let mut location__ = None;
-                let mut additional_info__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::Type => {
-                            if r#type__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("type"));
-                            }
-                            r#type__ = Some(map_.next_value::<LocationType>()? as i32);
-                        }
-                        GeneratedField::Location => {
-                            if location__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("location"));
-                            }
-                            location__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::AdditionalInfo => {
-                            if additional_info__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("additionalInfo"));
-                            }
-                            additional_info__ = Some(map_.next_value()?);
-                        }
-                    }
-                }
-                Ok(Location {
-                    r#type: r#type__.unwrap_or_default(),
-                    location: location__.unwrap_or_default(),
-                    additional_info: additional_info__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("booking.v1.Location", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for LocationType {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let variant = match self {
-            Self::LocationUnspecified => "LOCATION_TYPE_LOCATION_UNSPECIFIED",
-            Self::Physical => "LOCATION_TYPE_PHYSICAL",
-            Self::Online => "LOCATION_TYPE_ONLINE",
-        };
-        serializer.serialize_str(variant)
-    }
-}
-impl<'de> serde::Deserialize<'de> for LocationType {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "LOCATION_TYPE_LOCATION_UNSPECIFIED",
-            "LOCATION_TYPE_PHYSICAL",
-            "LOCATION_TYPE_ONLINE",
-        ];
-
-        struct GeneratedVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = LocationType;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(formatter, "expected one of: {:?}", &FIELDS)
-            }
-
-            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                i32::try_from(v)
-                    .ok()
-                    .and_then(|x| x.try_into().ok())
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
-            }
-
-            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                i32::try_from(v)
-                    .ok()
-                    .and_then(|x| x.try_into().ok())
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
-            }
-
-            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                match value {
-                    "LOCATION_TYPE_LOCATION_UNSPECIFIED" => Ok(LocationType::LocationUnspecified),
-                    "LOCATION_TYPE_PHYSICAL" => Ok(LocationType::Physical),
-                    "LOCATION_TYPE_ONLINE" => Ok(LocationType::Online),
-                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
-                }
-            }
-        }
-        deserializer.deserialize_any(GeneratedVisitor)
-    }
-}
-impl serde::Serialize for Organizer {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.name.is_empty() {
-            len += 1;
-        }
-        if !self.email.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.Organizer", len)?;
-        if !self.name.is_empty() {
-            struct_ser.serialize_field("name", &self.name)?;
-        }
-        if !self.email.is_empty() {
-            struct_ser.serialize_field("email", &self.email)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for Organizer {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "name",
-            "email",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Name,
-            Email,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "name" => Ok(GeneratedField::Name),
-                            "email" => Ok(GeneratedField::Email),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = Organizer;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.Organizer")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Organizer, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut name__ = None;
-                let mut email__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::Name => {
-                            if name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("name"));
-                            }
-                            name__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::Email => {
-                            if email__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("email"));
-                            }
-                            email__ = Some(map_.next_value()?);
-                        }
-                    }
-                }
-                Ok(Organizer {
-                    name: name__.unwrap_or_default(),
-                    email: email__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("booking.v1.Organizer", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for Slot {
