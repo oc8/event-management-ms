@@ -5,6 +5,7 @@ package booking.v1;
 service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
 //  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
 //  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
 //  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
@@ -59,6 +60,19 @@ message Slot {
   int64 updated_at = 7;
 }
 
+message Booking {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string booking_holder_key = 4;
+  string slot_id = 5;
+  Slot slot = 6;
+  int32 number_of_people = 7;
+  string message = 8;
+  int64 created_at = 9;
+  int64 updated_at = 10;
+}
+
 message Cancellation {
   string canceled_by = 1;
   string reason = 2;
@@ -95,4 +109,17 @@ message GetEventRequest {
 
 message GetEventResponse {
   Event event = 1;
+}
+
+message CreateBookingRequest {
+  string first_name = 1;
+  string last_name = 2;
+  string booking_holder_key = 3;
+  string slot_id = 4;
+  int32 number_of_people = 5;
+  string message = 6;
+}
+
+message CreateBookingResponse {
+  Booking booking = 1;
 }

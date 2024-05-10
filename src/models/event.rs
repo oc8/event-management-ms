@@ -91,7 +91,8 @@ impl Event {
 
         match event {
             Some(e) => {
-                let slots = Slot::find_by_event_id(conn, e.id);
+                let slots = Slot::find_by_event_id(conn, e.id)
+                    .unwrap_or_else(|| vec![]);
                 Some(EventWithSlots::new(e, slots))
             },
             None => None
@@ -132,7 +133,8 @@ impl Event {
         .expect("Failed to generate time slots");
 
         // TODO: find a way to return the slots without querying the database again
-        let slots = Slot::find_by_event_id(conn, event.id);
+        let slots = Slot::find_by_event_id(conn, event.id)
+            .unwrap_or_else(|| vec![]);
 
         Ok(slots)
     }

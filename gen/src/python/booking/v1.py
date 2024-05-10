@@ -58,6 +58,20 @@ class Slot(betterproto.Message):
 
 
 @dataclass
+class Booking(betterproto.Message):
+    id: str = betterproto.string_field(1)
+    first_name: str = betterproto.string_field(2)
+    last_name: str = betterproto.string_field(3)
+    booking_holder_key: str = betterproto.string_field(4)
+    slot_id: str = betterproto.string_field(5)
+    slot: "Slot" = betterproto.message_field(6)
+    number_of_people: int = betterproto.int32_field(7)
+    message: str = betterproto.string_field(8)
+    created_at: int = betterproto.int64_field(9)
+    updated_at: int = betterproto.int64_field(10)
+
+
+@dataclass
 class Cancellation(betterproto.Message):
     canceled_by: str = betterproto.string_field(1)
     reason: str = betterproto.string_field(2)
@@ -102,6 +116,21 @@ class GetEventResponse(betterproto.Message):
     event: "Event" = betterproto.message_field(1)
 
 
+@dataclass
+class CreateBookingRequest(betterproto.Message):
+    first_name: str = betterproto.string_field(1)
+    last_name: str = betterproto.string_field(2)
+    booking_holder_key: str = betterproto.string_field(3)
+    slot_id: str = betterproto.string_field(4)
+    number_of_people: int = betterproto.int32_field(5)
+    message: str = betterproto.string_field(6)
+
+
+@dataclass
+class CreateBookingResponse(betterproto.Message):
+    booking: "Booking" = betterproto.message_field(1)
+
+
 class BookingServiceStub(betterproto.ServiceStub):
     async def create_event(
         self,
@@ -141,4 +170,28 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/GetEvent",
             request,
             GetEventResponse,
+        )
+
+    async def create_booking(
+        self,
+        *,
+        first_name: str = "",
+        last_name: str = "",
+        booking_holder_key: str = "",
+        slot_id: str = "",
+        number_of_people: int = 0,
+        message: str = "",
+    ) -> CreateBookingResponse:
+        request = CreateBookingRequest()
+        request.first_name = first_name
+        request.last_name = last_name
+        request.booking_holder_key = booking_holder_key
+        request.slot_id = slot_id
+        request.number_of_people = number_of_people
+        request.message = message
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/CreateBooking",
+            request,
+            CreateBookingResponse,
         )

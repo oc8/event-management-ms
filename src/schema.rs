@@ -4,18 +4,16 @@ diesel::table! {
     bookings (id) {
         id -> Uuid,
         #[max_length = 255]
-        first_name -> Varchar,
+        first_name -> Nullable<Varchar>,
         #[max_length = 255]
-        last_name -> Varchar,
+        last_name -> Nullable<Varchar>,
         #[max_length = 255]
-        email -> Varchar,
-        #[max_length = 255]
-        phone -> Varchar,
+        booking_holder_key -> Varchar,
         slot_id -> Uuid,
-        number_of_people -> Int4,
+        number_of_people -> Nullable<Int4>,
         message -> Nullable<Text>,
-        created_at -> Nullable<Timestamp>,
-        updated_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 

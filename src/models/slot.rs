@@ -36,7 +36,7 @@ impl Slot {
             .returning(Slot::as_returning())
             .get_result(conn)
         {
-            Ok(user) => Ok(user),
+            Ok(slot) => Ok(slot),
             Err(e) => {
                 log::error!("Failed to create slot: {}", e);
                 Err(e)
@@ -52,12 +52,12 @@ impl Slot {
             .ok()
     }
 
-    pub fn find_by_event_id(conn: &mut PgConnection, event_id: Uuid) -> Vec<Slot> {
+    pub fn find_by_event_id(conn: &mut PgConnection, event_id: Uuid) -> Option<Vec<Slot>> {
         event_slots::dsl::event_slots
             .select(Slot::as_select())
             .filter(event_slots::dsl::event_id.eq(event_id))
             .load(conn)
-            .expect("Error loading slots")
+            .ok()
     }
 }
 

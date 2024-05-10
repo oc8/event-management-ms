@@ -1,4 +1,263 @@
 // @generated
+impl serde::Serialize for Booking {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.id.is_empty() {
+            len += 1;
+        }
+        if !self.first_name.is_empty() {
+            len += 1;
+        }
+        if !self.last_name.is_empty() {
+            len += 1;
+        }
+        if !self.booking_holder_key.is_empty() {
+            len += 1;
+        }
+        if !self.slot_id.is_empty() {
+            len += 1;
+        }
+        if self.slot.is_some() {
+            len += 1;
+        }
+        if self.number_of_people != 0 {
+            len += 1;
+        }
+        if !self.message.is_empty() {
+            len += 1;
+        }
+        if self.created_at != 0 {
+            len += 1;
+        }
+        if self.updated_at != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("booking.v1.Booking", len)?;
+        if !self.id.is_empty() {
+            struct_ser.serialize_field("id", &self.id)?;
+        }
+        if !self.first_name.is_empty() {
+            struct_ser.serialize_field("firstName", &self.first_name)?;
+        }
+        if !self.last_name.is_empty() {
+            struct_ser.serialize_field("lastName", &self.last_name)?;
+        }
+        if !self.booking_holder_key.is_empty() {
+            struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
+        }
+        if !self.slot_id.is_empty() {
+            struct_ser.serialize_field("slotId", &self.slot_id)?;
+        }
+        if let Some(v) = self.slot.as_ref() {
+            struct_ser.serialize_field("slot", v)?;
+        }
+        if self.number_of_people != 0 {
+            struct_ser.serialize_field("numberOfPeople", &self.number_of_people)?;
+        }
+        if !self.message.is_empty() {
+            struct_ser.serialize_field("message", &self.message)?;
+        }
+        if self.created_at != 0 {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("createdAt", ToString::to_string(&self.created_at).as_str())?;
+        }
+        if self.updated_at != 0 {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("updatedAt", ToString::to_string(&self.updated_at).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for Booking {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "id",
+            "first_name",
+            "firstName",
+            "last_name",
+            "lastName",
+            "booking_holder_key",
+            "bookingHolderKey",
+            "slot_id",
+            "slotId",
+            "slot",
+            "number_of_people",
+            "numberOfPeople",
+            "message",
+            "created_at",
+            "createdAt",
+            "updated_at",
+            "updatedAt",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Id,
+            FirstName,
+            LastName,
+            BookingHolderKey,
+            SlotId,
+            Slot,
+            NumberOfPeople,
+            Message,
+            CreatedAt,
+            UpdatedAt,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "id" => Ok(GeneratedField::Id),
+                            "firstName" | "first_name" => Ok(GeneratedField::FirstName),
+                            "lastName" | "last_name" => Ok(GeneratedField::LastName),
+                            "bookingHolderKey" | "booking_holder_key" => Ok(GeneratedField::BookingHolderKey),
+                            "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
+                            "slot" => Ok(GeneratedField::Slot),
+                            "numberOfPeople" | "number_of_people" => Ok(GeneratedField::NumberOfPeople),
+                            "message" => Ok(GeneratedField::Message),
+                            "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
+                            "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = Booking;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct booking.v1.Booking")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Booking, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut id__ = None;
+                let mut first_name__ = None;
+                let mut last_name__ = None;
+                let mut booking_holder_key__ = None;
+                let mut slot_id__ = None;
+                let mut slot__ = None;
+                let mut number_of_people__ = None;
+                let mut message__ = None;
+                let mut created_at__ = None;
+                let mut updated_at__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Id => {
+                            if id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("id"));
+                            }
+                            id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::FirstName => {
+                            if first_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("firstName"));
+                            }
+                            first_name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::LastName => {
+                            if last_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("lastName"));
+                            }
+                            last_name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::BookingHolderKey => {
+                            if booking_holder_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bookingHolderKey"));
+                            }
+                            booking_holder_key__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::SlotId => {
+                            if slot_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("slotId"));
+                            }
+                            slot_id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Slot => {
+                            if slot__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("slot"));
+                            }
+                            slot__ = map_.next_value()?;
+                        }
+                        GeneratedField::NumberOfPeople => {
+                            if number_of_people__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("numberOfPeople"));
+                            }
+                            number_of_people__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::Message => {
+                            if message__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("message"));
+                            }
+                            message__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::CreatedAt => {
+                            if created_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("createdAt"));
+                            }
+                            created_at__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::UpdatedAt => {
+                            if updated_at__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("updatedAt"));
+                            }
+                            updated_at__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(Booking {
+                    id: id__.unwrap_or_default(),
+                    first_name: first_name__.unwrap_or_default(),
+                    last_name: last_name__.unwrap_or_default(),
+                    booking_holder_key: booking_holder_key__.unwrap_or_default(),
+                    slot_id: slot_id__.unwrap_or_default(),
+                    slot: slot__,
+                    number_of_people: number_of_people__.unwrap_or_default(),
+                    message: message__.unwrap_or_default(),
+                    created_at: created_at__.unwrap_or_default(),
+                    updated_at: updated_at__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("booking.v1.Booking", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for Cancellation {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -124,6 +383,280 @@ impl<'de> serde::Deserialize<'de> for Cancellation {
             }
         }
         deserializer.deserialize_struct("booking.v1.Cancellation", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for CreateBookingRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.first_name.is_empty() {
+            len += 1;
+        }
+        if !self.last_name.is_empty() {
+            len += 1;
+        }
+        if !self.booking_holder_key.is_empty() {
+            len += 1;
+        }
+        if !self.slot_id.is_empty() {
+            len += 1;
+        }
+        if self.number_of_people != 0 {
+            len += 1;
+        }
+        if !self.message.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateBookingRequest", len)?;
+        if !self.first_name.is_empty() {
+            struct_ser.serialize_field("firstName", &self.first_name)?;
+        }
+        if !self.last_name.is_empty() {
+            struct_ser.serialize_field("lastName", &self.last_name)?;
+        }
+        if !self.booking_holder_key.is_empty() {
+            struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
+        }
+        if !self.slot_id.is_empty() {
+            struct_ser.serialize_field("slotId", &self.slot_id)?;
+        }
+        if self.number_of_people != 0 {
+            struct_ser.serialize_field("numberOfPeople", &self.number_of_people)?;
+        }
+        if !self.message.is_empty() {
+            struct_ser.serialize_field("message", &self.message)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "first_name",
+            "firstName",
+            "last_name",
+            "lastName",
+            "booking_holder_key",
+            "bookingHolderKey",
+            "slot_id",
+            "slotId",
+            "number_of_people",
+            "numberOfPeople",
+            "message",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            FirstName,
+            LastName,
+            BookingHolderKey,
+            SlotId,
+            NumberOfPeople,
+            Message,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "firstName" | "first_name" => Ok(GeneratedField::FirstName),
+                            "lastName" | "last_name" => Ok(GeneratedField::LastName),
+                            "bookingHolderKey" | "booking_holder_key" => Ok(GeneratedField::BookingHolderKey),
+                            "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
+                            "numberOfPeople" | "number_of_people" => Ok(GeneratedField::NumberOfPeople),
+                            "message" => Ok(GeneratedField::Message),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = CreateBookingRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct booking.v1.CreateBookingRequest")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateBookingRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut first_name__ = None;
+                let mut last_name__ = None;
+                let mut booking_holder_key__ = None;
+                let mut slot_id__ = None;
+                let mut number_of_people__ = None;
+                let mut message__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::FirstName => {
+                            if first_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("firstName"));
+                            }
+                            first_name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::LastName => {
+                            if last_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("lastName"));
+                            }
+                            last_name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::BookingHolderKey => {
+                            if booking_holder_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bookingHolderKey"));
+                            }
+                            booking_holder_key__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::SlotId => {
+                            if slot_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("slotId"));
+                            }
+                            slot_id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::NumberOfPeople => {
+                            if number_of_people__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("numberOfPeople"));
+                            }
+                            number_of_people__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::Message => {
+                            if message__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("message"));
+                            }
+                            message__ = Some(map_.next_value()?);
+                        }
+                    }
+                }
+                Ok(CreateBookingRequest {
+                    first_name: first_name__.unwrap_or_default(),
+                    last_name: last_name__.unwrap_or_default(),
+                    booking_holder_key: booking_holder_key__.unwrap_or_default(),
+                    slot_id: slot_id__.unwrap_or_default(),
+                    number_of_people: number_of_people__.unwrap_or_default(),
+                    message: message__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("booking.v1.CreateBookingRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for CreateBookingResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.booking.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateBookingResponse", len)?;
+        if let Some(v) = self.booking.as_ref() {
+            struct_ser.serialize_field("booking", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for CreateBookingResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "booking",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Booking,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "booking" => Ok(GeneratedField::Booking),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = CreateBookingResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct booking.v1.CreateBookingResponse")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateBookingResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut booking__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Booking => {
+                            if booking__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("booking"));
+                            }
+                            booking__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(CreateBookingResponse {
+                    booking: booking__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("booking.v1.CreateBookingResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for CreateEventRequest {
