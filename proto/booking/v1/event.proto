@@ -6,6 +6,7 @@ service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
+  rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
 //  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
 //  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
 //  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
@@ -121,5 +122,13 @@ message CreateBookingRequest {
 }
 
 message CreateBookingResponse {
+  Booking booking = 1;
+}
+
+message GetBookingRequest {
+  string id = 1;
+}
+
+message GetBookingResponse {
   Booking booking = 1;
 }

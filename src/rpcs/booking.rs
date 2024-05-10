@@ -1,11 +1,11 @@
 use tonic::Status;
 use uuid::Uuid;
-use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse};
+use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, GetBookingRequest, GetBookingResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::errors;
 use crate::models::booking::{Booking, NewBooking};
 use crate::models::slot::Slot;
-use crate::validations::validate_create_booking_request;
+use crate::validations::{validate_create_booking_request, validate_get_booking_request};
 
 pub fn create_booking(
     request: CreateBookingRequest,
@@ -34,5 +34,25 @@ pub fn create_booking(
 
     Ok(CreateBookingResponse{
         booking: Some(booking.into())
+    })
+}
+
+pub fn get_booking_by_id(
+    request: GetBookingRequest,
+    conn: &mut PgPooledConnection
+) -> Result<GetBookingResponse, Status> {
+    validate_get_booking_request(&request)?;
+
+    let booking_id = Uuid::parse_str(&request.id)
+        .map_err(|_| Status::invalid_argument(errors::INVALID_BOOKING_ID))?;
+
+    let booking = Booking::find_by_id(conn, booking_id);
+
+    if booking.is_none() {
+        return Err(Status::not_found(errors::BOOKING_NOT_FOUND))
+    }
+
+    Ok(GetBookingResponse{
+        booking: Some(booking.unwrap().into())
     })
 }

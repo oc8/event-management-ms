@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Code, Request, Response, Status};
 
-use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, GetEventRequest, GetEventResponse};
+use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 
@@ -44,6 +44,11 @@ impl BookingService for BookingServiceServerImpl {
     async fn create_booking(&self, request: Request<CreateBookingRequest>) -> Result<Response<CreateBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         rpcs::create_booking(request.into_inner(), &mut conn).map(Response::new)
+    }
+
+    async fn get_booking(&self, request: Request<GetBookingRequest>) -> Result<Response<GetBookingResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::get_booking_by_id(request.into_inner(), &mut conn).map(Response::new)
     }
 }
 

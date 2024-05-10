@@ -12,5 +12,7 @@ pub const INVALID_EVENT_TYPE: &str = "invalid_event_type";
 pub const INVALID_EVENT_ID: &str = "invalid_event_id";
 pub const EVENT_NOT_FOUND: &str = "event_not_found";
 pub const SLOT_NOT_FOUND: &str = "slot_not_found";
+pub const BOOKING_NOT_FOUND: &str = "booking_not_found";
 pub const INVALID_BOOKING_HOLDER_KEY: &str = "invalid_booking_holder_key";
 pub const INVALID_SLOT_ID: &str = "invalid_slot_id";
+pub const INVALID_BOOKING_ID: &str = "invalid_booking_id";

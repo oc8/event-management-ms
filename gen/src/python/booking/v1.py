@@ -131,6 +131,16 @@ class CreateBookingResponse(betterproto.Message):
     booking: "Booking" = betterproto.message_field(1)
 
 
+@dataclass
+class GetBookingRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+
+
+@dataclass
+class GetBookingResponse(betterproto.Message):
+    booking: "Booking" = betterproto.message_field(1)
+
+
 class BookingServiceStub(betterproto.ServiceStub):
     async def create_event(
         self,
@@ -194,4 +204,14 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/CreateBooking",
             request,
             CreateBookingResponse,
+        )
+
+    async def get_booking(self, *, id: str = "") -> GetBookingResponse:
+        request = GetBookingRequest()
+        request.id = id
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/GetBooking",
+            request,
+            GetBookingResponse,
         )
