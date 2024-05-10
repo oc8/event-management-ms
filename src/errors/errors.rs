@@ -16,3 +16,6 @@ pub const BOOKING_NOT_FOUND: &str = "booking_not_found";
 pub const INVALID_BOOKING_HOLDER_KEY: &str = "invalid_booking_holder_key";
 pub const INVALID_SLOT_ID: &str = "invalid_slot_id";
 pub const INVALID_BOOKING_ID: &str = "invalid_booking_id";
+pub const INVALID_CLOSING_START_DATE: &str = "invalid_closing_start_date";
+pub const INVALID_CLOSING_END_DATE: &str = "invalid_closing_end_date";
+pub const INVALID_CLOSING_DATE_RANGE: &str = "invalid_closing_date_range";

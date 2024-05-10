@@ -1,12 +1,9 @@
-use chrono::{Duration, NaiveDateTime};
+use chrono::{NaiveDateTime};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
-use diesel::data_types::{PgTime};
 use uuid::Uuid;
-use protos::booking::v1::{TimeData};
-use crate::models::event::{Event, EventWithSlots};
 use crate::models::slot::Slot;
 
-use crate::schema::{bookings, event_slots};
+use crate::schema::{bookings};
 
 #[derive(Queryable, Selectable, Debug, Clone)]
 #[diesel(table_name = bookings)]

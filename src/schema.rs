@@ -23,7 +23,7 @@ diesel::table! {
         event_id -> Uuid,
         closing_from -> Timestamp,
         closing_to -> Timestamp,
-        reason -> Text,
+        reason -> Nullable<Text>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }

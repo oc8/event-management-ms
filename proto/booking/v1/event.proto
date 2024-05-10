@@ -7,6 +7,7 @@ service BookingService {
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
+  rpc CreateClosingException(CreateClosingExceptionRequest) returns (CreateClosingExceptionResponse);
 //  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
 //  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
 //  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
@@ -51,6 +52,12 @@ message Event {
   int64 updated_at = 14;
 }
 
+message Cancellation {
+  string canceled_by = 1;
+  string reason = 2;
+  TimeData created_at = 3;
+}
+
 message Slot {
   string id = 1;
   string event_id = 2;
@@ -74,10 +81,15 @@ message Booking {
   int64 updated_at = 10;
 }
 
-message Cancellation {
-  string canceled_by = 1;
-  string reason = 2;
-  TimeData created_at = 3;
+message ClosingException {
+  string id = 1;
+  string event_id = 2;
+  Event event = 3;
+  TimeData closing_from = 4;
+  TimeData closing_to = 5;
+  string reason = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
 }
 
 message CreateEventRequest {
@@ -131,4 +143,16 @@ message GetBookingRequest {
 
 message GetBookingResponse {
   Booking booking = 1;
+}
+
+message CreateClosingExceptionRequest {
+  string event_id = 1;
+  string closing_from = 2;
+  string closing_to = 3;
+  string reason = 4;
+}
+
+// TODO: Remove ClosingException type and replace it with a slot of type CLOSING
+message CreateClosingExceptionResponse {
+  ClosingException exception = 1;
 }
