@@ -129,6 +129,16 @@ class GetEventResponse(betterproto.Message):
 
 
 @dataclass
+class GetActiveEventsRequest(betterproto.Message):
+    organizer_key: str = betterproto.string_field(1)
+
+
+@dataclass
+class GetActiveEventsResponse(betterproto.Message):
+    events: List["Event"] = betterproto.message_field(1)
+
+
+@dataclass
 class CreateBookingRequest(betterproto.Message):
     first_name: str = betterproto.string_field(1)
     last_name: str = betterproto.string_field(2)
@@ -210,6 +220,18 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/GetEvent",
             request,
             GetEventResponse,
+        )
+
+    async def get_active_events(
+        self, *, organizer_key: str = ""
+    ) -> GetActiveEventsResponse:
+        request = GetActiveEventsRequest()
+        request.organizer_key = organizer_key
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/GetActiveEvents",
+            request,
+            GetActiveEventsResponse,
         )
 
     async def create_booking(

@@ -99,6 +99,21 @@ impl Event {
         }
     }
 
+    pub fn find_active_events(conn: &mut PgConnection, organizer_key: String) -> Vec<EventWithSlots> {
+        let events = events::dsl::events
+            .select(Event::as_select())
+            .filter(events::dsl::organizer_key.eq(organizer_key))
+            .filter(events::dsl::status.eq(EventStatus::as_str_name(&EventStatus::Active)))
+            .load::<Event>(conn)
+            .unwrap_or_else(|_| vec![]);
+
+        events.into_iter().map(|event| {
+            let slots = Slot::find_active_by_event_id(conn, event.id)
+                .unwrap_or_else(|| vec![]);
+            EventWithSlots::new(event, slots)
+        }).collect()
+    }
+
     // TODO: Prevent double insertion of slots
     pub fn generate_time_slots(conn: &mut PgConnection, event: Event) -> QueryResult<Vec<Slot>> {
         conn.transaction(|pg_conn| {

@@ -5,6 +5,7 @@ package booking.v1;
 service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc GetActiveEvents(GetActiveEventsRequest) returns (GetActiveEventsResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc CreateClosingException(CreateClosingExceptionRequest) returns (CreateClosingExceptionResponse);
@@ -122,6 +123,14 @@ message GetEventRequest {
 
 message GetEventResponse {
   Event event = 1;
+}
+
+message GetActiveEventsRequest {
+  string organizer_key = 1;
+}
+
+message GetActiveEventsResponse {
+  repeated Event events = 1;
 }
 
 message CreateBookingRequest {

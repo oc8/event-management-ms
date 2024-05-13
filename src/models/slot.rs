@@ -59,6 +59,15 @@ impl Slot {
             .load(conn)
             .ok()
     }
+
+    pub fn find_active_by_event_id(conn: &mut PgConnection, event_id: Uuid) -> Option<Vec<Slot>> {
+        event_slots::dsl::event_slots
+            .select(Slot::as_select())
+            .filter(event_slots::dsl::event_id.eq(event_id))
+            .filter(event_slots::dsl::status.eq("active"))
+            .load(conn)
+            .ok()
+    }
 }
 
 fn pg_time_to_string(time: PgTime) -> String {
