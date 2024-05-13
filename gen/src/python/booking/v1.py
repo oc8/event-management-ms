@@ -81,8 +81,6 @@ class Booking(betterproto.Message):
 @dataclass
 class ClosingException(betterproto.Message):
     id: str = betterproto.string_field(1)
-    event_id: str = betterproto.string_field(2)
-    event: "Event" = betterproto.message_field(3)
     closing_from: "TimeData" = betterproto.message_field(4)
     closing_to: "TimeData" = betterproto.message_field(5)
     reason: str = betterproto.string_field(6)
@@ -165,19 +163,13 @@ class GetBookingResponse(betterproto.Message):
 
 @dataclass
 class CreateClosingExceptionRequest(betterproto.Message):
-    event_id: str = betterproto.string_field(1)
-    closing_from: str = betterproto.string_field(2)
-    closing_to: str = betterproto.string_field(3)
-    reason: str = betterproto.string_field(4)
+    closing_from: str = betterproto.string_field(1)
+    closing_to: str = betterproto.string_field(2)
+    reason: str = betterproto.string_field(3)
 
 
 @dataclass
 class CreateClosingExceptionResponse(betterproto.Message):
-    """
-    TODO: Remove ClosingException type and replace it with a slot of type
-    CLOSING
-    """
-
     exception: "ClosingException" = betterproto.message_field(1)
 
 
@@ -269,15 +261,9 @@ class BookingServiceStub(betterproto.ServiceStub):
         )
 
     async def create_closing_exception(
-        self,
-        *,
-        event_id: str = "",
-        closing_from: str = "",
-        closing_to: str = "",
-        reason: str = "",
+        self, *, closing_from: str = "", closing_to: str = "", reason: str = ""
     ) -> CreateClosingExceptionResponse:
         request = CreateClosingExceptionRequest()
-        request.event_id = event_id
         request.closing_from = closing_from
         request.closing_to = closing_to
         request.reason = reason

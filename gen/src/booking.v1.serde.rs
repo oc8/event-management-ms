@@ -396,12 +396,6 @@ impl serde::Serialize for ClosingException {
         if !self.id.is_empty() {
             len += 1;
         }
-        if !self.event_id.is_empty() {
-            len += 1;
-        }
-        if self.event.is_some() {
-            len += 1;
-        }
         if self.closing_from.is_some() {
             len += 1;
         }
@@ -420,12 +414,6 @@ impl serde::Serialize for ClosingException {
         let mut struct_ser = serializer.serialize_struct("booking.v1.ClosingException", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
-        }
-        if !self.event_id.is_empty() {
-            struct_ser.serialize_field("eventId", &self.event_id)?;
-        }
-        if let Some(v) = self.event.as_ref() {
-            struct_ser.serialize_field("event", v)?;
         }
         if let Some(v) = self.closing_from.as_ref() {
             struct_ser.serialize_field("closingFrom", v)?;
@@ -455,9 +443,6 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
     {
         const FIELDS: &[&str] = &[
             "id",
-            "event_id",
-            "eventId",
-            "event",
             "closing_from",
             "closingFrom",
             "closing_to",
@@ -472,8 +457,6 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Id,
-            EventId,
-            Event,
             ClosingFrom,
             ClosingTo,
             Reason,
@@ -501,8 +484,6 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                     {
                         match value {
                             "id" => Ok(GeneratedField::Id),
-                            "eventId" | "event_id" => Ok(GeneratedField::EventId),
-                            "event" => Ok(GeneratedField::Event),
                             "closingFrom" | "closing_from" => Ok(GeneratedField::ClosingFrom),
                             "closingTo" | "closing_to" => Ok(GeneratedField::ClosingTo),
                             "reason" => Ok(GeneratedField::Reason),
@@ -528,8 +509,6 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
-                let mut event_id__ = None;
-                let mut event__ = None;
                 let mut closing_from__ = None;
                 let mut closing_to__ = None;
                 let mut reason__ = None;
@@ -542,18 +521,6 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                                 return Err(serde::de::Error::duplicate_field("id"));
                             }
                             id__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::EventId => {
-                            if event_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("eventId"));
-                            }
-                            event_id__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::Event => {
-                            if event__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("event"));
-                            }
-                            event__ = map_.next_value()?;
                         }
                         GeneratedField::ClosingFrom => {
                             if closing_from__.is_some() {
@@ -593,8 +560,6 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                 }
                 Ok(ClosingException {
                     id: id__.unwrap_or_default(),
-                    event_id: event_id__.unwrap_or_default(),
-                    event: event__,
                     closing_from: closing_from__,
                     closing_to: closing_to__,
                     reason: reason__.unwrap_or_default(),
@@ -888,9 +853,6 @@ impl serde::Serialize for CreateClosingExceptionRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if !self.event_id.is_empty() {
-            len += 1;
-        }
         if !self.closing_from.is_empty() {
             len += 1;
         }
@@ -901,9 +863,6 @@ impl serde::Serialize for CreateClosingExceptionRequest {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("booking.v1.CreateClosingExceptionRequest", len)?;
-        if !self.event_id.is_empty() {
-            struct_ser.serialize_field("eventId", &self.event_id)?;
-        }
         if !self.closing_from.is_empty() {
             struct_ser.serialize_field("closingFrom", &self.closing_from)?;
         }
@@ -923,8 +882,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "event_id",
-            "eventId",
             "closing_from",
             "closingFrom",
             "closing_to",
@@ -934,7 +891,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            EventId,
             ClosingFrom,
             ClosingTo,
             Reason,
@@ -959,7 +915,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "eventId" | "event_id" => Ok(GeneratedField::EventId),
                             "closingFrom" | "closing_from" => Ok(GeneratedField::ClosingFrom),
                             "closingTo" | "closing_to" => Ok(GeneratedField::ClosingTo),
                             "reason" => Ok(GeneratedField::Reason),
@@ -982,18 +937,11 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut event_id__ = None;
                 let mut closing_from__ = None;
                 let mut closing_to__ = None;
                 let mut reason__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::EventId => {
-                            if event_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("eventId"));
-                            }
-                            event_id__ = Some(map_.next_value()?);
-                        }
                         GeneratedField::ClosingFrom => {
                             if closing_from__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("closingFrom"));
@@ -1015,7 +963,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
                     }
                 }
                 Ok(CreateClosingExceptionRequest {
-                    event_id: event_id__.unwrap_or_default(),
                     closing_from: closing_from__.unwrap_or_default(),
                     closing_to: closing_to__.unwrap_or_default(),
                     reason: reason__.unwrap_or_default(),

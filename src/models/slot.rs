@@ -3,10 +3,11 @@ use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, R
 use diesel::data_types::{PgTime};
 use uuid::Uuid;
 use protos::booking::v1::{TimeData};
-
+use diesel::prelude::*;
+use diesel::sql_query;
 use crate::schema::event_slots;
 
-#[derive(Queryable, Selectable, Debug, Clone)]
+#[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = event_slots)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Slot {
@@ -44,28 +45,36 @@ impl Slot {
         }
     }
 
-    pub fn find_by_id(conn: &mut PgConnection, id: Uuid) -> Option<Slot> {
+    pub fn find_by_id(conn: &mut PgConnection, p_slot_id: Uuid) -> Option<Slot> {
         event_slots::dsl::event_slots
             .select(Slot::as_select())
-            .filter(event_slots::dsl::id.eq(id))
+            .filter(event_slots::dsl::id.eq(p_slot_id))
             .first(conn)
             .ok()
     }
 
-    pub fn find_by_event_id(conn: &mut PgConnection, event_id: Uuid) -> Option<Vec<Slot>> {
+    pub fn find_by_event_id(conn: &mut PgConnection, p_event_id: Uuid) -> Option<Vec<Slot>> {
         event_slots::dsl::event_slots
             .select(Slot::as_select())
-            .filter(event_slots::dsl::event_id.eq(event_id))
+            .filter(event_slots::dsl::event_id.eq(p_event_id))
             .load(conn)
             .ok()
     }
 
-    pub fn find_active_by_event_id(conn: &mut PgConnection, event_id: Uuid) -> Option<Vec<Slot>> {
-        event_slots::dsl::event_slots
-            .select(Slot::as_select())
-            .filter(event_slots::dsl::event_id.eq(event_id))
-            .filter(event_slots::dsl::status.eq("active"))
-            .load(conn)
+    pub fn find_active_by_event_id(conn: &mut PgConnection, active_event_id: Uuid) -> Option<Vec<Slot>> {
+        sql_query("
+            SELECT * FROM event_slots es
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM closing_exceptions ce
+                WHERE es.start_time BETWEEN CAST(ce.closing_from AS TIME) AND CAST(ce.closing_to AS TIME)
+            )
+            AND es.event_id = $1
+            GROUP BY es.id
+            ORDER BY es.start_time
+        ")
+            .bind::<diesel::sql_types::Uuid, _>(active_event_id)
+            .load::<Slot>(conn)
             .ok()
     }
 }

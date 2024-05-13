@@ -20,7 +20,6 @@ diesel::table! {
 diesel::table! {
     closing_exceptions (id) {
         id -> Uuid,
-        event_id -> Uuid,
         closing_from -> Timestamp,
         closing_to -> Timestamp,
         reason -> Nullable<Text>,
@@ -71,7 +70,6 @@ diesel::table! {
 }
 
 diesel::joinable!(bookings -> event_slots (slot_id));
-diesel::joinable!(closing_exceptions -> events (event_id));
 diesel::joinable!(event_slots -> events (event_id));
 
 diesel::allow_tables_to_appear_in_same_query!(

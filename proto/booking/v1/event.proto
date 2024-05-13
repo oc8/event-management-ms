@@ -84,8 +84,6 @@ message Booking {
 
 message ClosingException {
   string id = 1;
-  string event_id = 2;
-  Event event = 3;
   TimeData closing_from = 4;
   TimeData closing_to = 5;
   string reason = 6;
@@ -155,13 +153,11 @@ message GetBookingResponse {
 }
 
 message CreateClosingExceptionRequest {
-  string event_id = 1;
-  string closing_from = 2;
-  string closing_to = 3;
-  string reason = 4;
+  string closing_from = 1;
+  string closing_to = 2;
+  string reason = 3;
 }
 
-// TODO: Remove ClosingException type and replace it with a slot of type CLOSING
 message CreateClosingExceptionResponse {
   ClosingException exception = 1;
 }

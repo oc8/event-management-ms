@@ -107,11 +107,18 @@ impl Event {
             .load::<Event>(conn)
             .unwrap_or_else(|_| vec![]);
 
-        events.into_iter().map(|event| {
-            let slots = Slot::find_active_by_event_id(conn, event.id)
-                .unwrap_or_else(|| vec![]);
-            EventWithSlots::new(event, slots)
-        }).collect()
+        events
+            .into_iter()
+            .filter_map(|event| {
+                let slots = Slot::find_active_by_event_id(conn, event.id)
+                    .unwrap_or_else(|| vec![]);
+                if slots.is_empty() {
+                    None
+                } else {
+                    Some(EventWithSlots::new(event, slots))
+                }
+            })
+            .collect()
     }
 
     // TODO: Prevent double insertion of slots
