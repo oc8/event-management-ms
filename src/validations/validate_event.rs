@@ -76,7 +76,11 @@ pub fn validate_get_event_request(req: &GetEventRequest) -> Result<(), Status> {
 }
 
 pub fn validate_get_active_events(req: &GetActiveEventsRequest) -> Result<(), Status> {
-    if req.organizer_key.is_empty() {
+    if req.filters.is_none() {
+        return Err(Status::new(Code::InvalidArgument, errors::INVALID_FILTERS))
+    }
+
+    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_ORGANIZER_KEY))
     }
 

@@ -2099,7 +2099,7 @@ impl<'de> serde::Deserialize<'de> for EventType {
         deserializer.deserialize_any(GeneratedVisitor)
     }
 }
-impl serde::Serialize for GetActiveEventsRequest {
+impl serde::Serialize for Filters {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -2107,30 +2107,64 @@ impl serde::Serialize for GetActiveEventsRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
+        if !self.from.is_empty() {
+            len += 1;
+        }
+        if !self.to.is_empty() {
+            len += 1;
+        }
         if !self.organizer_key.is_empty() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.GetActiveEventsRequest", len)?;
+        if self.limit != 0 {
+            len += 1;
+        }
+        if self.offset != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("booking.v1.Filters", len)?;
+        if !self.from.is_empty() {
+            struct_ser.serialize_field("from", &self.from)?;
+        }
+        if !self.to.is_empty() {
+            struct_ser.serialize_field("to", &self.to)?;
+        }
         if !self.organizer_key.is_empty() {
             struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+        }
+        if self.limit != 0 {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("limit", ToString::to_string(&self.limit).as_str())?;
+        }
+        if self.offset != 0 {
+            #[allow(clippy::needless_borrow)]
+            struct_ser.serialize_field("offset", ToString::to_string(&self.offset).as_str())?;
         }
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for GetActiveEventsRequest {
+impl<'de> serde::Deserialize<'de> for Filters {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "from",
+            "to",
             "organizer_key",
             "organizerKey",
+            "limit",
+            "offset",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
+            From,
+            To,
             OrganizerKey,
+            Limit,
+            Offset,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2152,7 +2186,138 @@ impl<'de> serde::Deserialize<'de> for GetActiveEventsRequest {
                         E: serde::de::Error,
                     {
                         match value {
+                            "from" => Ok(GeneratedField::From),
+                            "to" => Ok(GeneratedField::To),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
+                            "limit" => Ok(GeneratedField::Limit),
+                            "offset" => Ok(GeneratedField::Offset),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = Filters;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct booking.v1.Filters")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Filters, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut from__ = None;
+                let mut to__ = None;
+                let mut organizer_key__ = None;
+                let mut limit__ = None;
+                let mut offset__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::From => {
+                            if from__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("from"));
+                            }
+                            from__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::To => {
+                            if to__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("to"));
+                            }
+                            to__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::OrganizerKey => {
+                            if organizer_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("organizerKey"));
+                            }
+                            organizer_key__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Limit => {
+                            if limit__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("limit"));
+                            }
+                            limit__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::Offset => {
+                            if offset__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("offset"));
+                            }
+                            offset__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(Filters {
+                    from: from__.unwrap_or_default(),
+                    to: to__.unwrap_or_default(),
+                    organizer_key: organizer_key__.unwrap_or_default(),
+                    limit: limit__.unwrap_or_default(),
+                    offset: offset__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("booking.v1.Filters", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for GetActiveEventsRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.filters.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("booking.v1.GetActiveEventsRequest", len)?;
+        if let Some(v) = self.filters.as_ref() {
+            struct_ser.serialize_field("filters", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetActiveEventsRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "filters",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Filters,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "filters" => Ok(GeneratedField::Filters),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2172,19 +2337,19 @@ impl<'de> serde::Deserialize<'de> for GetActiveEventsRequest {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut organizer_key__ = None;
+                let mut filters__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::OrganizerKey => {
-                            if organizer_key__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("organizerKey"));
+                        GeneratedField::Filters => {
+                            if filters__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("filters"));
                             }
-                            organizer_key__ = Some(map_.next_value()?);
+                            filters__ = map_.next_value()?;
                         }
                     }
                 }
                 Ok(GetActiveEventsRequest {
-                    organizer_key: organizer_key__.unwrap_or_default(),
+                    filters: filters__,
                 })
             }
         }

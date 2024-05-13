@@ -6,6 +6,8 @@ use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
 use crate::models::slot::{Slot};
 
 use crate::schema::{events};
+use crate::utils;
+use crate::utils::Filters;
 
 #[derive(Queryable, Selectable, Debug, Clone)]
 #[diesel(table_name = events)]
@@ -99,11 +101,33 @@ impl Event {
         }
     }
 
-    pub fn find_active_events(conn: &mut PgConnection, organizer_key: String) -> Vec<EventWithSlots> {
-        let events = events::dsl::events
+    pub fn find_active_events(conn: &mut PgConnection, filters: Filters) -> Vec<EventWithSlots> {
+        let mut query = events::table
             .select(Event::as_select())
-            .filter(events::dsl::organizer_key.eq(organizer_key))
-            .filter(events::dsl::status.eq(EventStatus::as_str_name(&EventStatus::Active)))
+            .order(events::start_time.asc())
+            .into_boxed();
+
+        // let events = utils::apply_filters(query.into_boxed(), &filters)
+        //     .load::<Event>(conn)
+        //     .unwrap_or_else(|_| vec![]);
+
+        if let Some(from) = filters.from {
+            query = query.filter(events::start_time.ge(from));
+        }
+        if let Some(to) = filters.to {
+            query = query.filter(events::start_time.le(to));
+        }
+        if let Some(organizer_key) = &filters.organizer_key {
+            query = query.filter(events::organizer_key.eq(organizer_key));
+        }
+        if let Some(limit) = filters.limit {
+            query = query.limit(limit);
+        }
+        if let Some(offset) = filters.offset {
+            query = query.offset(offset);
+        }
+
+        let events = query
             .load::<Event>(conn)
             .unwrap_or_else(|_| vec![]);
 

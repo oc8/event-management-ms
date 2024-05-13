@@ -2,7 +2,7 @@
 # sources: booking/v1/event.proto
 # plugin: python-betterproto
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 import betterproto
 import grpclib
@@ -90,6 +90,15 @@ class Closure(betterproto.Message):
 
 
 @dataclass
+class Filters(betterproto.Message):
+    from_: str = betterproto.string_field(1)
+    to: str = betterproto.string_field(2)
+    organizer_key: str = betterproto.string_field(3)
+    limit: int = betterproto.int64_field(4)
+    offset: int = betterproto.int64_field(5)
+
+
+@dataclass
 class CreateEventRequest(betterproto.Message):
     name: str = betterproto.string_field(1)
     start: str = betterproto.string_field(2)
@@ -129,7 +138,7 @@ class GetEventResponse(betterproto.Message):
 
 @dataclass
 class GetActiveEventsRequest(betterproto.Message):
-    organizer_key: str = betterproto.string_field(1)
+    filters: "Filters" = betterproto.message_field(1)
 
 
 @dataclass
@@ -217,10 +226,11 @@ class BookingServiceStub(betterproto.ServiceStub):
         )
 
     async def get_active_events(
-        self, *, organizer_key: str = ""
+        self, *, filters: Optional["Filters"] = None
     ) -> GetActiveEventsResponse:
         request = GetActiveEventsRequest()
-        request.organizer_key = organizer_key
+        if filters is not None:
+            request.filters = filters
 
         return await self._unary_unary(
             "/booking.v1.BookingService/GetActiveEvents",

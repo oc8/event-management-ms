@@ -92,6 +92,14 @@ message Closure {
   int64 updated_at = 7;
 }
 
+message Filters {
+  string from = 1;
+  string to = 2;
+  string organizer_key = 3;
+  int64 limit = 4;
+  int64 offset = 5;
+}
+
 message CreateEventRequest {
   string name = 1;
   string start = 2;
@@ -125,7 +133,7 @@ message GetEventResponse {
 }
 
 message GetActiveEventsRequest {
-  string organizer_key = 1;
+  Filters filters = 1;
 }
 
 message GetActiveEventsResponse {
