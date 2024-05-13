@@ -18,11 +18,13 @@ diesel::table! {
 }
 
 diesel::table! {
-    closing_exceptions (id) {
+    closures (id) {
         id -> Uuid,
         closing_from -> Timestamp,
         closing_to -> Timestamp,
         reason -> Nullable<Text>,
+        #[max_length = 255]
+        organizer_key -> Varchar,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }
@@ -74,7 +76,7 @@ diesel::joinable!(event_slots -> events (event_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     bookings,
-    closing_exceptions,
+    closures,
     event_slots,
     events,
 );

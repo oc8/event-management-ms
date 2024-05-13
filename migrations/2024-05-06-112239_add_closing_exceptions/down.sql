@@ -1,1 +1,0 @@
-DROP TABLE closing_exceptions;

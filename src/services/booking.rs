@@ -4,8 +4,8 @@ use tonic::{Code, Request, Response, Status};
 
 use protos::booking::v1::{booking_service_server::BookingService,
     CreateBookingRequest, CreateBookingResponse,
-    CreateClosingExceptionRequest, CreateClosingExceptionResponse,
     CreateEventRequest, CreateEventResponse,
+    CreateClosureRequest, CreateClosureResponse,
     GetBookingRequest, GetBookingResponse,
     GetEventRequest, GetEventResponse,
     GetActiveEventsRequest, GetActiveEventsResponse
@@ -48,6 +48,11 @@ impl BookingService for BookingServiceServerImpl {
         rpcs::get_event_by_id(request.into_inner(), &mut conn).map(Response::new)
     }
 
+    async fn get_active_events(&self, request: Request<GetActiveEventsRequest>) -> Result<Response<GetActiveEventsResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::get_active_events(request.into_inner(), &mut conn).map(Response::new)
+    }
+
     async fn create_booking(&self, request: Request<CreateBookingRequest>) -> Result<Response<CreateBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         rpcs::create_booking(request.into_inner(), &mut conn).map(Response::new)
@@ -58,14 +63,9 @@ impl BookingService for BookingServiceServerImpl {
         rpcs::get_booking_by_id(request.into_inner(), &mut conn).map(Response::new)
     }
 
-    async fn create_closing_exception(&self, request: Request<CreateClosingExceptionRequest>) -> Result<Response<CreateClosingExceptionResponse>, Status> {
+    async fn create_closure(&self, request: Request<CreateClosureRequest>) -> Result<Response<CreateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
-        rpcs::create_closing_exception(request.into_inner(), &mut conn).map(Response::new)
-    }
-
-    async fn get_active_events(&self, request: Request<GetActiveEventsRequest>) -> Result<Response<GetActiveEventsResponse>, Status> {
-        let mut conn = get_connection(&self.pool)?;
-        rpcs::get_active_events(request.into_inner(), &mut conn).map(Response::new)
+        rpcs::create_closure(request.into_inner(), &mut conn).map(Response::new)
     }
 }
 

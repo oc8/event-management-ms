@@ -61,19 +61,21 @@ impl Slot {
             .ok()
     }
 
-    pub fn find_active_by_event_id(conn: &mut PgConnection, active_event_id: Uuid) -> Option<Vec<Slot>> {
+    pub fn find_active_by_event_id(conn: &mut PgConnection, active_event_id: Uuid, active_organizer_key: String) -> Option<Vec<Slot>> {
         sql_query("
             SELECT * FROM event_slots es
             WHERE NOT EXISTS (
                 SELECT 1
-                FROM closing_exceptions ce
+                FROM closures ce
                 WHERE es.start_time BETWEEN CAST(ce.closing_from AS TIME) AND CAST(ce.closing_to AS TIME)
+                    AND ce.organizer_key = $2
             )
             AND es.event_id = $1
             GROUP BY es.id
             ORDER BY es.start_time
         ")
             .bind::<diesel::sql_types::Uuid, _>(active_event_id)
+            .bind::<diesel::sql_types::VarChar, _>(active_organizer_key)
             .load::<Slot>(conn)
             .ok()
     }

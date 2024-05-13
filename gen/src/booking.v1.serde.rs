@@ -385,7 +385,7 @@ impl<'de> serde::Deserialize<'de> for Cancellation {
         deserializer.deserialize_struct("booking.v1.Cancellation", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for ClosingException {
+impl serde::Serialize for Closure {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -405,13 +405,16 @@ impl serde::Serialize for ClosingException {
         if !self.reason.is_empty() {
             len += 1;
         }
+        if !self.organizer_key.is_empty() {
+            len += 1;
+        }
         if self.created_at != 0 {
             len += 1;
         }
         if self.updated_at != 0 {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.ClosingException", len)?;
+        let mut struct_ser = serializer.serialize_struct("booking.v1.Closure", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
@@ -424,6 +427,9 @@ impl serde::Serialize for ClosingException {
         if !self.reason.is_empty() {
             struct_ser.serialize_field("reason", &self.reason)?;
         }
+        if !self.organizer_key.is_empty() {
+            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+        }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("createdAt", ToString::to_string(&self.created_at).as_str())?;
@@ -435,7 +441,7 @@ impl serde::Serialize for ClosingException {
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for ClosingException {
+impl<'de> serde::Deserialize<'de> for Closure {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -448,6 +454,8 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
             "closing_to",
             "closingTo",
             "reason",
+            "organizer_key",
+            "organizerKey",
             "created_at",
             "createdAt",
             "updated_at",
@@ -460,6 +468,7 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
             ClosingFrom,
             ClosingTo,
             Reason,
+            OrganizerKey,
             CreatedAt,
             UpdatedAt,
         }
@@ -487,6 +496,7 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                             "closingFrom" | "closing_from" => Ok(GeneratedField::ClosingFrom),
                             "closingTo" | "closing_to" => Ok(GeneratedField::ClosingTo),
                             "reason" => Ok(GeneratedField::Reason),
+                            "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -498,13 +508,13 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ClosingException;
+            type Value = Closure;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.ClosingException")
+                formatter.write_str("struct booking.v1.Closure")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ClosingException, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<Closure, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -512,6 +522,7 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                 let mut closing_from__ = None;
                 let mut closing_to__ = None;
                 let mut reason__ = None;
+                let mut organizer_key__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -540,6 +551,12 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                             }
                             reason__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::OrganizerKey => {
+                            if organizer_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("organizerKey"));
+                            }
+                            organizer_key__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::CreatedAt => {
                             if created_at__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("createdAt"));
@@ -558,17 +575,18 @@ impl<'de> serde::Deserialize<'de> for ClosingException {
                         }
                     }
                 }
-                Ok(ClosingException {
+                Ok(Closure {
                     id: id__.unwrap_or_default(),
                     closing_from: closing_from__,
                     closing_to: closing_to__,
                     reason: reason__.unwrap_or_default(),
+                    organizer_key: organizer_key__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })
             }
         }
-        deserializer.deserialize_struct("booking.v1.ClosingException", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("booking.v1.Closure", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for CreateBookingRequest {
@@ -845,7 +863,7 @@ impl<'de> serde::Deserialize<'de> for CreateBookingResponse {
         deserializer.deserialize_struct("booking.v1.CreateBookingResponse", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for CreateClosingExceptionRequest {
+impl serde::Serialize for CreateClosureRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -859,15 +877,21 @@ impl serde::Serialize for CreateClosingExceptionRequest {
         if !self.closing_to.is_empty() {
             len += 1;
         }
+        if !self.organizer_key.is_empty() {
+            len += 1;
+        }
         if !self.reason.is_empty() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateClosingExceptionRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateClosureRequest", len)?;
         if !self.closing_from.is_empty() {
             struct_ser.serialize_field("closingFrom", &self.closing_from)?;
         }
         if !self.closing_to.is_empty() {
             struct_ser.serialize_field("closingTo", &self.closing_to)?;
+        }
+        if !self.organizer_key.is_empty() {
+            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
         }
         if !self.reason.is_empty() {
             struct_ser.serialize_field("reason", &self.reason)?;
@@ -875,7 +899,7 @@ impl serde::Serialize for CreateClosingExceptionRequest {
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
+impl<'de> serde::Deserialize<'de> for CreateClosureRequest {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -886,6 +910,8 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
             "closingFrom",
             "closing_to",
             "closingTo",
+            "organizer_key",
+            "organizerKey",
             "reason",
         ];
 
@@ -893,6 +919,7 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
         enum GeneratedField {
             ClosingFrom,
             ClosingTo,
+            OrganizerKey,
             Reason,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -917,6 +944,7 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
                         match value {
                             "closingFrom" | "closing_from" => Ok(GeneratedField::ClosingFrom),
                             "closingTo" | "closing_to" => Ok(GeneratedField::ClosingTo),
+                            "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "reason" => Ok(GeneratedField::Reason),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -927,18 +955,19 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = CreateClosingExceptionRequest;
+            type Value = CreateClosureRequest;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.CreateClosingExceptionRequest")
+                formatter.write_str("struct booking.v1.CreateClosureRequest")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateClosingExceptionRequest, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateClosureRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
                 let mut closing_from__ = None;
                 let mut closing_to__ = None;
+                let mut organizer_key__ = None;
                 let mut reason__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
@@ -954,6 +983,12 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
                             }
                             closing_to__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::OrganizerKey => {
+                            if organizer_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("organizerKey"));
+                            }
+                            organizer_key__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::Reason => {
                             if reason__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("reason"));
@@ -962,17 +997,18 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionRequest {
                         }
                     }
                 }
-                Ok(CreateClosingExceptionRequest {
+                Ok(CreateClosureRequest {
                     closing_from: closing_from__.unwrap_or_default(),
                     closing_to: closing_to__.unwrap_or_default(),
+                    organizer_key: organizer_key__.unwrap_or_default(),
                     reason: reason__.unwrap_or_default(),
                 })
             }
         }
-        deserializer.deserialize_struct("booking.v1.CreateClosingExceptionRequest", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("booking.v1.CreateClosureRequest", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for CreateClosingExceptionResponse {
+impl serde::Serialize for CreateClosureResponse {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -980,29 +1016,29 @@ impl serde::Serialize for CreateClosingExceptionResponse {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.exception.is_some() {
+        if self.closure.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateClosingExceptionResponse", len)?;
-        if let Some(v) = self.exception.as_ref() {
-            struct_ser.serialize_field("exception", v)?;
+        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateClosureResponse", len)?;
+        if let Some(v) = self.closure.as_ref() {
+            struct_ser.serialize_field("closure", v)?;
         }
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for CreateClosingExceptionResponse {
+impl<'de> serde::Deserialize<'de> for CreateClosureResponse {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "exception",
+            "closure",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            Exception,
+            Closure,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1024,7 +1060,7 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionResponse {
                         E: serde::de::Error,
                     {
                         match value {
-                            "exception" => Ok(GeneratedField::Exception),
+                            "closure" => Ok(GeneratedField::Closure),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1034,33 +1070,33 @@ impl<'de> serde::Deserialize<'de> for CreateClosingExceptionResponse {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = CreateClosingExceptionResponse;
+            type Value = CreateClosureResponse;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.CreateClosingExceptionResponse")
+                formatter.write_str("struct booking.v1.CreateClosureResponse")
             }
 
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateClosingExceptionResponse, V::Error>
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateClosureResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut exception__ = None;
+                let mut closure__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::Exception => {
-                            if exception__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("exception"));
+                        GeneratedField::Closure => {
+                            if closure__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("closure"));
                             }
-                            exception__ = map_.next_value()?;
+                            closure__ = map_.next_value()?;
                         }
                     }
                 }
-                Ok(CreateClosingExceptionResponse {
-                    exception: exception__,
+                Ok(CreateClosureResponse {
+                    closure: closure__,
                 })
             }
         }
-        deserializer.deserialize_struct("booking.v1.CreateClosingExceptionResponse", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("booking.v1.CreateClosureResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for CreateEventRequest {

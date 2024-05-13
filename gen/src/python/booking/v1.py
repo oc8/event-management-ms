@@ -79,13 +79,14 @@ class Booking(betterproto.Message):
 
 
 @dataclass
-class ClosingException(betterproto.Message):
+class Closure(betterproto.Message):
     id: str = betterproto.string_field(1)
-    closing_from: "TimeData" = betterproto.message_field(4)
-    closing_to: "TimeData" = betterproto.message_field(5)
-    reason: str = betterproto.string_field(6)
-    created_at: int = betterproto.int64_field(7)
-    updated_at: int = betterproto.int64_field(8)
+    closing_from: "TimeData" = betterproto.message_field(2)
+    closing_to: "TimeData" = betterproto.message_field(3)
+    reason: str = betterproto.string_field(4)
+    organizer_key: str = betterproto.string_field(5)
+    created_at: int = betterproto.int64_field(6)
+    updated_at: int = betterproto.int64_field(7)
 
 
 @dataclass
@@ -162,15 +163,16 @@ class GetBookingResponse(betterproto.Message):
 
 
 @dataclass
-class CreateClosingExceptionRequest(betterproto.Message):
+class CreateClosureRequest(betterproto.Message):
     closing_from: str = betterproto.string_field(1)
     closing_to: str = betterproto.string_field(2)
-    reason: str = betterproto.string_field(3)
+    organizer_key: str = betterproto.string_field(3)
+    reason: str = betterproto.string_field(4)
 
 
 @dataclass
-class CreateClosingExceptionResponse(betterproto.Message):
-    exception: "ClosingException" = betterproto.message_field(1)
+class CreateClosureResponse(betterproto.Message):
+    closure: "Closure" = betterproto.message_field(1)
 
 
 class BookingServiceStub(betterproto.ServiceStub):
@@ -260,16 +262,22 @@ class BookingServiceStub(betterproto.ServiceStub):
             GetBookingResponse,
         )
 
-    async def create_closing_exception(
-        self, *, closing_from: str = "", closing_to: str = "", reason: str = ""
-    ) -> CreateClosingExceptionResponse:
-        request = CreateClosingExceptionRequest()
+    async def create_closure(
+        self,
+        *,
+        closing_from: str = "",
+        closing_to: str = "",
+        organizer_key: str = "",
+        reason: str = "",
+    ) -> CreateClosureResponse:
+        request = CreateClosureRequest()
         request.closing_from = closing_from
         request.closing_to = closing_to
+        request.organizer_key = organizer_key
         request.reason = reason
 
         return await self._unary_unary(
-            "/booking.v1.BookingService/CreateClosingException",
+            "/booking.v1.BookingService/CreateClosure",
             request,
-            CreateClosingExceptionResponse,
+            CreateClosureResponse,
         )

@@ -8,7 +8,7 @@ service BookingService {
   rpc GetActiveEvents(GetActiveEventsRequest) returns (GetActiveEventsResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
-  rpc CreateClosingException(CreateClosingExceptionRequest) returns (CreateClosingExceptionResponse);
+  rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
 //  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
 //  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
 //  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
@@ -82,13 +82,14 @@ message Booking {
   int64 updated_at = 10;
 }
 
-message ClosingException {
+message Closure {
   string id = 1;
-  TimeData closing_from = 4;
-  TimeData closing_to = 5;
-  string reason = 6;
-  int64 created_at = 7;
-  int64 updated_at = 8;
+  TimeData closing_from = 2;
+  TimeData closing_to = 3;
+  string reason = 4;
+  string organizer_key = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
 }
 
 message CreateEventRequest {
@@ -152,12 +153,13 @@ message GetBookingResponse {
   Booking booking = 1;
 }
 
-message CreateClosingExceptionRequest {
+message CreateClosureRequest {
   string closing_from = 1;
   string closing_to = 2;
-  string reason = 3;
+  string organizer_key = 3;
+  string reason = 4;
 }
 
-message CreateClosingExceptionResponse {
-  ClosingException exception = 1;
+message CreateClosureResponse {
+  Closure closure = 1;
 }

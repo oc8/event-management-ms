@@ -110,7 +110,7 @@ impl Event {
         events
             .into_iter()
             .filter_map(|event| {
-                let slots = Slot::find_active_by_event_id(conn, event.id)
+                let slots = Slot::find_active_by_event_id(conn, event.id, event.clone().organizer_key)
                     .unwrap_or_else(|| vec![]);
                 if slots.is_empty() {
                     None

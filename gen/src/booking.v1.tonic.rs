@@ -209,11 +209,11 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "GetBooking"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn create_closing_exception(
+        pub async fn create_closure(
             &mut self,
-            request: impl tonic::IntoRequest<super::CreateClosingExceptionRequest>,
+            request: impl tonic::IntoRequest<super::CreateClosureRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::CreateClosingExceptionResponse>,
+            tonic::Response<super::CreateClosureResponse>,
             tonic::Status,
         > {
             self.inner
@@ -227,16 +227,11 @@ pub mod booking_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/booking.v1.BookingService/CreateClosingException",
+                "/booking.v1.BookingService/CreateClosure",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(
-                    GrpcMethod::new(
-                        "booking.v1.BookingService",
-                        "CreateClosingException",
-                    ),
-                );
+                .insert(GrpcMethod::new("booking.v1.BookingService", "CreateClosure"));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -283,11 +278,11 @@ pub mod booking_service_server {
             tonic::Response<super::GetBookingResponse>,
             tonic::Status,
         >;
-        async fn create_closing_exception(
+        async fn create_closure(
             &self,
-            request: tonic::Request<super::CreateClosingExceptionRequest>,
+            request: tonic::Request<super::CreateClosureRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::CreateClosingExceptionResponse>,
+            tonic::Response<super::CreateClosureResponse>,
             tonic::Status,
         >;
     }
@@ -601,29 +596,25 @@ pub mod booking_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/booking.v1.BookingService/CreateClosingException" => {
+                "/booking.v1.BookingService/CreateClosure" => {
                     #[allow(non_camel_case_types)]
-                    struct CreateClosingExceptionSvc<T: BookingService>(pub Arc<T>);
+                    struct CreateClosureSvc<T: BookingService>(pub Arc<T>);
                     impl<
                         T: BookingService,
-                    > tonic::server::UnaryService<super::CreateClosingExceptionRequest>
-                    for CreateClosingExceptionSvc<T> {
-                        type Response = super::CreateClosingExceptionResponse;
+                    > tonic::server::UnaryService<super::CreateClosureRequest>
+                    for CreateClosureSvc<T> {
+                        type Response = super::CreateClosureResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::CreateClosingExceptionRequest>,
+                            request: tonic::Request<super::CreateClosureRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as BookingService>::create_closing_exception(
-                                        &inner,
-                                        request,
-                                    )
-                                    .await
+                                <T as BookingService>::create_closure(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -635,7 +626,7 @@ pub mod booking_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = CreateClosingExceptionSvc(inner);
+                        let method = CreateClosureSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
