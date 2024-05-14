@@ -16,7 +16,6 @@ mod rpcs;
 mod errors;
 mod models;
 mod schema;
-mod utils;
 #[cfg(test)]
 mod tests;
 

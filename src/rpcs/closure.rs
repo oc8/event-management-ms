@@ -11,9 +11,9 @@ pub fn create_closure(
 ) -> Result<CreateClosureResponse, Status> {
     validate_create_closing_exception_request(&request)?;
 
-    let closing_from = chrono::NaiveDateTime::parse_from_str(&request.closing_from, "%Y-%m-%dT%H:%M")
+    let closing_from = chrono::NaiveDateTime::parse_from_str(&request.closing_from, "%Y-%m-%dT%H:%M:%S")
         .map_err(|_| Status::invalid_argument(errors::INVALID_CLOSING_START_DATE))?;
-    let closing_to = chrono::NaiveDateTime::parse_from_str(&request.closing_to, "%Y-%m-%dT%H:%M")
+    let closing_to = chrono::NaiveDateTime::parse_from_str(&request.closing_to, "%Y-%m-%dT%H:%M:%S")
         .map_err(|_| Status::invalid_argument(errors::INVALID_CLOSING_END_DATE))?;
 
     let new_exception = NewClosure {

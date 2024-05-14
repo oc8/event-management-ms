@@ -1,13 +1,15 @@
+use std::str::FromStr;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection};
 use diesel::data_types::{PgInterval};
+use rrule::{RRule, RRuleSet, Unvalidated};
+use rrule::ParseError::MissingStartDate;
 use uuid::Uuid;
+use poc_booking_ms::{Filters, format_datetime};
 use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
 use crate::models::slot::{Slot};
 
 use crate::schema::{events};
-use crate::utils;
-use crate::utils::Filters;
 
 #[derive(Queryable, Selectable, Debug, Clone)]
 #[diesel(table_name = events)]
@@ -134,6 +136,7 @@ impl Event {
         events
             .into_iter()
             .filter_map(|event| {
+                // Some(EventWithSlots::new(event, vec![]));
                 let slots = Slot::find_active_by_event_id(conn, event.id, event.clone().organizer_key)
                     .unwrap_or_else(|| vec![]);
                 if slots.is_empty() {
@@ -183,6 +186,38 @@ impl Event {
             .unwrap_or_else(|| vec![]);
 
         Ok(slots)
+    }
+
+    pub fn create_virtual_events(event: &Event) -> Vec<Event> {
+        let mut virtual_events = Vec::new();
+
+        if let Some(recurrence_rule) = &event.recurrence_rule {
+            let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(event.start_time), recurrence_rule);
+            let recurrence = recurrence_rule.parse::<RRuleSet>();
+
+            match recurrence {
+                Ok(rule) => {
+                    let occurrences = rule.all(5).dates;
+
+                    for occurrence in occurrences {
+                        let mut virtual_event = event.clone();
+                        virtual_event.id = event.id;
+                        virtual_event.start_time = occurrence.naive_utc();
+                        virtual_event.end_time = occurrence.naive_utc() + (event.end_time - event.start_time);
+                        virtual_events.push(virtual_event);
+                    }
+                },
+                Err(e) => {
+                    log::error!("Failed to parse recurrence rule: {}", e);
+                }
+            }
+        } else {
+            virtual_events.push(event.clone());
+        }
+
+        virtual_events.sort_by(|a, b| a.start_time.cmp(&b.start_time));
+
+        virtual_events
     }
 }
 
@@ -238,5 +273,35 @@ impl From<EventWithSlots> for protos::booking::v1::Event {
         proto_event.slots = slots.collect();
 
         proto_event
+    }
+}
+
+impl From<EventWithSlots> for protos::booking::v1::EventInstances {
+    fn from(event_with_slots: EventWithSlots) -> Self {
+        let mut proto_instances = protos::booking::v1::EventInstances::default();
+        let items = Event::create_virtual_events(&event_with_slots.event);
+
+        proto_instances.id = event_with_slots.event.id.to_string();
+        proto_instances.name = event_with_slots.event.name;
+        proto_instances.set_status(EventStatus::from_str_name(&event_with_slots.event.status).unwrap_or(EventStatus::Unspecified));
+        proto_instances.set_event_type(EventType::from_str_name(&event_with_slots.event.event_type).unwrap_or(EventType::Event));
+        proto_instances.organizer_key = event_with_slots.event.organizer_key;
+        proto_instances.max_guests = event_with_slots.event.max_guests.unwrap_or_default();
+        proto_instances.slot_duration = match event_with_slots.event.slot_duration {
+            Some(interval) => interval.microseconds / 60_000_000,
+            None => 0
+        };
+        proto_instances.items = items.into_iter().map(|item| {
+            let mut proto_item = protos::booking::v1::Event::from(item);
+            proto_item.slots = vec![];
+            // event_with_slots.slots.iter().map(|slot| {
+            //     protos::booking::v1::Slot::from(slot.clone())
+            // }).collect();
+            proto_item
+        }).collect();
+        proto_instances.created_at = event_with_slots.event.created_at.and_utc().timestamp();
+        proto_instances.updated_at = event_with_slots.event.updated_at.and_utc().timestamp();
+
+        proto_instances
     }
 }

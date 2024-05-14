@@ -47,6 +47,21 @@ class Event(betterproto.Message):
 
 
 @dataclass
+class EventInstances(betterproto.Message):
+    id: str = betterproto.string_field(1)
+    name: str = betterproto.string_field(2)
+    event_type: "EventType" = betterproto.enum_field(3)
+    status: "EventStatus" = betterproto.enum_field(4)
+    organizer_key: str = betterproto.string_field(5)
+    cancellation: "Cancellation" = betterproto.message_field(6)
+    slot_duration: int = betterproto.int64_field(8)
+    max_guests: int = betterproto.int32_field(9)
+    items: List["Event"] = betterproto.message_field(10)
+    created_at: int = betterproto.int64_field(11)
+    updated_at: int = betterproto.int64_field(12)
+
+
+@dataclass
 class Cancellation(betterproto.Message):
     canceled_by: str = betterproto.string_field(1)
     reason: str = betterproto.string_field(2)
@@ -147,6 +162,17 @@ class GetActiveEventsResponse(betterproto.Message):
 
 
 @dataclass
+class GetEventInstancesRequest(betterproto.Message):
+    event_id: str = betterproto.string_field(1)
+    filters: "Filters" = betterproto.message_field(2)
+
+
+@dataclass
+class GetEventInstancesResponse(betterproto.Message):
+    event: "EventInstances" = betterproto.message_field(1)
+
+
+@dataclass
 class CreateBookingRequest(betterproto.Message):
     first_name: str = betterproto.string_field(1)
     last_name: str = betterproto.string_field(2)
@@ -236,6 +262,20 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/GetActiveEvents",
             request,
             GetActiveEventsResponse,
+        )
+
+    async def get_event_instances(
+        self, *, event_id: str = "", filters: Optional["Filters"] = None
+    ) -> GetEventInstancesResponse:
+        request = GetEventInstancesRequest()
+        request.event_id = event_id
+        if filters is not None:
+            request.filters = filters
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/GetEventInstances",
+            request,
+            GetEventInstancesResponse,
         )
 
     async def create_booking(

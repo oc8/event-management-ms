@@ -6,6 +6,7 @@ service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc GetActiveEvents(GetActiveEventsRequest) returns (GetActiveEventsResponse);
+  rpc GetEventInstances(GetEventInstancesRequest) returns (GetEventInstancesResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
@@ -51,6 +52,20 @@ message Event {
   int32 max_guests = 12;
   int64 created_at = 13;
   int64 updated_at = 14;
+}
+
+message EventInstances {
+  string id = 1;
+  string name = 2;
+  EventType event_type = 3;
+  EventStatus status = 4;
+  string organizer_key = 5;
+  Cancellation cancellation = 6;
+  int64 slot_duration = 8;
+  int32 max_guests = 9;
+  repeated Event items = 10;
+  int64 created_at = 11;
+  int64 updated_at = 12;
 }
 
 message Cancellation {
@@ -138,6 +153,15 @@ message GetActiveEventsRequest {
 
 message GetActiveEventsResponse {
   repeated Event events = 1;
+}
+
+message GetEventInstancesRequest {
+  string event_id = 1;
+  Filters filters = 2;
+}
+
+message GetEventInstancesResponse {
+  EventInstances event = 1;
 }
 
 message CreateBookingRequest {

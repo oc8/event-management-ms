@@ -2,12 +2,12 @@ use std::fmt::Debug;
 use diesel::data_types::PgInterval;
 use tonic::Status;
 use uuid::Uuid;
-use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetActiveEventsRequest, GetActiveEventsResponse, GetEventRequest, GetEventResponse};
+use poc_booking_ms::Filters;
+use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventInstances, EventStatus, EventType, GetActiveEventsRequest, GetActiveEventsResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetEventRequest, GetEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::errors;
 use crate::models::event::{Event, NewEvent};
-use crate::utils::Filters;
-use crate::validations::{validate_create_event_request, validate_get_active_events, validate_get_event_request};
+use crate::validations::{validate_create_event_request, validate_get_active_events, validate_get_event_instances, validate_get_event_request};
 
 pub fn create_event(
     request: CreateEventRequest,
@@ -15,9 +15,9 @@ pub fn create_event(
 ) -> Result<CreateEventResponse, Status> {
     validate_create_event_request(&request)?;
 
-    let start_time = chrono::NaiveDateTime::parse_from_str(&request.start, "%Y-%m-%dT%H:%M")
+    let start_time = chrono::NaiveDateTime::parse_from_str(&request.start, "%Y-%m-%dT%H:%M:%S")
         .map_err(|_| Status::invalid_argument(errors::INVALID_EVENT_START_DATE))?;
-    let end_time = chrono::NaiveDateTime::parse_from_str(&request.end, "%Y-%m-%dT%H:%M")
+    let end_time = chrono::NaiveDateTime::parse_from_str(&request.end, "%Y-%m-%dT%H:%M:%S")
         .map_err(|_| Status::invalid_argument(errors::INVALID_EVENT_END_DATE))?;
 
     let tz = match request.timezone.is_empty() {
@@ -91,5 +91,27 @@ pub fn get_active_events(
 
     Ok(GetActiveEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()
+    })
+}
+
+pub fn get_event_instances(
+    request: GetEventInstancesRequest,
+    conn: &mut PgPooledConnection
+) -> Result<GetEventInstancesResponse, Status> {
+    validate_get_event_instances(&request)?;
+
+    let event_id = Uuid::parse_str(&request.event_id)
+        .map_err(|_| Status::invalid_argument(errors::INVALID_EVENT_ID))?;
+
+    let event = Event::find_by_id(conn, event_id);
+
+    if event.is_none() {
+        return Err(Status::not_found(errors::EVENT_NOT_FOUND))
+    }
+
+    let event = event.unwrap();
+
+    Ok(GetEventInstancesResponse{
+        event: Some(event.into()),
     })
 }
