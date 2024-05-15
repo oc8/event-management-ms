@@ -51,6 +51,14 @@ impl Closure {
             .first(conn)
             .ok()
     }
+
+    pub fn find_by_organizer_key(conn: &mut PgConnection, organizer_key: &str) -> Vec<Closure> {
+        closures::dsl::closures
+            .select(Closure::as_select())
+            .filter(closures::dsl::organizer_key.eq(organizer_key))
+            .load(conn)
+            .expect("Error loading closures")
+    }
 }
 
 impl From<Closure> for protos::booking::v1::Closure {

@@ -3,7 +3,8 @@ use std::net::{Ipv6Addr, SocketAddr, SocketAddrV6};
 use rand::Rng;
 use redis::{Commands, RedisResult};
 use ::log::{error, info};
-use chrono::NaiveDateTime;
+use chrono::{Duration, NaiveDateTime, NaiveTime};
+use diesel::data_types::PgTime;
 use protos::booking::v1::Filters as FiltersProto;
 
 pub fn init_service_logging() {
@@ -53,54 +54,31 @@ pub fn format_datetime(datetime: NaiveDateTime) -> String {
     datetime.format("%Y%m%dT%H%M%SZ").to_string()
 }
 
-pub struct Filters {
-    pub from: Option<NaiveDateTime>,
-    pub to: Option<NaiveDateTime>,
-    pub organizer_key: Option<String>,
-    pub limit: Option<i64>,
-    pub offset: Option<i64>,
+pub fn microseconds_to_naive_time(microseconds: i64) -> NaiveTime {
+    let hours = microseconds / 3_600_000_000;
+    let remaining_microseconds = microseconds % 3_600_000_000;
+    let minutes = remaining_microseconds / 60_000_000;
+    let remaining_microseconds = remaining_microseconds % 60_000_000;
+    let seconds = remaining_microseconds / 1_000_000;
+    let remaining_microseconds = remaining_microseconds % 1_000_000;
+    let nanos = remaining_microseconds * 1000;
+
+    NaiveTime::from_hms_micro_opt(hours as u32, minutes as u32, seconds as u32, nanos as u32)
+        .expect("Failed to convert microseconds to NaiveTime")
 }
 
-impl Filters {
-    pub fn new(from: Option<NaiveDateTime>, to: Option<NaiveDateTime>, organizer_key: Option<String>, limit: Option<i64>, offset: Option<i64>) -> Self {
-        Filters {
-            from,
-            to,
-            organizer_key,
-            limit,
-            offset,
-        }
-    }
+pub fn add_time_to_datetime(datetime: NaiveDateTime, time: NaiveTime) -> NaiveDateTime {
+    let date_part = datetime.date();
+    let time_part = time;
+
+    NaiveDateTime::new(date_part, time_part)
 }
 
-impl From<Option<FiltersProto>> for Filters {
-    fn from(proto: Option<FiltersProto>) -> Self {
-        let proto = proto.unwrap();
+pub fn pg_time_to_string(time: PgTime) -> String {
+    let duration = Duration::microseconds(time.0);
 
-        let from = if proto.from.is_empty() {
-            None
-        } else {
-            Some(NaiveDateTime::parse_from_str(&proto.from, "%Y-%m-%dT%H:%M:%S").unwrap())
-        };
+    let hours = duration.num_hours();
+    let minutes = duration.num_minutes() - hours * 60;
 
-        let to = if proto.to.is_empty() {
-            None
-        } else {
-            Some(NaiveDateTime::parse_from_str(&proto.to, "%Y-%m-%dT%H:%M:%S").unwrap())
-        };
-
-        let limit = if proto.limit == 0 {
-            Some(50)
-        } else {
-            Some(proto.limit)
-        };
-
-        Filters {
-            from,
-            to,
-            organizer_key: Some(proto.organizer_key),
-            limit,
-            offset: Some(proto.offset),
-        }
-    }
+    format!("{:02}:{:02}", hours, minutes)
 }

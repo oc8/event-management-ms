@@ -1,10 +1,12 @@
-use chrono::{Duration, NaiveDateTime};
+use chrono::{NaiveDateTime};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
 use diesel::data_types::{PgTime};
 use uuid::Uuid;
 use protos::booking::v1::{TimeData};
 use diesel::prelude::*;
 use diesel::sql_query;
+use poc_booking_ms::pg_time_to_string;
+use crate::models::event::Event;
 use crate::schema::event_slots;
 
 #[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
@@ -61,7 +63,7 @@ impl Slot {
             .ok()
     }
 
-    pub fn find_active_by_event_id(conn: &mut PgConnection, active_event_id: Uuid, active_organizer_key: String) -> Option<Vec<Slot>> {
+    pub fn find_active_by_event(conn: &mut PgConnection, event: &Event) -> Option<Vec<Slot>> {
         sql_query("
             SELECT * FROM event_slots es
             WHERE NOT EXISTS (
@@ -74,20 +76,11 @@ impl Slot {
             GROUP BY es.id
             ORDER BY es.start_time
         ")
-            .bind::<diesel::sql_types::Uuid, _>(active_event_id)
-            .bind::<diesel::sql_types::VarChar, _>(active_organizer_key)
+            .bind::<diesel::sql_types::Uuid, _>(event.id)
+            .bind::<diesel::sql_types::VarChar, _>(event.organizer_key.clone())
             .load::<Slot>(conn)
             .ok()
     }
-}
-
-fn pg_time_to_string(time: PgTime) -> String {
-    let duration = Duration::microseconds(time.0);
-
-    let hours = duration.num_hours();
-    let minutes = duration.num_minutes() - hours * 60;
-
-    format!("{:02}:{:02}", hours, minutes)
 }
 
 impl From<Slot> for protos::booking::v1::Slot {

@@ -13,6 +13,7 @@ class EventStatus(betterproto.Enum):
     EVENT_STATUS_ACTIVE = 1
     EVENT_STATUS_CANCELED = 2
     EVENT_STATUS_FULL = 3
+    EVENT_STATUS_DISABLE = 4
 
 
 class EventType(betterproto.Enum):
@@ -173,6 +174,16 @@ class GetEventInstancesResponse(betterproto.Message):
 
 
 @dataclass
+class GetActiveEventsInstancesRequest(betterproto.Message):
+    filters: "Filters" = betterproto.message_field(1)
+
+
+@dataclass
+class GetActiveEventsInstancesResponse(betterproto.Message):
+    events: List["EventInstances"] = betterproto.message_field(1)
+
+
+@dataclass
 class CreateBookingRequest(betterproto.Message):
     first_name: str = betterproto.string_field(1)
     last_name: str = betterproto.string_field(2)
@@ -276,6 +287,19 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/GetEventInstances",
             request,
             GetEventInstancesResponse,
+        )
+
+    async def get_active_events_instances(
+        self, *, filters: Optional["Filters"] = None
+    ) -> GetActiveEventsInstancesResponse:
+        request = GetActiveEventsInstancesRequest()
+        if filters is not None:
+            request.filters = filters
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/GetActiveEventsInstances",
+            request,
+            GetActiveEventsInstancesResponse,
         )
 
     async def create_booking(

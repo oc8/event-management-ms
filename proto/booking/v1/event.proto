@@ -7,6 +7,7 @@ service BookingService {
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc GetActiveEvents(GetActiveEventsRequest) returns (GetActiveEventsResponse);
   rpc GetEventInstances(GetEventInstancesRequest) returns (GetEventInstancesResponse);
+  rpc GetActiveEventsInstances(GetActiveEventsInstancesRequest) returns (GetActiveEventsInstancesResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
@@ -23,6 +24,7 @@ enum EventStatus {
   EVENT_STATUS_ACTIVE = 1;
   EVENT_STATUS_CANCELED = 2;
   EVENT_STATUS_FULL = 3;
+  EVENT_STATUS_DISABLE = 4;
 }
 
 enum EventType {
@@ -162,6 +164,14 @@ message GetEventInstancesRequest {
 
 message GetEventInstancesResponse {
   EventInstances event = 1;
+}
+
+message GetActiveEventsInstancesRequest {
+  Filters filters = 1;
+}
+
+message GetActiveEventsInstancesResponse {
+  repeated EventInstances events = 1;
 }
 
 message CreateBookingRequest {

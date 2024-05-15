@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest, EventType, GetActiveEventsRequest, GetEventInstancesRequest, GetEventRequest};
+use protos::booking::v1::{CreateEventRequest, EventType, GetActiveEventsInstancesRequest, GetActiveEventsRequest, GetEventInstancesRequest, GetEventRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
@@ -92,6 +92,18 @@ pub fn validate_get_active_events(req: &GetActiveEventsRequest) -> Result<(), St
 pub fn validate_get_event_instances(req: &GetEventInstancesRequest) -> Result<(), Status> {
     if Uuid::parse_str(&req.event_id).is_err() {
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_ID))
+    }
+
+    Ok(())
+}
+
+pub fn validate_get_active_events_instances(req: &GetActiveEventsInstancesRequest) -> Result<(), Status> {
+    if req.filters.is_none() {
+        return Err(Status::new(Code::InvalidArgument, errors::INVALID_FILTERS))
+    }
+
+    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
+        return Err(Status::new(Code::InvalidArgument, errors::INVALID_ORGANIZER_KEY))
     }
 
     Ok(())
