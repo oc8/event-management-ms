@@ -1,5 +1,5 @@
 [package]
-name = "poc-booking-ms"
+name = "booking-ms"
 version = "0.1.0"
 edition = "2021"
 

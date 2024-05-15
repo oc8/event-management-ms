@@ -1,4 +1,4 @@
-# poc-booking-ms
+# booking-ms
 
 # CLIs
 

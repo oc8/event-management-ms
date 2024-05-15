@@ -4,7 +4,7 @@ use ::log::{info, warn};
 use tokio::task::JoinHandle;
 use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 use protos::booking::v1::booking_service_server::BookingServiceServer;
-use poc_booking_ms::{create_socket_addr, env_var, report_error};
+use booking_ms::{create_socket_addr, env_var, report_error};
 use crate::database::PgPool;
 use crate::services::booking::BookingServiceServerImpl;
 

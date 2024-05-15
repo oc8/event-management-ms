@@ -20,7 +20,7 @@ COPY --from=build /app/diesel.toml .
 COPY --from=build /app/migrations ./migrations
 COPY --from=build /app/src/schema.rs ./src/schema.rs
 
-COPY --from=build /app/target/release/rust-server .
+COPY --from=build /app/target/release/booking-ms .
 
 COPY --from=build /app/deployments/scripts/entrypoint.sh ./entrypoint.sh
 RUN chmod +x entrypoint.sh

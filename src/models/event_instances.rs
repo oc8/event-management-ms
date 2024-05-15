@@ -1,6 +1,6 @@
 use diesel::dsl::IntervalDsl;
 use rrule::RRuleSet;
-use poc_booking_ms::{add_time_to_datetime, format_datetime, microseconds_to_naive_time};
+use booking_ms::{add_time_to_datetime, format_datetime, microseconds_to_naive_time};
 use protos::booking::v1::{EventStatus, EventType};
 use crate::models::closure::Closure;
 use crate::models::event::{Event, EventWithSlots};

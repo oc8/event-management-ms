@@ -319,6 +319,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 
 [[package]]
+name = "booking-ms"
+version = "0.1.0"
+dependencies = [
+ "autometrics",
+ "axum 0.7.5",
+ "base32",
+ "bytes",
+ "chrono",
+ "chrono-tz 0.9.0",
+ "diesel",
+ "diesel_migrations",
+ "dotenvy",
+ "env_logger",
+ "futures-util",
+ "log",
+ "prost",
+ "protos",
+ "rand",
+ "redis",
+ "rrule",
+ "serde",
+ "serde_json",
+ "time",
+ "tokio",
+ "tonic",
+ "tonic-reflection",
+ "uuid",
+ "validator",
+ "yaml-rust",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1420,38 +1452,6 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
-
-[[package]]
-name = "poc-booking-ms"
-version = "0.1.0"
-dependencies = [
- "autometrics",
- "axum 0.7.5",
- "base32",
- "bytes",
- "chrono",
- "chrono-tz 0.9.0",
- "diesel",
- "diesel_migrations",
- "dotenvy",
- "env_logger",
- "futures-util",
- "log",
- "prost",
- "protos",
- "rand",
- "redis",
- "rrule",
- "serde",
- "serde_json",
- "time",
- "tokio",
- "tonic",
- "tonic-reflection",
- "uuid",
- "validator",
- "yaml-rust",
-]
 
 [[package]]
 name = "portable-atomic"

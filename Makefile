@@ -1,4 +1,4 @@
-prog := poc-booking-ms
+prog := booking-ms
 
 debug ?= 0
 
