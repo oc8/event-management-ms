@@ -3,7 +3,7 @@ use tonic::Status;
 use uuid::Uuid;
 use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse, GetActiveEventsRequest, GetActiveEventsResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetEventRequest, GetEventResponse};
 use crate::database::PgPooledConnection;
-use crate::errors::errors;
+use crate::errors::{errors, format_error};
 use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
 use crate::models::event_instances::{EventInstances};
@@ -17,9 +17,9 @@ pub fn create_event(
     validate_create_event_request(&request)?;
 
     let start_time = chrono::NaiveDateTime::parse_from_str(&request.start, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| Status::invalid_argument(errors::INVALID_EVENT_START_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_EVENT_START_DATE))?;
     let end_time = chrono::NaiveDateTime::parse_from_str(&request.end, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| Status::invalid_argument(errors::INVALID_EVENT_END_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_EVENT_END_DATE))?;
 
     let tz = match request.timezone.is_empty() {
         true => chrono::Utc.to_string(),
@@ -72,7 +72,7 @@ pub fn get_event_by_id(
     let event = Event::find_by_id(conn, Uuid::parse_str(&request.id).unwrap());
 
     if event.is_none() {
-        return Err(Status::not_found(errors::EVENT_NOT_FOUND))
+        return Err(format_error(errors::EVENT_NOT_FOUND))
     }
 
     Ok(GetEventResponse{
@@ -102,12 +102,12 @@ pub fn get_event_instances(
     validate_get_event_instances(&request)?;
 
     let event_id = Uuid::parse_str(&request.event_id)
-        .map_err(|_| Status::invalid_argument(errors::INVALID_EVENT_ID))?;
+        .map_err(|_| format_error(errors::INVALID_EVENT_ID))?;
 
     let event = Event::find_by_id(conn, event_id);
 
     if event.is_none() {
-        return Err(Status::not_found(errors::EVENT_NOT_FOUND))
+        return Err(format_error(errors::EVENT_NOT_FOUND))
     }
 
     let event = event.unwrap();
@@ -132,7 +132,7 @@ pub fn get_active_events_instances(
     let events = Event::find_active_events(conn, filters);
 
     if events.is_empty() {
-        return Err(Status::not_found(errors::EVENT_NOT_FOUND))
+        return Err(format_error(errors::EVENT_NOT_FOUND))
     }
 
     let organizer_key = events[0].event.organizer_key.clone();

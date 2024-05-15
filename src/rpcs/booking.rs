@@ -2,7 +2,7 @@ use tonic::Status;
 use uuid::Uuid;
 use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, GetBookingRequest, GetBookingResponse};
 use crate::database::PgPooledConnection;
-use crate::errors::errors;
+use crate::errors::{errors, format_error};
 use crate::models::booking::{Booking, NewBooking};
 use crate::models::slot::Slot;
 use crate::validations::{validate_create_booking_request, validate_get_booking_request};
@@ -13,15 +13,15 @@ pub fn create_booking(
 ) -> Result<CreateBookingResponse, Status> {
     validate_create_booking_request(&request)?;
 
-    let slot_id = Uuid::parse_str(&request.slot_id).map_err(|_| Status::invalid_argument(errors::INVALID_SLOT_ID))?;
+    let slot_id = Uuid::parse_str(&request.slot_id).map_err(|_| format_error(errors::INVALID_SLOT_ID))?;
     let slot = Slot::find_by_id(conn, slot_id);
 
     if slot.is_none() {
-        return Err(Status::not_found(errors::SLOT_NOT_FOUND))
+        return Err(format_error(errors::SLOT_NOT_FOUND))
     }
 
     let date_time = chrono::NaiveDateTime::parse_from_str(&request.date_time, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| Status::invalid_argument(errors::INVALID_BOOKING_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_BOOKING_DATE))?;
 
     let new_booking = NewBooking {
         slot_id: &slot_id,
@@ -44,12 +44,12 @@ pub fn get_booking_by_id(
     validate_get_booking_request(&request)?;
 
     let booking_id = Uuid::parse_str(&request.id)
-        .map_err(|_| Status::invalid_argument(errors::INVALID_BOOKING_ID))?;
+        .map_err(|_| format_error(errors::INVALID_BOOKING_ID))?;
 
     let booking = Booking::find_by_id(conn, booking_id);
 
     if booking.is_none() {
-        return Err(Status::not_found(errors::BOOKING_NOT_FOUND))
+        return Err(format_error(errors::BOOKING_NOT_FOUND))
     }
 
     Ok(GetBookingResponse{

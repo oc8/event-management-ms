@@ -1,6 +1,6 @@
 use std::sync::{Arc};
 use autometrics::autometrics;
-use tonic::{Code, Request, Response, Status};
+use tonic::{Request, Response, Status};
 
 use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, GetActiveEventsRequest, GetActiveEventsResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse};
 use crate::database::{PgPool, PgPooledConnection};
@@ -9,6 +9,7 @@ use crate::{errors, rpcs};
 use autometrics::objectives::{
     Objective, ObjectiveLatency, ObjectivePercentile
 };
+use crate::errors::format_error;
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -74,14 +75,14 @@ impl BookingService for BookingServiceServerImpl {
 
 pub fn get_connection(pool: &PgPool) -> Result<PgPooledConnection, Status> {
     match pool.get() {
-        Err(_) => Err(Status::new(Code::DataLoss, errors::DATABASE_CONNECTION_FAILURE)),
+        Err(_) => Err(format_error(errors::DATABASE_CONNECTION_FAILURE)),
         Ok(conn) => Ok(conn),
     }
 }
 
 fn get_redis_connection(r_client: &redis::Client) -> Result<redis::Connection, Status> {
     match r_client.get_connection() {
-        Err(_) => Err(Status::new(Code::DataLoss, errors::REDIS_CONNECTION_FAILURE)),
+        Err(_) => Err(format_error(errors::REDIS_CONNECTION_FAILURE)),
         Ok(conn) => Ok(conn),
     }
 }

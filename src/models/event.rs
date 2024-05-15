@@ -73,8 +73,11 @@ impl Event {
             .get_result(conn)
         {
             Ok(e) => {
-                let slots = Self::generate_time_slots(conn, e.clone())?;
-                Ok(EventWithSlots::new(e, slots))
+                if e.event_type == EventType::as_str_name(&EventType::Meeting) {
+                    let slots = Self::generate_time_slots(conn, e.clone())?;
+                    return Ok(EventWithSlots::new(e, slots));
+                }
+                Ok(EventWithSlots::new(e, vec![]))
             },
             Err(e) => {
                 log::error!("Failed to create event: {}", e);
