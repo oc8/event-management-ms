@@ -1,11 +1,8 @@
 use std::env;
 use std::net::{Ipv6Addr, SocketAddr, SocketAddrV6};
-use rand::Rng;
-use redis::{Commands, RedisResult};
 use ::log::{error, info};
 use chrono::{Duration, NaiveDateTime, NaiveTime};
 use diesel::data_types::PgTime;
-use protos::booking::v1::Filters as FiltersProto;
 
 pub fn init_service_logging() {
     env_logger::builder()
