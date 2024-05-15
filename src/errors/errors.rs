@@ -21,3 +21,4 @@ pub const INVALID_CLOSING_END_DATE: &str = "invalid_closing_end_date";
 pub const INVALID_CLOSING_DATE_RANGE: &str = "invalid_closing_date_range";
 pub const INVALID_ORGANIZER_KEY: &str = "invalid_organizer_key";
 pub const INVALID_FILTERS: &str = "invalid_filters";
+pub const INVALID_BOOKING_DATE: &str = "invalid_booking_date";

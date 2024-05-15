@@ -10,12 +10,6 @@ impl serde::Serialize for Booking {
         if !self.id.is_empty() {
             len += 1;
         }
-        if !self.first_name.is_empty() {
-            len += 1;
-        }
-        if !self.last_name.is_empty() {
-            len += 1;
-        }
         if !self.booking_holder_key.is_empty() {
             len += 1;
         }
@@ -25,10 +19,7 @@ impl serde::Serialize for Booking {
         if self.slot.is_some() {
             len += 1;
         }
-        if self.number_of_people != 0 {
-            len += 1;
-        }
-        if !self.message.is_empty() {
+        if self.date_time.is_some() {
             len += 1;
         }
         if self.created_at != 0 {
@@ -41,12 +32,6 @@ impl serde::Serialize for Booking {
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
-        if !self.first_name.is_empty() {
-            struct_ser.serialize_field("firstName", &self.first_name)?;
-        }
-        if !self.last_name.is_empty() {
-            struct_ser.serialize_field("lastName", &self.last_name)?;
-        }
         if !self.booking_holder_key.is_empty() {
             struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
         }
@@ -56,11 +41,8 @@ impl serde::Serialize for Booking {
         if let Some(v) = self.slot.as_ref() {
             struct_ser.serialize_field("slot", v)?;
         }
-        if self.number_of_people != 0 {
-            struct_ser.serialize_field("numberOfPeople", &self.number_of_people)?;
-        }
-        if !self.message.is_empty() {
-            struct_ser.serialize_field("message", &self.message)?;
+        if let Some(v) = self.date_time.as_ref() {
+            struct_ser.serialize_field("dateTime", v)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -81,18 +63,13 @@ impl<'de> serde::Deserialize<'de> for Booking {
     {
         const FIELDS: &[&str] = &[
             "id",
-            "first_name",
-            "firstName",
-            "last_name",
-            "lastName",
             "booking_holder_key",
             "bookingHolderKey",
             "slot_id",
             "slotId",
             "slot",
-            "number_of_people",
-            "numberOfPeople",
-            "message",
+            "date_time",
+            "dateTime",
             "created_at",
             "createdAt",
             "updated_at",
@@ -102,13 +79,10 @@ impl<'de> serde::Deserialize<'de> for Booking {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Id,
-            FirstName,
-            LastName,
             BookingHolderKey,
             SlotId,
             Slot,
-            NumberOfPeople,
-            Message,
+            DateTime,
             CreatedAt,
             UpdatedAt,
         }
@@ -133,13 +107,10 @@ impl<'de> serde::Deserialize<'de> for Booking {
                     {
                         match value {
                             "id" => Ok(GeneratedField::Id),
-                            "firstName" | "first_name" => Ok(GeneratedField::FirstName),
-                            "lastName" | "last_name" => Ok(GeneratedField::LastName),
                             "bookingHolderKey" | "booking_holder_key" => Ok(GeneratedField::BookingHolderKey),
                             "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
                             "slot" => Ok(GeneratedField::Slot),
-                            "numberOfPeople" | "number_of_people" => Ok(GeneratedField::NumberOfPeople),
-                            "message" => Ok(GeneratedField::Message),
+                            "dateTime" | "date_time" => Ok(GeneratedField::DateTime),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -162,13 +133,10 @@ impl<'de> serde::Deserialize<'de> for Booking {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut id__ = None;
-                let mut first_name__ = None;
-                let mut last_name__ = None;
                 let mut booking_holder_key__ = None;
                 let mut slot_id__ = None;
                 let mut slot__ = None;
-                let mut number_of_people__ = None;
-                let mut message__ = None;
+                let mut date_time__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -178,18 +146,6 @@ impl<'de> serde::Deserialize<'de> for Booking {
                                 return Err(serde::de::Error::duplicate_field("id"));
                             }
                             id__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::FirstName => {
-                            if first_name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("firstName"));
-                            }
-                            first_name__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::LastName => {
-                            if last_name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("lastName"));
-                            }
-                            last_name__ = Some(map_.next_value()?);
                         }
                         GeneratedField::BookingHolderKey => {
                             if booking_holder_key__.is_some() {
@@ -209,19 +165,11 @@ impl<'de> serde::Deserialize<'de> for Booking {
                             }
                             slot__ = map_.next_value()?;
                         }
-                        GeneratedField::NumberOfPeople => {
-                            if number_of_people__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("numberOfPeople"));
+                        GeneratedField::DateTime => {
+                            if date_time__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("dateTime"));
                             }
-                            number_of_people__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::Message => {
-                            if message__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("message"));
-                            }
-                            message__ = Some(map_.next_value()?);
+                            date_time__ = map_.next_value()?;
                         }
                         GeneratedField::CreatedAt => {
                             if created_at__.is_some() {
@@ -243,13 +191,10 @@ impl<'de> serde::Deserialize<'de> for Booking {
                 }
                 Ok(Booking {
                     id: id__.unwrap_or_default(),
-                    first_name: first_name__.unwrap_or_default(),
-                    last_name: last_name__.unwrap_or_default(),
                     booking_holder_key: booking_holder_key__.unwrap_or_default(),
                     slot_id: slot_id__.unwrap_or_default(),
                     slot: slot__,
-                    number_of_people: number_of_people__.unwrap_or_default(),
-                    message: message__.unwrap_or_default(),
+                    date_time: date_time__,
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })
@@ -597,42 +542,24 @@ impl serde::Serialize for CreateBookingRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if !self.first_name.is_empty() {
-            len += 1;
-        }
-        if !self.last_name.is_empty() {
-            len += 1;
-        }
         if !self.booking_holder_key.is_empty() {
             len += 1;
         }
         if !self.slot_id.is_empty() {
             len += 1;
         }
-        if self.number_of_people != 0 {
-            len += 1;
-        }
-        if !self.message.is_empty() {
+        if !self.date_time.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("booking.v1.CreateBookingRequest", len)?;
-        if !self.first_name.is_empty() {
-            struct_ser.serialize_field("firstName", &self.first_name)?;
-        }
-        if !self.last_name.is_empty() {
-            struct_ser.serialize_field("lastName", &self.last_name)?;
-        }
         if !self.booking_holder_key.is_empty() {
             struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
         }
         if !self.slot_id.is_empty() {
             struct_ser.serialize_field("slotId", &self.slot_id)?;
         }
-        if self.number_of_people != 0 {
-            struct_ser.serialize_field("numberOfPeople", &self.number_of_people)?;
-        }
-        if !self.message.is_empty() {
-            struct_ser.serialize_field("message", &self.message)?;
+        if !self.date_time.is_empty() {
+            struct_ser.serialize_field("dateTime", &self.date_time)?;
         }
         struct_ser.end()
     }
@@ -644,27 +571,19 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "first_name",
-            "firstName",
-            "last_name",
-            "lastName",
             "booking_holder_key",
             "bookingHolderKey",
             "slot_id",
             "slotId",
-            "number_of_people",
-            "numberOfPeople",
-            "message",
+            "date_time",
+            "dateTime",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            FirstName,
-            LastName,
             BookingHolderKey,
             SlotId,
-            NumberOfPeople,
-            Message,
+            DateTime,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -686,12 +605,9 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "firstName" | "first_name" => Ok(GeneratedField::FirstName),
-                            "lastName" | "last_name" => Ok(GeneratedField::LastName),
                             "bookingHolderKey" | "booking_holder_key" => Ok(GeneratedField::BookingHolderKey),
                             "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
-                            "numberOfPeople" | "number_of_people" => Ok(GeneratedField::NumberOfPeople),
-                            "message" => Ok(GeneratedField::Message),
+                            "dateTime" | "date_time" => Ok(GeneratedField::DateTime),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -711,26 +627,11 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut first_name__ = None;
-                let mut last_name__ = None;
                 let mut booking_holder_key__ = None;
                 let mut slot_id__ = None;
-                let mut number_of_people__ = None;
-                let mut message__ = None;
+                let mut date_time__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
-                        GeneratedField::FirstName => {
-                            if first_name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("firstName"));
-                            }
-                            first_name__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::LastName => {
-                            if last_name__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("lastName"));
-                            }
-                            last_name__ = Some(map_.next_value()?);
-                        }
                         GeneratedField::BookingHolderKey => {
                             if booking_holder_key__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("bookingHolderKey"));
@@ -743,29 +644,18 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
                             }
                             slot_id__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::NumberOfPeople => {
-                            if number_of_people__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("numberOfPeople"));
+                        GeneratedField::DateTime => {
+                            if date_time__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("dateTime"));
                             }
-                            number_of_people__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::Message => {
-                            if message__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("message"));
-                            }
-                            message__ = Some(map_.next_value()?);
+                            date_time__ = Some(map_.next_value()?);
                         }
                     }
                 }
                 Ok(CreateBookingRequest {
-                    first_name: first_name__.unwrap_or_default(),
-                    last_name: last_name__.unwrap_or_default(),
                     booking_holder_key: booking_holder_key__.unwrap_or_default(),
                     slot_id: slot_id__.unwrap_or_default(),
-                    number_of_people: number_of_people__.unwrap_or_default(),
-                    message: message__.unwrap_or_default(),
+                    date_time: date_time__.unwrap_or_default(),
                 })
             }
         }

@@ -88,15 +88,12 @@ message Slot {
 
 message Booking {
   string id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string booking_holder_key = 4;
-  string slot_id = 5;
-  Slot slot = 6;
-  int32 number_of_people = 7;
-  string message = 8;
-  int64 created_at = 9;
-  int64 updated_at = 10;
+  string booking_holder_key = 2;
+  string slot_id = 3;
+  Slot slot = 4;
+  TimeData date_time = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
 }
 
 message Closure {
@@ -175,12 +172,9 @@ message GetActiveEventsInstancesResponse {
 }
 
 message CreateBookingRequest {
-  string first_name = 1;
-  string last_name = 2;
-  string booking_holder_key = 3;
-  string slot_id = 4;
-  int32 number_of_people = 5;
-  string message = 6;
+  string booking_holder_key = 1;
+  string slot_id = 2;
+  string date_time = 3;
 }
 
 message CreateBookingResponse {

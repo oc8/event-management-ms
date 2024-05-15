@@ -31,7 +31,6 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
 
     let start = chrono::NaiveDateTime::parse_from_str(&req.start, "%Y-%m-%dT%H:%M:%S");
     if start.is_err() {
-        println!("Invalid start date {}", req.start);
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_EVENT_START_DATE))
     }
 

@@ -12,6 +12,11 @@ pub fn validate_create_booking_request(req: &CreateBookingRequest) -> Result<(),
         return Err(Status::new(Code::InvalidArgument, errors::INVALID_SLOT_ID))
     }
 
+    let date_time = chrono::NaiveDateTime::parse_from_str(&req.date_time, "%Y-%m-%dT%H:%M:%S");
+    if date_time.is_err() {
+        return Err(Status::new(Code::InvalidArgument, errors::INVALID_BOOKING_DATE))
+    }
+
     Ok(())
 }
 

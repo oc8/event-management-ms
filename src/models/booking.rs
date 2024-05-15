@@ -1,6 +1,7 @@
-use chrono::{NaiveDateTime};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
 use uuid::Uuid;
+use protos::booking::v1::TimeData;
 use crate::models::slot::Slot;
 
 use crate::schema::{bookings};
@@ -11,11 +12,8 @@ use crate::schema::{bookings};
 pub struct Booking {
     pub id: Uuid,
     pub slot_id: Uuid,
-    pub last_name: Option<String>,
-    pub first_name: Option<String>,
     pub booking_holder_key: String,
-    pub number_of_people: Option<i32>,
-    pub message: Option<String>,
+    pub date_time: NaiveDateTime,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -24,11 +22,8 @@ pub struct Booking {
 #[diesel(table_name = bookings)]
 pub struct NewBooking<'a> {
     pub slot_id: &'a Uuid,
-    pub last_name: Option<&'a str>,
-    pub first_name: Option<&'a str>,
     pub booking_holder_key: &'a str,
-    pub number_of_people: Option<i32>,
-    pub message: Option<&'a str>,
+    pub date_time: &'a NaiveDateTime,
 }
 
 #[derive(Debug, Clone)]
@@ -92,11 +87,11 @@ impl From<Booking> for protos::booking::v1::Booking {
 
         proto_booking.id = booking.id.to_string();
         proto_booking.slot_id = booking.slot_id.to_string();
-        proto_booking.last_name = booking.last_name.unwrap_or_default();
-        proto_booking.first_name = booking.first_name.unwrap_or_default();
         proto_booking.booking_holder_key = booking.booking_holder_key;
-        proto_booking.number_of_people = booking.number_of_people.unwrap_or(1);
-        proto_booking.message = booking.message.unwrap_or_default();
+        proto_booking.date_time = Some(TimeData {
+            timezone: "UTC".to_string(),
+            date_time: DateTime::<Utc>::from_naive_utc_and_offset(booking.date_time, Utc).to_rfc3339()
+        });
         proto_booking.created_at = booking.created_at.and_utc().timestamp();
         proto_booking.updated_at = booking.updated_at.and_utc().timestamp();
 

@@ -20,13 +20,13 @@ pub fn create_booking(
         return Err(Status::not_found(errors::SLOT_NOT_FOUND))
     }
 
+    let date_time = chrono::NaiveDateTime::parse_from_str(&request.date_time, "%Y-%m-%dT%H:%M:%S")
+        .map_err(|_| Status::invalid_argument(errors::INVALID_BOOKING_DATE))?;
+
     let new_booking = NewBooking {
         slot_id: &slot_id,
-        last_name: Some(&request.last_name),
-        first_name: Some(&request.first_name),
         booking_holder_key: &request.booking_holder_key,
-        number_of_people: Some(request.number_of_people),
-        message: Some(&request.message),
+        date_time: &date_time,
     };
 
     let booking = Booking::create(conn, new_booking)
