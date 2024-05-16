@@ -5,7 +5,6 @@ use uuid::Uuid;
 use protos::booking::v1::{TimeData};
 use diesel::prelude::*;
 use diesel::sql_query;
-use booking_ms::pg_time_to_string;
 use crate::models::event::Event;
 use crate::schema::{event_slots, events};
 

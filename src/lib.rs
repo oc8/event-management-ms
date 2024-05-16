@@ -51,31 +51,9 @@ pub fn format_datetime(datetime: NaiveDateTime) -> String {
     datetime.format("%Y%m%dT%H%M%SZ").to_string()
 }
 
-pub fn microseconds_to_naive_time(microseconds: i64) -> NaiveTime {
-    let hours = microseconds / 3_600_000_000;
-    let remaining_microseconds = microseconds % 3_600_000_000;
-    let minutes = remaining_microseconds / 60_000_000;
-    let remaining_microseconds = remaining_microseconds % 60_000_000;
-    let seconds = remaining_microseconds / 1_000_000;
-    let remaining_microseconds = remaining_microseconds % 1_000_000;
-    let nanos = remaining_microseconds * 1000;
-
-    NaiveTime::from_hms_micro_opt(hours as u32, minutes as u32, seconds as u32, nanos as u32)
-        .expect("Failed to convert microseconds to NaiveTime")
-}
-
 pub fn add_time_to_datetime(datetime: NaiveDateTime, time: NaiveTime) -> NaiveDateTime {
     let date_part = datetime.date();
     let time_part = time;
 
     NaiveDateTime::new(date_part, time_part)
-}
-
-pub fn pg_time_to_string(time: PgTime) -> String {
-    let duration = Duration::microseconds(time.0);
-
-    let hours = duration.num_hours();
-    let minutes = duration.num_minutes() - hours * 60;
-
-    format!("{:02}:{:02}", hours, minutes)
 }
