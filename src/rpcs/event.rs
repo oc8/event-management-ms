@@ -45,12 +45,15 @@ pub fn create_event(
         canceled_by: None,
         canceled_reason: None,
         slot_duration: Some(&interval),
-        max_guests: Some(&request.max_guests),
         recurrence_rule: match request.recurrence_rule.is_empty() {
             true => None,
             false => Some(&request.recurrence_rule)
         },
-        max_persons_per_slot: Some(&request.max_guests),
+        max_persons_per_slot: match request.max_persons_per_slots {
+            0 => Some(&1),
+            _ => Some(&request.max_persons_per_slots)
+        },
+        max_persons: Some(&request.max_persons),
     };
 
     let event = Event::create(conn, new_event)

@@ -22,12 +22,12 @@ CREATE TABLE events (
     recurrence_rule VARCHAR(255) DEFAULT NULL,
     timezone VARCHAR(255) NOT NULL,
     organizer_key VARCHAR(255) NOT NULL,
-    max_guests INT DEFAULT NULL,
     canceled_by VARCHAR(255) DEFAULT NULL,
     canceled_at TIMESTAMP DEFAULT NULL,
     canceled_reason VARCHAR(255) DEFAULT NULL,
     slot_duration INTERVAL DEFAULT NULL,
     max_persons_per_slot INT DEFAULT NULL,
+    max_persons INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );

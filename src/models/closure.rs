@@ -12,7 +12,6 @@ pub struct Closure {
     pub closing_from: NaiveDateTime,
     pub closing_to: NaiveDateTime,
     pub organizer_key: String,
-    pub reason: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -23,7 +22,6 @@ pub struct NewClosure<'a> {
     pub closing_from: &'a NaiveDateTime,
     pub closing_to: &'a NaiveDateTime,
     pub organizer_key: &'a str,
-    pub reason: Option<&'a str>,
 }
 
 impl Closure {
@@ -75,7 +73,6 @@ impl From<Closure> for protos::booking::v1::Closure {
             timezone: "UTC".to_string(), // TODO: Get timezone from event
             date_time: DateTime::<Utc>::from_naive_utc_and_offset(closure.closing_to, Utc).to_rfc3339()
         });
-        proto_closure.reason = closure.reason.unwrap_or_default();
         proto_closure.organizer_key = closure.organizer_key;
         proto_closure.created_at = closure.created_at.and_utc().timestamp();
         proto_closure.updated_at = closure.updated_at.and_utc().timestamp();

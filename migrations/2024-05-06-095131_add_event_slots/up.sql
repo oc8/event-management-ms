@@ -3,6 +3,7 @@ CREATE TABLE event_slots (
     event_id uuid NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
+    max_persons INT DEFAULT 1 NOT NULL,
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
     FOREIGN KEY (event_id) REFERENCES events(id)

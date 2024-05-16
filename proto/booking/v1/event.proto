@@ -51,7 +51,7 @@ message Event {
   Cancellation cancellation = 9;
   repeated Slot slots = 10;
   int64 slot_duration = 11;
-  int32 max_guests = 12;
+  int32 max_persons = 12;
   int64 created_at = 13;
   int64 updated_at = 14;
 }
@@ -64,10 +64,11 @@ message EventInstances {
   string organizer_key = 5;
   Cancellation cancellation = 6;
   int64 slot_duration = 8;
-  int32 max_guests = 9;
-  repeated Event items = 10;
-  int64 created_at = 11;
-  int64 updated_at = 12;
+  int32 max_persons = 9;
+  int32 max_persons_per_slots = 10;
+  repeated Event items = 11;
+  int64 created_at = 12;
+  int64 updated_at = 13;
 }
 
 message Cancellation {
@@ -81,7 +82,7 @@ message Slot {
   string event_id = 2;
   TimeData start = 3;
   TimeData end = 4;
-  int32 max_guests = 5;
+  int32 max_persons = 5;
   int64 created_at = 6;
   int64 updated_at = 7;
 }
@@ -92,15 +93,15 @@ message Booking {
   string slot_id = 3;
   Slot slot = 4;
   TimeData date_time = 5;
-  int64 created_at = 6;
-  int64 updated_at = 7;
+  int32 nb_persons = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
 }
 
 message Closure {
   string id = 1;
   TimeData closing_from = 2;
   TimeData closing_to = 3;
-  string reason = 4;
   string organizer_key = 5;
   int64 created_at = 6;
   int64 updated_at = 7;
@@ -121,21 +122,14 @@ message CreateEventRequest {
   string timezone = 4;
   string organizer_key = 5;
   int64 slot_duration = 6;
-  int32 max_guests = 7;
-  string recurrence_rule = 8;
-  EventType event_type = 9;
+  int32 max_persons = 7;
+  int32 max_persons_per_slots = 8;
+  string recurrence_rule = 9;
+  EventType event_type = 10;
 }
 
 message CreateEventResponse {
   Event event = 1;
-}
-
-message CreateEventsRequest {
-  repeated CreateEventRequest events = 1;
-}
-
-message CreateEventsResponse {
-  repeated Event events = 1;
 }
 
 message GetEventRequest {

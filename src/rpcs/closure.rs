@@ -20,7 +20,6 @@ pub fn create_closure(
         closing_from: &closing_from,
         closing_to: &closing_to,
         organizer_key: &request.organizer_key,
-        reason: Some(&request.reason),
     };
 
     let closure = Closure::create(conn, new_exception)

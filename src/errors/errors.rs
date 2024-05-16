@@ -54,10 +54,10 @@ pub const INVALID_RECURRENCE_RULE: ApiError = ApiError {
     message: "Invalid recurrence rule"
 };
 
-pub const INVALID_MAX_GUESTS: ApiError = ApiError {
+pub const INVALID_MAX_PERSONS: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
-    code: "invalid_max_guests",
-    message: "Invalid max guests"
+    code: "invalid_max_persons",
+    message: "Invalid max persons"
 };
 
 pub const INVALID_EVENT_TYPE: ApiError = ApiError {

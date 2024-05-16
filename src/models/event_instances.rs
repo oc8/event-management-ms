@@ -96,7 +96,6 @@ impl From<EventInstances> for protos::booking::v1::EventInstances {
         proto_instances.set_status(EventStatus::from_str_name(&instance.event.status).unwrap_or(EventStatus::Unspecified));
         proto_instances.set_event_type(EventType::from_str_name(&instance.event.event_type).unwrap_or(EventType::Event));
         proto_instances.organizer_key = instance.event.organizer_key.clone();
-        proto_instances.max_guests = instance.event.max_guests.unwrap_or_default();
         proto_instances.slot_duration = match instance.event.slot_duration {
             Some(interval) => interval.microseconds / 60_000_000,
             None => 0
@@ -108,6 +107,7 @@ impl From<EventInstances> for protos::booking::v1::EventInstances {
             }).collect();
             proto_item
         }).collect();
+        proto_instances.max_persons = instance.event.max_persons.unwrap_or(1);
         proto_instances.created_at = instance.event.created_at.and_utc().timestamp();
         proto_instances.updated_at = instance.event.updated_at.and_utc().timestamp();
 

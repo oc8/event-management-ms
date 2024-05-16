@@ -23,11 +23,11 @@ pub struct Event {
     pub recurrence_rule: Option<String>,
     pub timezone: String,
     pub organizer_key: String,
-    pub max_guests: Option<i32>,
     pub canceled_by: Option<String>,
     pub canceled_at: Option<NaiveDateTime>,
     pub canceled_reason: Option<String>,
     pub slot_duration: Option<PgInterval>,
+    pub max_persons: Option<i32>,
     pub max_persons_per_slot: Option<i32>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -44,11 +44,11 @@ pub struct NewEvent<'a> {
     pub recurrence_rule: Option<&'a str>,
     pub timezone: &'a str,
     pub organizer_key: &'a str,
-    pub max_guests: Option<&'a i32>,
     pub canceled_by: Option<&'a str>,
     pub canceled_at: Option<&'a NaiveDateTime>,
     pub canceled_reason: Option<&'a str>,
     pub slot_duration: Option<&'a PgInterval>,
+    pub max_persons: Option<&'a i32>,
     pub max_persons_per_slot: Option<&'a i32>,
 }
 
@@ -167,11 +167,12 @@ impl Event {
                     WHERE
                         slot_end_time < $2
                 )
-                INSERT INTO event_slots (event_id, start_time, end_time)
+                INSERT INTO event_slots (event_id, start_time, end_time, max_persons)
                 SELECT
                     $4,
                     slot_start_time,
-                    slot_end_time
+                    slot_end_time,
+                    $5
                 FROM
                     slot_times;"
             )
@@ -179,6 +180,7 @@ impl Event {
                 .bind::<diesel::sql_types::Timestamp, _>(event.end_time)
                 .bind::<diesel::sql_types::Integer, _>((event.slot_duration.unwrap().microseconds / 60_000_000) as i32)
                 .bind::<diesel::sql_types::Uuid, _>(event.id)
+                .bind::<diesel::sql_types::Integer, _>(event.max_persons_per_slot.unwrap_or(1))
                 .execute(pg_conn)
         })
         .expect("Failed to generate time slots");
@@ -231,7 +233,6 @@ impl From<Event> for protos::booking::v1::Event {
         });
         proto_event.recurrence_rule = event.recurrence_rule.unwrap_or_default();
         proto_event.organizer_key = event.organizer_key;
-        proto_event.max_guests = event.max_guests.unwrap_or_default();
         proto_event.cancellation = match event.canceled_at {
             Some(_) => Some(Cancellation {
                 canceled_by: event.canceled_by.unwrap_or_default(),
@@ -247,6 +248,7 @@ impl From<Event> for protos::booking::v1::Event {
             Some(interval) => interval.microseconds / 60_000_000,
             None => 0
         };
+        proto_event.max_persons = event.max_persons.unwrap_or_default();
         proto_event.created_at = event.created_at.and_utc().timestamp();
         proto_event.updated_at = event.updated_at.and_utc().timestamp();
 

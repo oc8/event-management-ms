@@ -22,6 +22,9 @@ impl serde::Serialize for Booking {
         if self.date_time.is_some() {
             len += 1;
         }
+        if self.nb_persons != 0 {
+            len += 1;
+        }
         if self.created_at != 0 {
             len += 1;
         }
@@ -43,6 +46,9 @@ impl serde::Serialize for Booking {
         }
         if let Some(v) = self.date_time.as_ref() {
             struct_ser.serialize_field("dateTime", v)?;
+        }
+        if self.nb_persons != 0 {
+            struct_ser.serialize_field("nbPersons", &self.nb_persons)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -70,6 +76,8 @@ impl<'de> serde::Deserialize<'de> for Booking {
             "slot",
             "date_time",
             "dateTime",
+            "nb_persons",
+            "nbPersons",
             "created_at",
             "createdAt",
             "updated_at",
@@ -83,6 +91,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
             SlotId,
             Slot,
             DateTime,
+            NbPersons,
             CreatedAt,
             UpdatedAt,
         }
@@ -111,6 +120,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                             "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
                             "slot" => Ok(GeneratedField::Slot),
                             "dateTime" | "date_time" => Ok(GeneratedField::DateTime),
+                            "nbPersons" | "nb_persons" => Ok(GeneratedField::NbPersons),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -137,6 +147,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                 let mut slot_id__ = None;
                 let mut slot__ = None;
                 let mut date_time__ = None;
+                let mut nb_persons__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -171,6 +182,14 @@ impl<'de> serde::Deserialize<'de> for Booking {
                             }
                             date_time__ = map_.next_value()?;
                         }
+                        GeneratedField::NbPersons => {
+                            if nb_persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("nbPersons"));
+                            }
+                            nb_persons__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                         GeneratedField::CreatedAt => {
                             if created_at__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("createdAt"));
@@ -195,6 +214,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                     slot_id: slot_id__.unwrap_or_default(),
                     slot: slot__,
                     date_time: date_time__,
+                    nb_persons: nb_persons__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })
@@ -347,9 +367,6 @@ impl serde::Serialize for Closure {
         if self.closing_to.is_some() {
             len += 1;
         }
-        if !self.reason.is_empty() {
-            len += 1;
-        }
         if !self.organizer_key.is_empty() {
             len += 1;
         }
@@ -368,9 +385,6 @@ impl serde::Serialize for Closure {
         }
         if let Some(v) = self.closing_to.as_ref() {
             struct_ser.serialize_field("closingTo", v)?;
-        }
-        if !self.reason.is_empty() {
-            struct_ser.serialize_field("reason", &self.reason)?;
         }
         if !self.organizer_key.is_empty() {
             struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
@@ -398,7 +412,6 @@ impl<'de> serde::Deserialize<'de> for Closure {
             "closingFrom",
             "closing_to",
             "closingTo",
-            "reason",
             "organizer_key",
             "organizerKey",
             "created_at",
@@ -412,7 +425,6 @@ impl<'de> serde::Deserialize<'de> for Closure {
             Id,
             ClosingFrom,
             ClosingTo,
-            Reason,
             OrganizerKey,
             CreatedAt,
             UpdatedAt,
@@ -440,7 +452,6 @@ impl<'de> serde::Deserialize<'de> for Closure {
                             "id" => Ok(GeneratedField::Id),
                             "closingFrom" | "closing_from" => Ok(GeneratedField::ClosingFrom),
                             "closingTo" | "closing_to" => Ok(GeneratedField::ClosingTo),
-                            "reason" => Ok(GeneratedField::Reason),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
@@ -466,7 +477,6 @@ impl<'de> serde::Deserialize<'de> for Closure {
                 let mut id__ = None;
                 let mut closing_from__ = None;
                 let mut closing_to__ = None;
-                let mut reason__ = None;
                 let mut organizer_key__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
@@ -489,12 +499,6 @@ impl<'de> serde::Deserialize<'de> for Closure {
                                 return Err(serde::de::Error::duplicate_field("closingTo"));
                             }
                             closing_to__ = map_.next_value()?;
-                        }
-                        GeneratedField::Reason => {
-                            if reason__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("reason"));
-                            }
-                            reason__ = Some(map_.next_value()?);
                         }
                         GeneratedField::OrganizerKey => {
                             if organizer_key__.is_some() {
@@ -524,7 +528,6 @@ impl<'de> serde::Deserialize<'de> for Closure {
                     id: id__.unwrap_or_default(),
                     closing_from: closing_from__,
                     closing_to: closing_to__,
-                    reason: reason__.unwrap_or_default(),
                     organizer_key: organizer_key__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
@@ -1015,7 +1018,10 @@ impl serde::Serialize for CreateEventRequest {
         if self.slot_duration != 0 {
             len += 1;
         }
-        if self.max_guests != 0 {
+        if self.max_persons != 0 {
+            len += 1;
+        }
+        if self.max_persons_per_slots != 0 {
             len += 1;
         }
         if !self.recurrence_rule.is_empty() {
@@ -1044,8 +1050,11 @@ impl serde::Serialize for CreateEventRequest {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
-        if self.max_guests != 0 {
-            struct_ser.serialize_field("maxGuests", &self.max_guests)?;
+        if self.max_persons != 0 {
+            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
+        }
+        if self.max_persons_per_slots != 0 {
+            struct_ser.serialize_field("maxPersonsPerSlots", &self.max_persons_per_slots)?;
         }
         if !self.recurrence_rule.is_empty() {
             struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
@@ -1073,8 +1082,10 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             "organizerKey",
             "slot_duration",
             "slotDuration",
-            "max_guests",
-            "maxGuests",
+            "max_persons",
+            "maxPersons",
+            "max_persons_per_slots",
+            "maxPersonsPerSlots",
             "recurrence_rule",
             "recurrenceRule",
             "event_type",
@@ -1089,7 +1100,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             Timezone,
             OrganizerKey,
             SlotDuration,
-            MaxGuests,
+            MaxPersons,
+            MaxPersonsPerSlots,
             RecurrenceRule,
             EventType,
         }
@@ -1119,7 +1131,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             "timezone" => Ok(GeneratedField::Timezone),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
-                            "maxGuests" | "max_guests" => Ok(GeneratedField::MaxGuests),
+                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
+                            "maxPersonsPerSlots" | "max_persons_per_slots" => Ok(GeneratedField::MaxPersonsPerSlots),
                             "recurrenceRule" | "recurrence_rule" => Ok(GeneratedField::RecurrenceRule),
                             "eventType" | "event_type" => Ok(GeneratedField::EventType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1147,7 +1160,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                 let mut timezone__ = None;
                 let mut organizer_key__ = None;
                 let mut slot_duration__ = None;
-                let mut max_guests__ = None;
+                let mut max_persons__ = None;
+                let mut max_persons_per_slots__ = None;
                 let mut recurrence_rule__ = None;
                 let mut event_type__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -1190,11 +1204,19 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxGuests => {
-                            if max_guests__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxGuests"));
+                        GeneratedField::MaxPersons => {
+                            if max_persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPersons"));
                             }
-                            max_guests__ = 
+                            max_persons__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::MaxPersonsPerSlots => {
+                            if max_persons_per_slots__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPersonsPerSlots"));
+                            }
+                            max_persons_per_slots__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -1219,7 +1241,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                     timezone: timezone__.unwrap_or_default(),
                     organizer_key: organizer_key__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
-                    max_guests: max_guests__.unwrap_or_default(),
+                    max_persons: max_persons__.unwrap_or_default(),
+                    max_persons_per_slots: max_persons_per_slots__.unwrap_or_default(),
                     recurrence_rule: recurrence_rule__.unwrap_or_default(),
                     event_type: event_type__.unwrap_or_default(),
                 })
@@ -1319,188 +1342,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventResponse {
         deserializer.deserialize_struct("booking.v1.CreateEventResponse", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for CreateEventsRequest {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.events.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateEventsRequest", len)?;
-        if !self.events.is_empty() {
-            struct_ser.serialize_field("events", &self.events)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for CreateEventsRequest {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "events",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Events,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "events" => Ok(GeneratedField::Events),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = CreateEventsRequest;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.CreateEventsRequest")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateEventsRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut events__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::Events => {
-                            if events__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("events"));
-                            }
-                            events__ = Some(map_.next_value()?);
-                        }
-                    }
-                }
-                Ok(CreateEventsRequest {
-                    events: events__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("booking.v1.CreateEventsRequest", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for CreateEventsResponse {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.events.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("booking.v1.CreateEventsResponse", len)?;
-        if !self.events.is_empty() {
-            struct_ser.serialize_field("events", &self.events)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for CreateEventsResponse {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "events",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Events,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "events" => Ok(GeneratedField::Events),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = CreateEventsResponse;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct booking.v1.CreateEventsResponse")
-            }
-
-            fn visit_map<V>(self, mut map_: V) -> std::result::Result<CreateEventsResponse, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut events__ = None;
-                while let Some(k) = map_.next_key()? {
-                    match k {
-                        GeneratedField::Events => {
-                            if events__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("events"));
-                            }
-                            events__ = Some(map_.next_value()?);
-                        }
-                    }
-                }
-                Ok(CreateEventsResponse {
-                    events: events__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("booking.v1.CreateEventsResponse", FIELDS, GeneratedVisitor)
-    }
-}
 impl serde::Serialize for Event {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -1542,7 +1383,7 @@ impl serde::Serialize for Event {
         if self.slot_duration != 0 {
             len += 1;
         }
-        if self.max_guests != 0 {
+        if self.max_persons != 0 {
             len += 1;
         }
         if self.created_at != 0 {
@@ -1590,8 +1431,8 @@ impl serde::Serialize for Event {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
-        if self.max_guests != 0 {
-            struct_ser.serialize_field("maxGuests", &self.max_guests)?;
+        if self.max_persons != 0 {
+            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -1626,8 +1467,8 @@ impl<'de> serde::Deserialize<'de> for Event {
             "slots",
             "slot_duration",
             "slotDuration",
-            "max_guests",
-            "maxGuests",
+            "max_persons",
+            "maxPersons",
             "created_at",
             "createdAt",
             "updated_at",
@@ -1647,7 +1488,7 @@ impl<'de> serde::Deserialize<'de> for Event {
             Cancellation,
             Slots,
             SlotDuration,
-            MaxGuests,
+            MaxPersons,
             CreatedAt,
             UpdatedAt,
         }
@@ -1682,7 +1523,7 @@ impl<'de> serde::Deserialize<'de> for Event {
                             "cancellation" => Ok(GeneratedField::Cancellation),
                             "slots" => Ok(GeneratedField::Slots),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
-                            "maxGuests" | "max_guests" => Ok(GeneratedField::MaxGuests),
+                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1715,7 +1556,7 @@ impl<'de> serde::Deserialize<'de> for Event {
                 let mut cancellation__ = None;
                 let mut slots__ = None;
                 let mut slot_duration__ = None;
-                let mut max_guests__ = None;
+                let mut max_persons__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -1788,11 +1629,11 @@ impl<'de> serde::Deserialize<'de> for Event {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxGuests => {
-                            if max_guests__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxGuests"));
+                        GeneratedField::MaxPersons => {
+                            if max_persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPersons"));
                             }
-                            max_guests__ = 
+                            max_persons__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -1826,7 +1667,7 @@ impl<'de> serde::Deserialize<'de> for Event {
                     cancellation: cancellation__,
                     slots: slots__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
-                    max_guests: max_guests__.unwrap_or_default(),
+                    max_persons: max_persons__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })
@@ -1864,7 +1705,10 @@ impl serde::Serialize for EventInstances {
         if self.slot_duration != 0 {
             len += 1;
         }
-        if self.max_guests != 0 {
+        if self.max_persons != 0 {
+            len += 1;
+        }
+        if self.max_persons_per_slots != 0 {
             len += 1;
         }
         if !self.items.is_empty() {
@@ -1903,8 +1747,11 @@ impl serde::Serialize for EventInstances {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
-        if self.max_guests != 0 {
-            struct_ser.serialize_field("maxGuests", &self.max_guests)?;
+        if self.max_persons != 0 {
+            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
+        }
+        if self.max_persons_per_slots != 0 {
+            struct_ser.serialize_field("maxPersonsPerSlots", &self.max_persons_per_slots)?;
         }
         if !self.items.is_empty() {
             struct_ser.serialize_field("items", &self.items)?;
@@ -1937,8 +1784,10 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
             "cancellation",
             "slot_duration",
             "slotDuration",
-            "max_guests",
-            "maxGuests",
+            "max_persons",
+            "maxPersons",
+            "max_persons_per_slots",
+            "maxPersonsPerSlots",
             "items",
             "created_at",
             "createdAt",
@@ -1955,7 +1804,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
             OrganizerKey,
             Cancellation,
             SlotDuration,
-            MaxGuests,
+            MaxPersons,
+            MaxPersonsPerSlots,
             Items,
             CreatedAt,
             UpdatedAt,
@@ -1987,7 +1837,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "cancellation" => Ok(GeneratedField::Cancellation),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
-                            "maxGuests" | "max_guests" => Ok(GeneratedField::MaxGuests),
+                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
+                            "maxPersonsPerSlots" | "max_persons_per_slots" => Ok(GeneratedField::MaxPersonsPerSlots),
                             "items" => Ok(GeneratedField::Items),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
@@ -2017,7 +1868,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                 let mut organizer_key__ = None;
                 let mut cancellation__ = None;
                 let mut slot_duration__ = None;
-                let mut max_guests__ = None;
+                let mut max_persons__ = None;
+                let mut max_persons_per_slots__ = None;
                 let mut items__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
@@ -2067,11 +1919,19 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxGuests => {
-                            if max_guests__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxGuests"));
+                        GeneratedField::MaxPersons => {
+                            if max_persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPersons"));
                             }
-                            max_guests__ = 
+                            max_persons__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::MaxPersonsPerSlots => {
+                            if max_persons_per_slots__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPersonsPerSlots"));
+                            }
+                            max_persons_per_slots__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -2107,7 +1967,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                     organizer_key: organizer_key__.unwrap_or_default(),
                     cancellation: cancellation__,
                     slot_duration: slot_duration__.unwrap_or_default(),
-                    max_guests: max_guests__.unwrap_or_default(),
+                    max_persons: max_persons__.unwrap_or_default(),
+                    max_persons_per_slots: max_persons_per_slots__.unwrap_or_default(),
                     items: items__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
@@ -3388,7 +3249,7 @@ impl serde::Serialize for Slot {
         if self.end.is_some() {
             len += 1;
         }
-        if self.max_guests != 0 {
+        if self.max_persons != 0 {
             len += 1;
         }
         if self.created_at != 0 {
@@ -3410,8 +3271,8 @@ impl serde::Serialize for Slot {
         if let Some(v) = self.end.as_ref() {
             struct_ser.serialize_field("end", v)?;
         }
-        if self.max_guests != 0 {
-            struct_ser.serialize_field("maxGuests", &self.max_guests)?;
+        if self.max_persons != 0 {
+            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -3436,8 +3297,8 @@ impl<'de> serde::Deserialize<'de> for Slot {
             "eventId",
             "start",
             "end",
-            "max_guests",
-            "maxGuests",
+            "max_persons",
+            "maxPersons",
             "created_at",
             "createdAt",
             "updated_at",
@@ -3450,7 +3311,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
             EventId,
             Start,
             End,
-            MaxGuests,
+            MaxPersons,
             CreatedAt,
             UpdatedAt,
         }
@@ -3478,7 +3339,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
                             "eventId" | "event_id" => Ok(GeneratedField::EventId),
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
-                            "maxGuests" | "max_guests" => Ok(GeneratedField::MaxGuests),
+                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -3504,7 +3365,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
                 let mut event_id__ = None;
                 let mut start__ = None;
                 let mut end__ = None;
-                let mut max_guests__ = None;
+                let mut max_persons__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -3533,11 +3394,11 @@ impl<'de> serde::Deserialize<'de> for Slot {
                             }
                             end__ = map_.next_value()?;
                         }
-                        GeneratedField::MaxGuests => {
-                            if max_guests__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxGuests"));
+                        GeneratedField::MaxPersons => {
+                            if max_persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPersons"));
                             }
-                            max_guests__ = 
+                            max_persons__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -3564,7 +3425,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
                     event_id: event_id__.unwrap_or_default(),
                     start: start__,
                     end: end__,
-                    max_guests: max_guests__.unwrap_or_default(),
+                    max_persons: max_persons__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })

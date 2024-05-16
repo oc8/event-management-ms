@@ -42,7 +42,7 @@ class Event(betterproto.Message):
     cancellation: "Cancellation" = betterproto.message_field(9)
     slots: List["Slot"] = betterproto.message_field(10)
     slot_duration: int = betterproto.int64_field(11)
-    max_guests: int = betterproto.int32_field(12)
+    max_persons: int = betterproto.int32_field(12)
     created_at: int = betterproto.int64_field(13)
     updated_at: int = betterproto.int64_field(14)
 
@@ -56,10 +56,11 @@ class EventInstances(betterproto.Message):
     organizer_key: str = betterproto.string_field(5)
     cancellation: "Cancellation" = betterproto.message_field(6)
     slot_duration: int = betterproto.int64_field(8)
-    max_guests: int = betterproto.int32_field(9)
-    items: List["Event"] = betterproto.message_field(10)
-    created_at: int = betterproto.int64_field(11)
-    updated_at: int = betterproto.int64_field(12)
+    max_persons: int = betterproto.int32_field(9)
+    max_persons_per_slots: int = betterproto.int32_field(10)
+    items: List["Event"] = betterproto.message_field(11)
+    created_at: int = betterproto.int64_field(12)
+    updated_at: int = betterproto.int64_field(13)
 
 
 @dataclass
@@ -75,7 +76,7 @@ class Slot(betterproto.Message):
     event_id: str = betterproto.string_field(2)
     start: "TimeData" = betterproto.message_field(3)
     end: "TimeData" = betterproto.message_field(4)
-    max_guests: int = betterproto.int32_field(5)
+    max_persons: int = betterproto.int32_field(5)
     created_at: int = betterproto.int64_field(6)
     updated_at: int = betterproto.int64_field(7)
 
@@ -87,8 +88,9 @@ class Booking(betterproto.Message):
     slot_id: str = betterproto.string_field(3)
     slot: "Slot" = betterproto.message_field(4)
     date_time: "TimeData" = betterproto.message_field(5)
-    created_at: int = betterproto.int64_field(6)
-    updated_at: int = betterproto.int64_field(7)
+    nb_persons: int = betterproto.int32_field(6)
+    created_at: int = betterproto.int64_field(7)
+    updated_at: int = betterproto.int64_field(8)
 
 
 @dataclass
@@ -96,7 +98,6 @@ class Closure(betterproto.Message):
     id: str = betterproto.string_field(1)
     closing_from: "TimeData" = betterproto.message_field(2)
     closing_to: "TimeData" = betterproto.message_field(3)
-    reason: str = betterproto.string_field(4)
     organizer_key: str = betterproto.string_field(5)
     created_at: int = betterproto.int64_field(6)
     updated_at: int = betterproto.int64_field(7)
@@ -119,24 +120,15 @@ class CreateEventRequest(betterproto.Message):
     timezone: str = betterproto.string_field(4)
     organizer_key: str = betterproto.string_field(5)
     slot_duration: int = betterproto.int64_field(6)
-    max_guests: int = betterproto.int32_field(7)
-    recurrence_rule: str = betterproto.string_field(8)
-    event_type: "EventType" = betterproto.enum_field(9)
+    max_persons: int = betterproto.int32_field(7)
+    max_persons_per_slots: int = betterproto.int32_field(8)
+    recurrence_rule: str = betterproto.string_field(9)
+    event_type: "EventType" = betterproto.enum_field(10)
 
 
 @dataclass
 class CreateEventResponse(betterproto.Message):
     event: "Event" = betterproto.message_field(1)
-
-
-@dataclass
-class CreateEventsRequest(betterproto.Message):
-    events: List["CreateEventRequest"] = betterproto.message_field(1)
-
-
-@dataclass
-class CreateEventsResponse(betterproto.Message):
-    events: List["Event"] = betterproto.message_field(1)
 
 
 @dataclass
@@ -225,7 +217,8 @@ class BookingServiceStub(betterproto.ServiceStub):
         timezone: str = "",
         organizer_key: str = "",
         slot_duration: int = 0,
-        max_guests: int = 0,
+        max_persons: int = 0,
+        max_persons_per_slots: int = 0,
         recurrence_rule: str = "",
         event_type: "EventType" = 0,
     ) -> CreateEventResponse:
@@ -236,7 +229,8 @@ class BookingServiceStub(betterproto.ServiceStub):
         request.timezone = timezone
         request.organizer_key = organizer_key
         request.slot_duration = slot_duration
-        request.max_guests = max_guests
+        request.max_persons = max_persons
+        request.max_persons_per_slots = max_persons_per_slots
         request.recurrence_rule = recurrence_rule
         request.event_type = event_type
 
