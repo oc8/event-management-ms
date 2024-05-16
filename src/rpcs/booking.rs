@@ -31,8 +31,7 @@ pub fn create_booking(
         return Err(format_error(errors::BOOKING_DATE_TIME_MISMATCH))
     }
 
-    let booking = Booking::find_by_slot_and_date_time(conn, slot_id, date_time);
-
+    let booking = Booking::find_duplicated_booking(conn, slot_id, request.booking_holder_key.clone(), date_time);
     if booking.is_some() {
         return Err(format_error(errors::BOOKING_ALREADY_EXISTS))
     }

@@ -80,10 +80,11 @@ impl Booking {
         }
     }
 
-    pub fn find_by_slot_and_date_time(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> Option<Booking> {
+    pub fn find_duplicated_booking(conn: &mut PgConnection, slot_id: Uuid, booking_holder: String, date_time: NaiveDateTime) -> Option<Booking> {
         bookings::dsl::bookings
             .select(Booking::as_select())
             .filter(bookings::dsl::slot_id.eq(slot_id))
+            .filter(bookings::dsl::booking_holder_key.eq(booking_holder))
             .filter(bookings::dsl::date_time.eq(date_time))
             .first(conn)
             .ok()
