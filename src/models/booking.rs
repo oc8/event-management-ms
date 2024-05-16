@@ -79,6 +79,24 @@ impl Booking {
             None => None
         }
     }
+
+    pub fn find_by_slot_and_date_time(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> Option<Booking> {
+        bookings::dsl::bookings
+            .select(Booking::as_select())
+            .filter(bookings::dsl::slot_id.eq(slot_id))
+            .filter(bookings::dsl::date_time.eq(date_time))
+            .first(conn)
+            .ok()
+    }
+
+    pub fn count_bookings_by_datetime(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> i64 {
+        bookings::dsl::bookings
+            .select(diesel::dsl::count(bookings::dsl::id))
+            .filter(bookings::dsl::slot_id.eq(slot_id))
+            .filter(bookings::dsl::date_time.eq(date_time))
+            .first(conn)
+            .unwrap()
+    }
 }
 
 impl From<Booking> for protos::booking::v1::Booking {

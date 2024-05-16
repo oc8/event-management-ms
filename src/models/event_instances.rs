@@ -43,11 +43,11 @@ impl EventInstances {
                         for slot in slots {
                             let slot_start = add_time_to_datetime(
                                 virtual_event.event.start_time,
-                                microseconds_to_naive_time(IntervalDsl::microseconds(slot.start_time.0).microseconds)
+                                slot.start_time
                             );
                             let slot_end = add_time_to_datetime(
                                 virtual_event.event.end_time,
-                                microseconds_to_naive_time(IntervalDsl::microseconds(slot.end_time.0).microseconds)
+                                slot.end_time
                             );
 
                             // Check if the slot falls within any closure range
@@ -88,6 +88,7 @@ impl From<EventInstances> for protos::booking::v1::EventInstances {
     fn from(instance: EventInstances) -> Self {
         let mut proto_instances = protos::booking::v1::EventInstances::default();
 
+        // TODO: if vec is empty, do not return the event
         let items = EventInstances::create_active_virtual_events(&instance.event, &instance.slots, &instance.closures);
 
         proto_instances.id = instance.event.id.to_string();

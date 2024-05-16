@@ -150,6 +150,24 @@ pub const INVALID_SLOT_DURATION: ApiError = ApiError {
     message: "Invalid slot duration"
 };
 
+pub const BOOKING_ALREADY_EXISTS: ApiError = ApiError {
+    grpc_code: Code::AlreadyExists,
+    code: "booking_already_exists",
+    message: "Booking already exists"
+};
+
+pub const BOOKING_DATE_IN_PAST: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "booking_date_in_past",
+    message: "Booking date is in the past"
+};
+
+pub const BOOKING_DATE_TIME_MISMATCH: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "booking_date_time_mismatch",
+    message: "Booking date and time mismatch"
+};
+
 // format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);

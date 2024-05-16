@@ -14,14 +14,28 @@ pub fn create_booking(
     validate_create_booking_request(&request)?;
 
     let slot_id = Uuid::parse_str(&request.slot_id).map_err(|_| format_error(errors::INVALID_SLOT_ID))?;
-    let slot = Slot::find_by_id(conn, slot_id);
-
-    if slot.is_none() {
-        return Err(format_error(errors::SLOT_NOT_FOUND))
-    }
+    let (slot, event) = Slot::find_by_id_with_event(conn, slot_id)
+        .ok_or_else(|| format_error(errors::SLOT_NOT_FOUND))?;
 
     let date_time = chrono::NaiveDateTime::parse_from_str(&request.date_time, "%Y-%m-%dT%H:%M:%S")
         .map_err(|_| format_error(errors::INVALID_BOOKING_DATE))?;
+
+    if date_time < chrono::Utc::now().naive_utc() {
+        return Err(format_error(errors::BOOKING_DATE_IN_PAST))
+    }
+
+    if
+        (date_time.time() != slot.start_time || date_time.date() != event.start_time.date()) &&
+        (event.recurrence_rule.is_some() && !event.get_available_dates(5).contains(&date_time.date()))
+    {
+        return Err(format_error(errors::BOOKING_DATE_TIME_MISMATCH))
+    }
+
+    let booking = Booking::find_by_slot_and_date_time(conn, slot_id, date_time);
+
+    if booking.is_some() {
+        return Err(format_error(errors::BOOKING_ALREADY_EXISTS))
+    }
 
     let new_booking = NewBooking {
         slot_id: &slot_id,

@@ -69,14 +69,11 @@ pub fn get_event_by_id(
 ) -> Result<GetEventResponse, Status> {
     validate_get_event_request(&request)?;
 
-    let event = Event::find_by_id(conn, Uuid::parse_str(&request.id).unwrap());
-
-    if event.is_none() {
-        return Err(format_error(errors::EVENT_NOT_FOUND))
-    }
+    let event = Event::find_by_id(conn, Uuid::parse_str(&request.id).unwrap())
+        .ok_or_else(|| format_error(errors::EVENT_NOT_FOUND))?;
 
     Ok(GetEventResponse{
-        event: Some(event.unwrap().into())
+        event: Some(event.into())
     })
 }
 
@@ -104,13 +101,8 @@ pub fn get_event_instances(
     let event_id = Uuid::parse_str(&request.event_id)
         .map_err(|_| format_error(errors::INVALID_EVENT_ID))?;
 
-    let event = Event::find_by_id(conn, event_id);
-
-    if event.is_none() {
-        return Err(format_error(errors::EVENT_NOT_FOUND))
-    }
-
-    let event = event.unwrap();
+    let event = Event::find_by_id(conn, event_id)
+        .ok_or_else(|| format_error(errors::EVENT_NOT_FOUND))?;
 
     let closures = Closure::find_by_organizer_key(conn, &event.event.organizer_key);
 

@@ -1,4 +1,4 @@
-use chrono::{NaiveDateTime};
+use chrono::{NaiveDateTime, NaiveTime};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
 use diesel::data_types::{PgTime};
 use uuid::Uuid;
@@ -7,7 +7,7 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use booking_ms::pg_time_to_string;
 use crate::models::event::Event;
-use crate::schema::event_slots;
+use crate::schema::{event_slots, events};
 
 #[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = event_slots)]
@@ -15,8 +15,8 @@ use crate::schema::event_slots;
 pub struct Slot {
     pub id: Uuid,
     pub event_id: Uuid,
-    pub start_time: PgTime,
-    pub end_time: PgTime,
+    pub start_time: NaiveTime,
+    pub end_time: NaiveTime,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -55,6 +55,15 @@ impl Slot {
             .ok()
     }
 
+    pub fn find_by_id_with_event(conn: &mut PgConnection, p_slot_id: Uuid) -> Option<(Slot, Event)> {
+        event_slots::table
+            .filter(event_slots::id.eq(p_slot_id))
+            .inner_join(events::table.on(event_slots::event_id.eq(events::id)))
+            .select((event_slots::all_columns, events::all_columns))
+            .first::<(Slot, Event)>(conn)
+            .ok()
+    }
+
     pub fn find_by_event_id(conn: &mut PgConnection, p_event_id: Uuid) -> Option<Vec<Slot>> {
         event_slots::dsl::event_slots
             .select(Slot::as_select())
@@ -87,8 +96,8 @@ impl From<Slot> for protos::booking::v1::Slot {
     fn from(slot: Slot) -> Self {
         let mut proto_slot = protos::booking::v1::Slot::default();
 
-        let start = pg_time_to_string(slot.start_time);
-        let end = pg_time_to_string(slot.end_time);
+        let start = slot.start_time.to_string();
+        let end = slot.end_time.to_string();
 
         proto_slot.id = slot.id.to_string();
         proto_slot.event_id = slot.event_id.to_string();

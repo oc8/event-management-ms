@@ -1,14 +1,16 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
-use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName};
 use diesel::data_types::{PgInterval};
+use rrule::RRuleSet;
 use uuid::Uuid;
+use booking_ms::format_datetime;
 use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
 use crate::models::slot::{Slot};
 use crate::models::filters::{Filters};
 
 use crate::schema::{events};
 
-#[derive(Queryable, Selectable, Debug, Clone)]
+#[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = events)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Event {
@@ -186,6 +188,28 @@ impl Event {
             .unwrap_or_else(|| vec![]);
 
         Ok(slots)
+    }
+
+    pub fn get_available_dates(&self, limit: u16) -> Vec<NaiveDate> {
+        if let Some(recurrence_rule) = &self.recurrence_rule {
+            let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(self.start_time), recurrence_rule);
+            let recurrence = recurrence_rule.parse::<RRuleSet>();
+
+            match recurrence {
+                Ok(recurrence) => {
+                    recurrence.all(limit).dates
+                        .into_iter()
+                        .map(|date| date.naive_utc().date())
+                        .collect()
+                },
+                Err(e) => {
+                    log::error!("Failed to parse recurrence rule: {}", e);
+                    vec![]
+                }
+            }
+        } else {
+            vec![]
+        }
     }
 }
 
