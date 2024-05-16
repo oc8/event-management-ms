@@ -31,7 +31,7 @@ diesel::table! {
         event_id -> Uuid,
         start_time -> Time,
         end_time -> Time,
-        max_persons -> Int4,
+        capacity -> Int4,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }
@@ -60,8 +60,8 @@ diesel::table! {
         #[max_length = 255]
         canceled_reason -> Nullable<Varchar>,
         slot_duration -> Nullable<Interval>,
-        max_persons_per_slot -> Nullable<Int4>,
-        max_persons -> Nullable<Int4>,
+        slot_capacity -> Nullable<Int4>,
+        capacity -> Nullable<Int4>,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }

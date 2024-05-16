@@ -16,7 +16,7 @@ pub struct Slot {
     pub event_id: Uuid,
     pub start_time: NaiveTime,
     pub end_time: NaiveTime,
-    pub max_persons: i32,
+    pub capacity: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -27,7 +27,7 @@ pub struct NewSlot<'a> {
     pub event_id: &'a Uuid,
     pub start_time: &'a PgTime,
     pub end_time: &'a PgTime,
-    pub max_persons: &'a i32,
+    pub capacity: &'a i32,
 }
 
 impl Slot {
@@ -110,7 +110,7 @@ impl From<Slot> for protos::booking::v1::Slot {
             timezone: "UTC".to_string(), // TODO: Get timezone from event
             date_time: end,
         });
-        proto_slot.max_persons = slot.max_persons;
+        proto_slot.capacity = slot.capacity;
         proto_slot.created_at = slot.created_at.and_utc().timestamp();
         proto_slot.updated_at = slot.updated_at.and_utc().timestamp();
 

@@ -27,8 +27,8 @@ pub struct Event {
     pub canceled_at: Option<NaiveDateTime>,
     pub canceled_reason: Option<String>,
     pub slot_duration: Option<PgInterval>,
-    pub max_persons: Option<i32>,
-    pub max_persons_per_slot: Option<i32>,
+    pub slot_capacity: Option<i32>,
+    pub capacity: Option<i32>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -48,8 +48,8 @@ pub struct NewEvent<'a> {
     pub canceled_at: Option<&'a NaiveDateTime>,
     pub canceled_reason: Option<&'a str>,
     pub slot_duration: Option<&'a PgInterval>,
-    pub max_persons: Option<&'a i32>,
-    pub max_persons_per_slot: Option<&'a i32>,
+    pub capacity: Option<&'a i32>,
+    pub slot_capacity: Option<&'a i32>,
 }
 
 #[derive(Debug, Clone)]
@@ -167,7 +167,7 @@ impl Event {
                     WHERE
                         slot_end_time < $2
                 )
-                INSERT INTO event_slots (event_id, start_time, end_time, max_persons)
+                INSERT INTO event_slots (event_id, start_time, end_time, capacity)
                 SELECT
                     $4,
                     slot_start_time,
@@ -180,7 +180,7 @@ impl Event {
                 .bind::<diesel::sql_types::Timestamp, _>(event.end_time)
                 .bind::<diesel::sql_types::Integer, _>((event.slot_duration.unwrap().microseconds / 60_000_000) as i32)
                 .bind::<diesel::sql_types::Uuid, _>(event.id)
-                .bind::<diesel::sql_types::Integer, _>(event.max_persons_per_slot.unwrap_or(1))
+                .bind::<diesel::sql_types::Integer, _>(event.slot_capacity.unwrap_or(1))
                 .execute(pg_conn)
         })
         .expect("Failed to generate time slots");
@@ -248,7 +248,7 @@ impl From<Event> for protos::booking::v1::Event {
             Some(interval) => interval.microseconds / 60_000_000,
             None => 0
         };
-        proto_event.max_persons = event.max_persons.unwrap_or_default();
+        proto_event.capacity = event.capacity.unwrap_or_default();
         proto_event.created_at = event.created_at.and_utc().timestamp();
         proto_event.updated_at = event.updated_at.and_utc().timestamp();
 

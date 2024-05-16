@@ -54,10 +54,10 @@ pub const INVALID_RECURRENCE_RULE: ApiError = ApiError {
     message: "Invalid recurrence rule"
 };
 
-pub const INVALID_MAX_PERSONS: ApiError = ApiError {
+pub const INVALID_CAPACITY: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
-    code: "invalid_max_persons",
-    message: "Invalid max persons"
+    code: "invalid_capacity",
+    message: "Invalid capacity"
 };
 
 pub const INVALID_EVENT_TYPE: ApiError = ApiError {
@@ -166,6 +166,12 @@ pub const BOOKING_DATE_TIME_MISMATCH: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "booking_date_time_mismatch",
     message: "Booking date and time mismatch"
+};
+
+pub const BOOKING_CAPACITY_FULL: ApiError = ApiError {
+    grpc_code: Code::ResourceExhausted,
+    code: "booking_capacity_full",
+    message: "Booking capacity is full"
 };
 
 // format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }

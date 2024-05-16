@@ -60,10 +60,10 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
                 EventType::Unspecified => errors.push(errors::INVALID_EVENT_TYPE),
                 EventType::Meeting => {
                     if
-                        !req.max_persons.validate_range(Option::from(1), Option::from(10000), Option::from(1), Option::from(10000)) &&
-                        !req.max_persons_per_slots.validate_range(Option::from(1), Option::from(10000), Option::from(1), Option::from(10000))
+                        !req.capacity.validate_range(Option::from(1), Option::from(10000), Option::from(1), Option::from(10000)) &&
+                        !req.slot_capacity.validate_range(Option::from(1), Option::from(10000), Option::from(1), Option::from(10000))
                     {
-                        errors.push(errors::INVALID_MAX_PERSONS)
+                        errors.push(errors::INVALID_CAPACITY)
                     }
 
                     if !req.slot_duration.validate_range(Option::from(1), Option::from(1440), Option::from(1), Option::from(1440)) {

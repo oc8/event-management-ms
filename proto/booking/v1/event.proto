@@ -51,7 +51,7 @@ message Event {
   Cancellation cancellation = 9;
   repeated Slot slots = 10;
   int64 slot_duration = 11;
-  int32 max_persons = 12;
+  int32 capacity = 12;
   int64 created_at = 13;
   int64 updated_at = 14;
 }
@@ -64,8 +64,8 @@ message EventInstances {
   string organizer_key = 5;
   Cancellation cancellation = 6;
   int64 slot_duration = 8;
-  int32 max_persons = 9;
-  int32 max_persons_per_slots = 10;
+  int32 capacity = 9;
+  int32 slot_capacity = 10;
   repeated Event items = 11;
   int64 created_at = 12;
   int64 updated_at = 13;
@@ -82,7 +82,7 @@ message Slot {
   string event_id = 2;
   TimeData start = 3;
   TimeData end = 4;
-  int32 max_persons = 5;
+  int32 capacity = 5;
   int64 created_at = 6;
   int64 updated_at = 7;
 }
@@ -122,8 +122,8 @@ message CreateEventRequest {
   string timezone = 4;
   string organizer_key = 5;
   int64 slot_duration = 6;
-  int32 max_persons = 7;
-  int32 max_persons_per_slots = 8;
+  int32 capacity = 7;
+  int32 slot_capacity = 8;
   string recurrence_rule = 9;
   EventType event_type = 10;
 }

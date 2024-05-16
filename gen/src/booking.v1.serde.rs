@@ -1018,10 +1018,10 @@ impl serde::Serialize for CreateEventRequest {
         if self.slot_duration != 0 {
             len += 1;
         }
-        if self.max_persons != 0 {
+        if self.capacity != 0 {
             len += 1;
         }
-        if self.max_persons_per_slots != 0 {
+        if self.slot_capacity != 0 {
             len += 1;
         }
         if !self.recurrence_rule.is_empty() {
@@ -1050,11 +1050,11 @@ impl serde::Serialize for CreateEventRequest {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
-        if self.max_persons != 0 {
-            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
+        if self.capacity != 0 {
+            struct_ser.serialize_field("capacity", &self.capacity)?;
         }
-        if self.max_persons_per_slots != 0 {
-            struct_ser.serialize_field("maxPersonsPerSlots", &self.max_persons_per_slots)?;
+        if self.slot_capacity != 0 {
+            struct_ser.serialize_field("slotCapacity", &self.slot_capacity)?;
         }
         if !self.recurrence_rule.is_empty() {
             struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
@@ -1082,10 +1082,9 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             "organizerKey",
             "slot_duration",
             "slotDuration",
-            "max_persons",
-            "maxPersons",
-            "max_persons_per_slots",
-            "maxPersonsPerSlots",
+            "capacity",
+            "slot_capacity",
+            "slotCapacity",
             "recurrence_rule",
             "recurrenceRule",
             "event_type",
@@ -1100,8 +1099,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             Timezone,
             OrganizerKey,
             SlotDuration,
-            MaxPersons,
-            MaxPersonsPerSlots,
+            Capacity,
+            SlotCapacity,
             RecurrenceRule,
             EventType,
         }
@@ -1131,8 +1130,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             "timezone" => Ok(GeneratedField::Timezone),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
-                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
-                            "maxPersonsPerSlots" | "max_persons_per_slots" => Ok(GeneratedField::MaxPersonsPerSlots),
+                            "capacity" => Ok(GeneratedField::Capacity),
+                            "slotCapacity" | "slot_capacity" => Ok(GeneratedField::SlotCapacity),
                             "recurrenceRule" | "recurrence_rule" => Ok(GeneratedField::RecurrenceRule),
                             "eventType" | "event_type" => Ok(GeneratedField::EventType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1160,8 +1159,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                 let mut timezone__ = None;
                 let mut organizer_key__ = None;
                 let mut slot_duration__ = None;
-                let mut max_persons__ = None;
-                let mut max_persons_per_slots__ = None;
+                let mut capacity__ = None;
+                let mut slot_capacity__ = None;
                 let mut recurrence_rule__ = None;
                 let mut event_type__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -1204,19 +1203,19 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxPersons => {
-                            if max_persons__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxPersons"));
+                        GeneratedField::Capacity => {
+                            if capacity__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("capacity"));
                             }
-                            max_persons__ = 
+                            capacity__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxPersonsPerSlots => {
-                            if max_persons_per_slots__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxPersonsPerSlots"));
+                        GeneratedField::SlotCapacity => {
+                            if slot_capacity__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("slotCapacity"));
                             }
-                            max_persons_per_slots__ = 
+                            slot_capacity__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -1241,8 +1240,8 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                     timezone: timezone__.unwrap_or_default(),
                     organizer_key: organizer_key__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
-                    max_persons: max_persons__.unwrap_or_default(),
-                    max_persons_per_slots: max_persons_per_slots__.unwrap_or_default(),
+                    capacity: capacity__.unwrap_or_default(),
+                    slot_capacity: slot_capacity__.unwrap_or_default(),
                     recurrence_rule: recurrence_rule__.unwrap_or_default(),
                     event_type: event_type__.unwrap_or_default(),
                 })
@@ -1383,7 +1382,7 @@ impl serde::Serialize for Event {
         if self.slot_duration != 0 {
             len += 1;
         }
-        if self.max_persons != 0 {
+        if self.capacity != 0 {
             len += 1;
         }
         if self.created_at != 0 {
@@ -1431,8 +1430,8 @@ impl serde::Serialize for Event {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
-        if self.max_persons != 0 {
-            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
+        if self.capacity != 0 {
+            struct_ser.serialize_field("capacity", &self.capacity)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -1467,8 +1466,7 @@ impl<'de> serde::Deserialize<'de> for Event {
             "slots",
             "slot_duration",
             "slotDuration",
-            "max_persons",
-            "maxPersons",
+            "capacity",
             "created_at",
             "createdAt",
             "updated_at",
@@ -1488,7 +1486,7 @@ impl<'de> serde::Deserialize<'de> for Event {
             Cancellation,
             Slots,
             SlotDuration,
-            MaxPersons,
+            Capacity,
             CreatedAt,
             UpdatedAt,
         }
@@ -1523,7 +1521,7 @@ impl<'de> serde::Deserialize<'de> for Event {
                             "cancellation" => Ok(GeneratedField::Cancellation),
                             "slots" => Ok(GeneratedField::Slots),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
-                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
+                            "capacity" => Ok(GeneratedField::Capacity),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1556,7 +1554,7 @@ impl<'de> serde::Deserialize<'de> for Event {
                 let mut cancellation__ = None;
                 let mut slots__ = None;
                 let mut slot_duration__ = None;
-                let mut max_persons__ = None;
+                let mut capacity__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -1629,11 +1627,11 @@ impl<'de> serde::Deserialize<'de> for Event {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxPersons => {
-                            if max_persons__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxPersons"));
+                        GeneratedField::Capacity => {
+                            if capacity__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("capacity"));
                             }
-                            max_persons__ = 
+                            capacity__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -1667,7 +1665,7 @@ impl<'de> serde::Deserialize<'de> for Event {
                     cancellation: cancellation__,
                     slots: slots__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
-                    max_persons: max_persons__.unwrap_or_default(),
+                    capacity: capacity__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })
@@ -1705,10 +1703,10 @@ impl serde::Serialize for EventInstances {
         if self.slot_duration != 0 {
             len += 1;
         }
-        if self.max_persons != 0 {
+        if self.capacity != 0 {
             len += 1;
         }
-        if self.max_persons_per_slots != 0 {
+        if self.slot_capacity != 0 {
             len += 1;
         }
         if !self.items.is_empty() {
@@ -1747,11 +1745,11 @@ impl serde::Serialize for EventInstances {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
         }
-        if self.max_persons != 0 {
-            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
+        if self.capacity != 0 {
+            struct_ser.serialize_field("capacity", &self.capacity)?;
         }
-        if self.max_persons_per_slots != 0 {
-            struct_ser.serialize_field("maxPersonsPerSlots", &self.max_persons_per_slots)?;
+        if self.slot_capacity != 0 {
+            struct_ser.serialize_field("slotCapacity", &self.slot_capacity)?;
         }
         if !self.items.is_empty() {
             struct_ser.serialize_field("items", &self.items)?;
@@ -1784,10 +1782,9 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
             "cancellation",
             "slot_duration",
             "slotDuration",
-            "max_persons",
-            "maxPersons",
-            "max_persons_per_slots",
-            "maxPersonsPerSlots",
+            "capacity",
+            "slot_capacity",
+            "slotCapacity",
             "items",
             "created_at",
             "createdAt",
@@ -1804,8 +1801,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
             OrganizerKey,
             Cancellation,
             SlotDuration,
-            MaxPersons,
-            MaxPersonsPerSlots,
+            Capacity,
+            SlotCapacity,
             Items,
             CreatedAt,
             UpdatedAt,
@@ -1837,8 +1834,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "cancellation" => Ok(GeneratedField::Cancellation),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
-                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
-                            "maxPersonsPerSlots" | "max_persons_per_slots" => Ok(GeneratedField::MaxPersonsPerSlots),
+                            "capacity" => Ok(GeneratedField::Capacity),
+                            "slotCapacity" | "slot_capacity" => Ok(GeneratedField::SlotCapacity),
                             "items" => Ok(GeneratedField::Items),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
@@ -1868,8 +1865,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                 let mut organizer_key__ = None;
                 let mut cancellation__ = None;
                 let mut slot_duration__ = None;
-                let mut max_persons__ = None;
-                let mut max_persons_per_slots__ = None;
+                let mut capacity__ = None;
+                let mut slot_capacity__ = None;
                 let mut items__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
@@ -1919,19 +1916,19 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxPersons => {
-                            if max_persons__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxPersons"));
+                        GeneratedField::Capacity => {
+                            if capacity__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("capacity"));
                             }
-                            max_persons__ = 
+                            capacity__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::MaxPersonsPerSlots => {
-                            if max_persons_per_slots__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxPersonsPerSlots"));
+                        GeneratedField::SlotCapacity => {
+                            if slot_capacity__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("slotCapacity"));
                             }
-                            max_persons_per_slots__ = 
+                            slot_capacity__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -1967,8 +1964,8 @@ impl<'de> serde::Deserialize<'de> for EventInstances {
                     organizer_key: organizer_key__.unwrap_or_default(),
                     cancellation: cancellation__,
                     slot_duration: slot_duration__.unwrap_or_default(),
-                    max_persons: max_persons__.unwrap_or_default(),
-                    max_persons_per_slots: max_persons_per_slots__.unwrap_or_default(),
+                    capacity: capacity__.unwrap_or_default(),
+                    slot_capacity: slot_capacity__.unwrap_or_default(),
                     items: items__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
@@ -3249,7 +3246,7 @@ impl serde::Serialize for Slot {
         if self.end.is_some() {
             len += 1;
         }
-        if self.max_persons != 0 {
+        if self.capacity != 0 {
             len += 1;
         }
         if self.created_at != 0 {
@@ -3271,8 +3268,8 @@ impl serde::Serialize for Slot {
         if let Some(v) = self.end.as_ref() {
             struct_ser.serialize_field("end", v)?;
         }
-        if self.max_persons != 0 {
-            struct_ser.serialize_field("maxPersons", &self.max_persons)?;
+        if self.capacity != 0 {
+            struct_ser.serialize_field("capacity", &self.capacity)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -3297,8 +3294,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
             "eventId",
             "start",
             "end",
-            "max_persons",
-            "maxPersons",
+            "capacity",
             "created_at",
             "createdAt",
             "updated_at",
@@ -3311,7 +3307,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
             EventId,
             Start,
             End,
-            MaxPersons,
+            Capacity,
             CreatedAt,
             UpdatedAt,
         }
@@ -3339,7 +3335,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
                             "eventId" | "event_id" => Ok(GeneratedField::EventId),
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
-                            "maxPersons" | "max_persons" => Ok(GeneratedField::MaxPersons),
+                            "capacity" => Ok(GeneratedField::Capacity),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -3365,7 +3361,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
                 let mut event_id__ = None;
                 let mut start__ = None;
                 let mut end__ = None;
-                let mut max_persons__ = None;
+                let mut capacity__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -3394,11 +3390,11 @@ impl<'de> serde::Deserialize<'de> for Slot {
                             }
                             end__ = map_.next_value()?;
                         }
-                        GeneratedField::MaxPersons => {
-                            if max_persons__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("maxPersons"));
+                        GeneratedField::Capacity => {
+                            if capacity__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("capacity"));
                             }
-                            max_persons__ = 
+                            capacity__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -3425,7 +3421,7 @@ impl<'de> serde::Deserialize<'de> for Slot {
                     event_id: event_id__.unwrap_or_default(),
                     start: start__,
                     end: end__,
-                    max_persons: max_persons__.unwrap_or_default(),
+                    capacity: capacity__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })

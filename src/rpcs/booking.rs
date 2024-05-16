@@ -36,6 +36,19 @@ pub fn create_booking(
         return Err(format_error(errors::BOOKING_ALREADY_EXISTS))
     }
 
+    match event.capacity {
+        // Check capacity by event
+        Some(capacity) => {
+            // TODO: Implement event capacity check
+        },
+        // Check capacity by slot
+        None => {
+            if Booking::count_bookings_by_datetime(conn, slot_id, date_time) >= slot.capacity as i64 {
+                return Err(format_error(errors::BOOKING_CAPACITY_FULL))
+            }
+        }
+    }
+
     let new_booking = NewBooking {
         slot_id: &slot_id,
         booking_holder_key: &request.booking_holder_key,

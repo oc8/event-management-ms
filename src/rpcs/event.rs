@@ -49,11 +49,11 @@ pub fn create_event(
             true => None,
             false => Some(&request.recurrence_rule)
         },
-        max_persons_per_slot: match request.max_persons_per_slots {
+        slot_capacity: match request.slot_capacity {
             0 => Some(&1),
-            _ => Some(&request.max_persons_per_slots)
+            _ => Some(&request.slot_capacity)
         },
-        max_persons: Some(&request.max_persons),
+        capacity: Some(&request.capacity),
     };
 
     let event = Event::create(conn, new_event)

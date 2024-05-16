@@ -106,7 +106,7 @@ impl From<EventInstances> for protos::booking::v1::EventInstances {
             }).collect();
             proto_item
         }).collect();
-        proto_instances.max_persons = instance.event.max_persons.unwrap_or(1);
+        proto_instances.capacity = instance.event.capacity.unwrap_or(1);
         proto_instances.created_at = instance.event.created_at.and_utc().timestamp();
         proto_instances.updated_at = instance.event.updated_at.and_utc().timestamp();
 

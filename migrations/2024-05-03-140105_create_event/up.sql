@@ -26,8 +26,8 @@ CREATE TABLE events (
     canceled_at TIMESTAMP DEFAULT NULL,
     canceled_reason VARCHAR(255) DEFAULT NULL,
     slot_duration INTERVAL DEFAULT NULL,
-    max_persons_per_slot INT DEFAULT NULL,
-    max_persons INT DEFAULT NULL,
+    slot_capacity INT DEFAULT NULL,
+    capacity INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );

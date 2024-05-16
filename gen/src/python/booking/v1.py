@@ -42,7 +42,7 @@ class Event(betterproto.Message):
     cancellation: "Cancellation" = betterproto.message_field(9)
     slots: List["Slot"] = betterproto.message_field(10)
     slot_duration: int = betterproto.int64_field(11)
-    max_persons: int = betterproto.int32_field(12)
+    capacity: int = betterproto.int32_field(12)
     created_at: int = betterproto.int64_field(13)
     updated_at: int = betterproto.int64_field(14)
 
@@ -56,8 +56,8 @@ class EventInstances(betterproto.Message):
     organizer_key: str = betterproto.string_field(5)
     cancellation: "Cancellation" = betterproto.message_field(6)
     slot_duration: int = betterproto.int64_field(8)
-    max_persons: int = betterproto.int32_field(9)
-    max_persons_per_slots: int = betterproto.int32_field(10)
+    capacity: int = betterproto.int32_field(9)
+    slot_capacity: int = betterproto.int32_field(10)
     items: List["Event"] = betterproto.message_field(11)
     created_at: int = betterproto.int64_field(12)
     updated_at: int = betterproto.int64_field(13)
@@ -76,7 +76,7 @@ class Slot(betterproto.Message):
     event_id: str = betterproto.string_field(2)
     start: "TimeData" = betterproto.message_field(3)
     end: "TimeData" = betterproto.message_field(4)
-    max_persons: int = betterproto.int32_field(5)
+    capacity: int = betterproto.int32_field(5)
     created_at: int = betterproto.int64_field(6)
     updated_at: int = betterproto.int64_field(7)
 
@@ -120,8 +120,8 @@ class CreateEventRequest(betterproto.Message):
     timezone: str = betterproto.string_field(4)
     organizer_key: str = betterproto.string_field(5)
     slot_duration: int = betterproto.int64_field(6)
-    max_persons: int = betterproto.int32_field(7)
-    max_persons_per_slots: int = betterproto.int32_field(8)
+    capacity: int = betterproto.int32_field(7)
+    slot_capacity: int = betterproto.int32_field(8)
     recurrence_rule: str = betterproto.string_field(9)
     event_type: "EventType" = betterproto.enum_field(10)
 
@@ -217,8 +217,8 @@ class BookingServiceStub(betterproto.ServiceStub):
         timezone: str = "",
         organizer_key: str = "",
         slot_duration: int = 0,
-        max_persons: int = 0,
-        max_persons_per_slots: int = 0,
+        capacity: int = 0,
+        slot_capacity: int = 0,
         recurrence_rule: str = "",
         event_type: "EventType" = 0,
     ) -> CreateEventResponse:
@@ -229,8 +229,8 @@ class BookingServiceStub(betterproto.ServiceStub):
         request.timezone = timezone
         request.organizer_key = organizer_key
         request.slot_duration = slot_duration
-        request.max_persons = max_persons
-        request.max_persons_per_slots = max_persons_per_slots
+        request.capacity = capacity
+        request.slot_capacity = slot_capacity
         request.recurrence_rule = recurrence_rule
         request.event_type = event_type
 
