@@ -1,6 +1,7 @@
 use log::debug;
 use tonic::Status;
 use uuid::Uuid;
+use booking_ms::add_time_to_datetime;
 use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, GetBookingRequest, GetBookingResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
@@ -37,8 +38,10 @@ pub fn create_booking(
     match event.capacity {
         // Check capacity by event
         Some(capacity) => {
-            // TODO: Implement event capacity check
-            let sum_persons = Booking::sum_persons_by_datetime(conn, slot.id, date_time)
+            let start_date = add_time_to_datetime(date_time, event.start_time.time());
+            let end_date = add_time_to_datetime(date_time, event.end_time.time());
+
+            let sum_persons = Booking::sum_persons_by_event(conn, event.id, start_date, end_date)
                 .unwrap_or(0);
 
             if sum_persons + request.persons > capacity {

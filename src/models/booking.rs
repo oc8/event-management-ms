@@ -6,7 +6,7 @@ use uuid::Uuid;
 use protos::booking::v1::TimeData;
 use crate::models::slot::Slot;
 
-use crate::schema::{bookings};
+use crate::schema::{bookings, event_slots};
 
 #[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = bookings)]
@@ -100,6 +100,19 @@ impl Booking {
             .filter(bookings::dsl::date_time.eq(date_time))
             .select(diesel::dsl::sum(bookings::dsl::persons))
             .get_result::<Option<i64>>(conn).ok()?;
+
+        sum.map(|s| s as i32)
+    }
+
+    pub fn sum_persons_by_event(conn: &mut PgConnection, event_id: Uuid, min_date_time: NaiveDateTime, max_date_time: NaiveDateTime) -> Option<i32> {
+        let sum = bookings::dsl::bookings
+            .inner_join(event_slots::table)
+            .filter(event_slots::dsl::event_id.eq(event_id))
+            .filter(bookings::dsl::date_time.ge(min_date_time))
+            .filter(bookings::dsl::date_time.le(max_date_time))
+            .select(sum(bookings::dsl::persons))
+            .get_result::<Option<i64>>(conn)
+            .ok()?;
 
         sum.map(|s| s as i32)
     }
