@@ -94,12 +94,14 @@ impl Booking {
             .ok()
     }
 
-    pub fn sum_persons_by_datetime(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> Option<i64> {
-        bookings::dsl::bookings
+    pub fn sum_persons_by_datetime(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> Option<i32> {
+        let sum = bookings::dsl::bookings
             .filter(bookings::dsl::slot_id.eq(slot_id))
             .filter(bookings::dsl::date_time.eq(date_time))
             .select(diesel::dsl::sum(bookings::dsl::persons))
-            .get_result::<Option<i64>>(conn).ok()?
+            .get_result::<Option<i64>>(conn).ok()?;
+
+        sum.map(|s| s as i32)
     }
 }
 

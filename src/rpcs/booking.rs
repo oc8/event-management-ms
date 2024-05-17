@@ -34,8 +34,6 @@ pub fn create_booking(
         return Err(format_error(errors::BOOKING_DATE_TIME_MISMATCH))
     }
 
-    println!("date_time: {:?}", date_time);
-
     match event.capacity {
         // Check capacity by event
         Some(capacity) => {
@@ -43,7 +41,7 @@ pub fn create_booking(
             let sum_persons = Booking::sum_persons_by_datetime(conn, slot.id, date_time)
                 .unwrap_or(0);
 
-            if sum_persons + request.persons as i64 > slot.capacity as i64 {
+            if sum_persons + request.persons > capacity {
                 return Err(format_error(errors::BOOKING_CAPACITY_FULL))
             }
         },
@@ -52,7 +50,7 @@ pub fn create_booking(
             let sum_persons = Booking::sum_persons_by_datetime(conn, slot.id, date_time)
                 .unwrap_or(0);
 
-            if sum_persons + request.persons as i64 >= slot.capacity as i64 {
+            if sum_persons + request.persons >= slot.capacity {
                 return Err(format_error(errors::BOOKING_CAPACITY_FULL))
             }
         }
