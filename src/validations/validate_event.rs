@@ -42,7 +42,7 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
         errors.push(errors::INVALID_EVENT_END_DATE)
     }
 
-    if start.is_ok() && end.is_err() && (start.unwrap() >= end.unwrap()) {
+    if start.is_ok() && end.is_ok() && (start.unwrap() >= end.unwrap()) {
         errors.push(errors::INVALID_EVENT_END_DATE)
     }
 
