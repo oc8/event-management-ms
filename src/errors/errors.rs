@@ -180,6 +180,12 @@ pub const INVALID_PERSONS_NUMBER: ApiError = ApiError {
     message: "Invalid persons number"
 };
 
+pub const EVENT_CREATION_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "event_creation_failed",
+    message: "Failed to create event"
+};
+
 // format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);

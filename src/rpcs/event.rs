@@ -1,6 +1,8 @@
 use diesel::data_types::PgInterval;
+use log::error;
 use tonic::Status;
 use uuid::Uuid;
+use booking_ms::report_error;
 use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse, GetActiveEventsRequest, GetActiveEventsResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetEventRequest, GetEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
@@ -57,9 +59,12 @@ pub fn create_event(
     };
 
     let event = Event::create(conn, new_event)
-        .map_err(|_| Status::internal("Failed to create event"))?;
+        .map_err(|e| {
+            report_error(e);
+            format_error(errors::EVENT_CREATION_FAILED)
+        })?;
 
-    log::info!("Event created: {:?}", event);
+    log::debug!("event created: {:?}", event);
 
     Ok(CreateEventResponse{
         event: Some(event.into())
