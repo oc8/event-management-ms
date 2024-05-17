@@ -8,17 +8,19 @@ ifdef debug
   release :=
   target :=debug
   extension :=debug
+  rust_log :=debug
 else
   release :=--release
   target :=release
   extension :=
+    rust_log :=info
 endif
 
 build:
 	cargo build $(release)
 
 dev:
-	cargo watch -x "run -- $(prog) $(ARGS)"
+	RUST_LOG=$(rust_log) cargo watch -x "run -- $(prog) $(ARGS)"
 
 test:
 	cargo test -- --nocapture

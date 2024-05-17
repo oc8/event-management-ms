@@ -29,3 +29,4 @@ buf generate
 - [ ] Add CRUD operations
 - [ ] Add tests
 - [ ] Fix event recursion when the current date is far from the event date
+- [ ] Return the datetime converted with the timezone and add a filter params to manually set the timezone for conversion
