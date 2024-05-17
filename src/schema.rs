@@ -7,6 +7,7 @@ diesel::table! {
         booking_holder_key -> Varchar,
         slot_id -> Uuid,
         date_time -> Timestamp,
+        persons -> Int4,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }

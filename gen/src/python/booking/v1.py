@@ -88,7 +88,7 @@ class Booking(betterproto.Message):
     slot_id: str = betterproto.string_field(3)
     slot: "Slot" = betterproto.message_field(4)
     date_time: "TimeData" = betterproto.message_field(5)
-    nb_persons: int = betterproto.int32_field(6)
+    persons: int = betterproto.int32_field(6)
     created_at: int = betterproto.int64_field(7)
     updated_at: int = betterproto.int64_field(8)
 
@@ -177,6 +177,7 @@ class CreateBookingRequest(betterproto.Message):
     booking_holder_key: str = betterproto.string_field(1)
     slot_id: str = betterproto.string_field(2)
     date_time: str = betterproto.string_field(3)
+    persons: int = betterproto.int32_field(4)
 
 
 @dataclass
@@ -199,7 +200,6 @@ class CreateClosureRequest(betterproto.Message):
     closing_from: str = betterproto.string_field(1)
     closing_to: str = betterproto.string_field(2)
     organizer_key: str = betterproto.string_field(3)
-    reason: str = betterproto.string_field(4)
 
 
 @dataclass
@@ -291,12 +291,18 @@ class BookingServiceStub(betterproto.ServiceStub):
         )
 
     async def create_booking(
-        self, *, booking_holder_key: str = "", slot_id: str = "", date_time: str = ""
+        self,
+        *,
+        booking_holder_key: str = "",
+        slot_id: str = "",
+        date_time: str = "",
+        persons: int = 0,
     ) -> CreateBookingResponse:
         request = CreateBookingRequest()
         request.booking_holder_key = booking_holder_key
         request.slot_id = slot_id
         request.date_time = date_time
+        request.persons = persons
 
         return await self._unary_unary(
             "/booking.v1.BookingService/CreateBooking",
@@ -315,18 +321,12 @@ class BookingServiceStub(betterproto.ServiceStub):
         )
 
     async def create_closure(
-        self,
-        *,
-        closing_from: str = "",
-        closing_to: str = "",
-        organizer_key: str = "",
-        reason: str = "",
+        self, *, closing_from: str = "", closing_to: str = "", organizer_key: str = ""
     ) -> CreateClosureResponse:
         request = CreateClosureRequest()
         request.closing_from = closing_from
         request.closing_to = closing_to
         request.organizer_key = organizer_key
-        request.reason = reason
 
         return await self._unary_unary(
             "/booking.v1.BookingService/CreateClosure",

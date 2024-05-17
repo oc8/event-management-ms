@@ -93,7 +93,7 @@ message Booking {
   string slot_id = 3;
   Slot slot = 4;
   TimeData date_time = 5;
-  int32 nb_persons = 6;
+  int32 persons = 6;
   int64 created_at = 7;
   int64 updated_at = 8;
 }
@@ -169,6 +169,7 @@ message CreateBookingRequest {
   string booking_holder_key = 1;
   string slot_id = 2;
   string date_time = 3;
+  int32 persons = 4;
 }
 
 message CreateBookingResponse {
@@ -187,7 +188,6 @@ message CreateClosureRequest {
   string closing_from = 1;
   string closing_to = 2;
   string organizer_key = 3;
-  string reason = 4;
 }
 
 message CreateClosureResponse {

@@ -174,6 +174,12 @@ pub const BOOKING_CAPACITY_FULL: ApiError = ApiError {
     message: "Booking capacity is full"
 };
 
+pub const INVALID_PERSONS_NUMBER: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "invalid_persons_number",
+    message: "Invalid persons number"
+};
+
 // format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);

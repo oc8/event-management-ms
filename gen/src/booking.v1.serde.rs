@@ -22,7 +22,7 @@ impl serde::Serialize for Booking {
         if self.date_time.is_some() {
             len += 1;
         }
-        if self.nb_persons != 0 {
+        if self.persons != 0 {
             len += 1;
         }
         if self.created_at != 0 {
@@ -47,8 +47,8 @@ impl serde::Serialize for Booking {
         if let Some(v) = self.date_time.as_ref() {
             struct_ser.serialize_field("dateTime", v)?;
         }
-        if self.nb_persons != 0 {
-            struct_ser.serialize_field("nbPersons", &self.nb_persons)?;
+        if self.persons != 0 {
+            struct_ser.serialize_field("persons", &self.persons)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
@@ -76,8 +76,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
             "slot",
             "date_time",
             "dateTime",
-            "nb_persons",
-            "nbPersons",
+            "persons",
             "created_at",
             "createdAt",
             "updated_at",
@@ -91,7 +90,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
             SlotId,
             Slot,
             DateTime,
-            NbPersons,
+            Persons,
             CreatedAt,
             UpdatedAt,
         }
@@ -120,7 +119,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                             "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
                             "slot" => Ok(GeneratedField::Slot),
                             "dateTime" | "date_time" => Ok(GeneratedField::DateTime),
-                            "nbPersons" | "nb_persons" => Ok(GeneratedField::NbPersons),
+                            "persons" => Ok(GeneratedField::Persons),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -147,7 +146,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                 let mut slot_id__ = None;
                 let mut slot__ = None;
                 let mut date_time__ = None;
-                let mut nb_persons__ = None;
+                let mut persons__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -182,11 +181,11 @@ impl<'de> serde::Deserialize<'de> for Booking {
                             }
                             date_time__ = map_.next_value()?;
                         }
-                        GeneratedField::NbPersons => {
-                            if nb_persons__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("nbPersons"));
+                        GeneratedField::Persons => {
+                            if persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("persons"));
                             }
-                            nb_persons__ = 
+                            persons__ = 
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -214,7 +213,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                     slot_id: slot_id__.unwrap_or_default(),
                     slot: slot__,
                     date_time: date_time__,
-                    nb_persons: nb_persons__.unwrap_or_default(),
+                    persons: persons__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
                 })
@@ -554,6 +553,9 @@ impl serde::Serialize for CreateBookingRequest {
         if !self.date_time.is_empty() {
             len += 1;
         }
+        if self.persons != 0 {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("booking.v1.CreateBookingRequest", len)?;
         if !self.booking_holder_key.is_empty() {
             struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
@@ -563,6 +565,9 @@ impl serde::Serialize for CreateBookingRequest {
         }
         if !self.date_time.is_empty() {
             struct_ser.serialize_field("dateTime", &self.date_time)?;
+        }
+        if self.persons != 0 {
+            struct_ser.serialize_field("persons", &self.persons)?;
         }
         struct_ser.end()
     }
@@ -580,6 +585,7 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
             "slotId",
             "date_time",
             "dateTime",
+            "persons",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -587,6 +593,7 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
             BookingHolderKey,
             SlotId,
             DateTime,
+            Persons,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -611,6 +618,7 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
                             "bookingHolderKey" | "booking_holder_key" => Ok(GeneratedField::BookingHolderKey),
                             "slotId" | "slot_id" => Ok(GeneratedField::SlotId),
                             "dateTime" | "date_time" => Ok(GeneratedField::DateTime),
+                            "persons" => Ok(GeneratedField::Persons),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -633,6 +641,7 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
                 let mut booking_holder_key__ = None;
                 let mut slot_id__ = None;
                 let mut date_time__ = None;
+                let mut persons__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::BookingHolderKey => {
@@ -653,12 +662,21 @@ impl<'de> serde::Deserialize<'de> for CreateBookingRequest {
                             }
                             date_time__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::Persons => {
+                            if persons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("persons"));
+                            }
+                            persons__ = 
+                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                     }
                 }
                 Ok(CreateBookingRequest {
                     booking_holder_key: booking_holder_key__.unwrap_or_default(),
                     slot_id: slot_id__.unwrap_or_default(),
                     date_time: date_time__.unwrap_or_default(),
+                    persons: persons__.unwrap_or_default(),
                 })
             }
         }
@@ -773,9 +791,6 @@ impl serde::Serialize for CreateClosureRequest {
         if !self.organizer_key.is_empty() {
             len += 1;
         }
-        if !self.reason.is_empty() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("booking.v1.CreateClosureRequest", len)?;
         if !self.closing_from.is_empty() {
             struct_ser.serialize_field("closingFrom", &self.closing_from)?;
@@ -785,9 +800,6 @@ impl serde::Serialize for CreateClosureRequest {
         }
         if !self.organizer_key.is_empty() {
             struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
-        }
-        if !self.reason.is_empty() {
-            struct_ser.serialize_field("reason", &self.reason)?;
         }
         struct_ser.end()
     }
@@ -805,7 +817,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosureRequest {
             "closingTo",
             "organizer_key",
             "organizerKey",
-            "reason",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -813,7 +824,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosureRequest {
             ClosingFrom,
             ClosingTo,
             OrganizerKey,
-            Reason,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -838,7 +848,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosureRequest {
                             "closingFrom" | "closing_from" => Ok(GeneratedField::ClosingFrom),
                             "closingTo" | "closing_to" => Ok(GeneratedField::ClosingTo),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
-                            "reason" => Ok(GeneratedField::Reason),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -861,7 +870,6 @@ impl<'de> serde::Deserialize<'de> for CreateClosureRequest {
                 let mut closing_from__ = None;
                 let mut closing_to__ = None;
                 let mut organizer_key__ = None;
-                let mut reason__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::ClosingFrom => {
@@ -882,19 +890,12 @@ impl<'de> serde::Deserialize<'de> for CreateClosureRequest {
                             }
                             organizer_key__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Reason => {
-                            if reason__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("reason"));
-                            }
-                            reason__ = Some(map_.next_value()?);
-                        }
                     }
                 }
                 Ok(CreateClosureRequest {
                     closing_from: closing_from__.unwrap_or_default(),
                     closing_to: closing_to__.unwrap_or_default(),
                     organizer_key: organizer_key__.unwrap_or_default(),
-                    reason: reason__.unwrap_or_default(),
                 })
             }
         }

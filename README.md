@@ -28,3 +28,4 @@ buf generate
 - [ ] Prevent double closing exception insertion
 - [ ] Add CRUD operations
 - [ ] Add tests
+- [ ] Fix event recursion when the current date is far from the event date

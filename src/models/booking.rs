@@ -1,12 +1,14 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
-use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
+use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryableByName, NullableExpressionMethods, OptionalExtension, QueryResult, sql_query};
+use diesel::dsl::{Nullable, sum};
+use serde::Serialize;
 use uuid::Uuid;
 use protos::booking::v1::TimeData;
 use crate::models::slot::Slot;
 
 use crate::schema::{bookings};
 
-#[derive(Queryable, Selectable, Debug, Clone)]
+#[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = bookings)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Booking {
@@ -14,6 +16,7 @@ pub struct Booking {
     pub slot_id: Uuid,
     pub booking_holder_key: String,
     pub date_time: NaiveDateTime,
+    pub persons: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -24,6 +27,7 @@ pub struct NewBooking<'a> {
     pub slot_id: &'a Uuid,
     pub booking_holder_key: &'a str,
     pub date_time: &'a NaiveDateTime,
+    pub persons: &'a i32,
 }
 
 #[derive(Debug, Clone)]
@@ -90,13 +94,12 @@ impl Booking {
             .ok()
     }
 
-    pub fn count_bookings_by_datetime(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> i64 {
+    pub fn sum_persons_by_datetime(conn: &mut PgConnection, slot_id: Uuid, date_time: NaiveDateTime) -> Option<i64> {
         bookings::dsl::bookings
-            .select(diesel::dsl::count(bookings::dsl::id))
             .filter(bookings::dsl::slot_id.eq(slot_id))
             .filter(bookings::dsl::date_time.eq(date_time))
-            .first(conn)
-            .unwrap()
+            .select(diesel::dsl::sum(bookings::dsl::persons))
+            .get_result::<Option<i64>>(conn).ok()?
     }
 }
 
