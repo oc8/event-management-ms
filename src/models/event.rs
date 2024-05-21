@@ -1,15 +1,13 @@
 use std::error::Error;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
-use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName};
+use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods};
 use diesel::data_types::{PgInterval};
-use log::debug;
 use rrule::RRuleSet;
 use uuid::Uuid;
 use booking_ms::format_datetime;
 use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
 use crate::models::slot::{Slot};
 use crate::models::filters::{Filters};
-
 use crate::schema::{events};
 
 #[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
@@ -84,7 +82,7 @@ impl Event {
                 Ok(EventWithSlots::new(e, vec![]))
             },
             Err(e) => {
-                log::error!("Failed to create event: {}", e);
+                log::error!("failed to create event: {}", e);
                 Err(e)
             },
         }
@@ -109,7 +107,7 @@ impl Event {
 
     pub fn find_events(conn: &mut PgConnection, filters: Filters) -> Vec<EventWithSlots> {
 
-        debug!("Finding events with filters: {:?}", filters);
+        log::debug!("finding events with filters={:?}", filters);
 
         let mut query = events::table
             .select(Event::as_select())
@@ -121,7 +119,9 @@ impl Event {
         //     .unwrap_or_else(|_| vec![]);
 
         if let Some(from) = filters.from {
-            query = query.filter(events::start_time.ge(from));
+            query = query.filter(
+                events::start_time.ge(from).or(events::recurrence_rule.is_not_null())
+            );
         }
         if let Some(to) = filters.to {
             query = query.filter(events::start_time.le(to));
@@ -150,7 +150,7 @@ impl Event {
             .load::<Event>(conn)
             .unwrap_or_else(|_| vec![]);
 
-        debug!("Found events: {:?}", events);
+        log::debug!("found events: {:?}", events);
 
         events
             .into_iter()
@@ -209,23 +209,29 @@ impl Event {
 
     pub fn get_available_dates(&self, limit: u16) -> Result<Vec<NaiveDate>, String> {
         if let Some(recurrence_rule) = &self.recurrence_rule {
-            let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(self.start_time), recurrence_rule);
-            let recurrence = recurrence_rule.parse::<RRuleSet>();
-
-            match recurrence {
-                Ok(recurrence) => {
-                    Ok(recurrence.all(limit).dates
-                        .into_iter()
-                        .map(|date| date.naive_utc().date())
-                        .collect())
-                },
-                Err(e) => {
-                    log::error!("Failed to parse recurrence rule: {}", e);
-                    Err("Failed to parse recurrence rule".to_string())
-                }
-            }
+            Self::generate_available_dates(recurrence_rule.clone(), self.start_time, limit)
         } else {
             Ok(vec![self.start_time.date()])
+        }
+    }
+
+    pub fn generate_available_dates(recurrence_rule: String, datetime: NaiveDateTime, limit: u16) -> Result<Vec<NaiveDate>, String> {
+        let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(datetime), recurrence_rule);
+        let recurrence = recurrence_rule.parse::<RRuleSet>();
+
+        log::debug!("Recurrence rule: {}", recurrence_rule);
+
+        match recurrence {
+            Ok(recurrence) => {
+                Ok(recurrence.all(limit).dates
+                    .into_iter()
+                    .map(|date| date.naive_utc().date())
+                    .collect())
+            },
+            Err(e) => {
+                log::error!("Failed to parse recurrence rule: {}", e);
+                Err("Failed to parse recurrence rule".to_string())
+            }
         }
     }
 }
