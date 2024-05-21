@@ -21,7 +21,7 @@ impl EventInstances {
         }
     }
 
-    pub fn create_active_virtual_events(event: &Event, slots: &Vec<Slot>, closures: &Vec<Closure>) -> Vec<EventWithSlots> {
+    pub fn create_active_virtual_events(event: &Event, slots: &Vec<Slot>, closures: &Vec<Closure>, limit: u16) -> Vec<EventWithSlots> {
         let mut virtual_events = Vec::new();
 
         if let Some(recurrence_rule) = &event.recurrence_rule {
@@ -30,7 +30,7 @@ impl EventInstances {
 
             match recurrence {
                 Ok(rule) => {
-                    let occurrences = rule.all(5).dates;
+                    let occurrences = rule.all(limit).dates;
 
                     for occurrence in occurrences {
                         let mut virtual_event = EventWithSlots::new(event.clone(), Vec::new());
@@ -88,7 +88,7 @@ impl From<EventInstances> for protos::booking::v1::EventInstances {
         let mut proto_instances = protos::booking::v1::EventInstances::default();
 
         // TODO: if vec is empty, do not return the event
-        let items = EventInstances::create_active_virtual_events(&instance.event, &instance.slots, &instance.closures);
+        let items = EventInstances::create_active_virtual_events(&instance.event, &instance.slots, &instance.closures, 5);
 
         proto_instances.id = instance.event.id.to_string();
         proto_instances.name = instance.event.name.clone();
