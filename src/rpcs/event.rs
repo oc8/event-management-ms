@@ -3,14 +3,14 @@ use log::error;
 use tonic::Status;
 use uuid::Uuid;
 use booking_ms::report_error;
-use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse, GetActiveEventsRequest, GetActiveEventsResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetEventRequest, GetEventResponse};
+use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
 use crate::models::event_instances::{EventInstances};
 use crate::models::filters::Filters;
-use crate::validations::{validate_create_event_request, validate_get_active_events, validate_get_active_events_instances, validate_get_event_instances, validate_get_event_request};
+use crate::validations::{validate_create_event_request, validate_list_events, validate_get_active_events_instances, validate_get_event_instances, validate_get_event_request};
 
 pub fn create_event(
     request: CreateEventRequest,
@@ -85,17 +85,17 @@ pub fn get_event_by_id(
     })
 }
 
-pub fn get_active_events(
-    request: GetActiveEventsRequest,
+pub fn list_events(
+    request: ListEventsRequest,
     conn: &mut PgPooledConnection
-) -> Result<GetActiveEventsResponse, Status> {
-    validate_get_active_events(&request)?;
+) -> Result<ListEventsResponse, Status> {
+    validate_list_events(&request)?;
 
     let filters: Filters = request.filters.into();
 
-    let events = Event::find_active_events(conn, filters);
+    let events = Event::find_events(conn, filters);
 
-    Ok(GetActiveEventsResponse{
+    Ok(ListEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()
     })
 }
@@ -129,7 +129,7 @@ pub fn get_active_events_instances(
 
     let filters: Filters = request.filters.into();
 
-    let events = Event::find_active_events(conn, filters);
+    let events = Event::find_events(conn, filters);
 
     if events.is_empty() {
         return Err(format_error(errors::EVENT_NOT_FOUND))

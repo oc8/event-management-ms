@@ -5,7 +5,7 @@ package booking.v1;
 service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
-  rpc GetActiveEvents(GetActiveEventsRequest) returns (GetActiveEventsResponse);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
   rpc GetEventInstances(GetEventInstancesRequest) returns (GetEventInstancesResponse);
   rpc GetActiveEventsInstances(GetActiveEventsInstancesRequest) returns (GetActiveEventsInstancesResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
@@ -105,8 +105,10 @@ message Filters {
   string from = 1;
   string to = 2;
   string organizer_key = 3;
-  int64 limit = 4;
-  int64 offset = 5;
+  EventStatus status = 4;
+  EventType event_type = 5;
+  int64 limit = 6;
+  int64 offset = 7;
 }
 
 message CreateEventRequest {
@@ -134,11 +136,11 @@ message GetEventResponse {
   Event event = 1;
 }
 
-message GetActiveEventsRequest {
+message ListEventsRequest {
   Filters filters = 1;
 }
 
-message GetActiveEventsResponse {
+message ListEventsResponse {
   repeated Event events = 1;
 }
 

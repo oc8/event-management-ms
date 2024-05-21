@@ -134,11 +134,11 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "GetEvent"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn get_active_events(
+        pub async fn list_events(
             &mut self,
-            request: impl tonic::IntoRequest<super::GetActiveEventsRequest>,
+            request: impl tonic::IntoRequest<super::ListEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetActiveEventsResponse>,
+            tonic::Response<super::ListEventsResponse>,
             tonic::Status,
         > {
             self.inner
@@ -152,11 +152,11 @@ pub mod booking_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/booking.v1.BookingService/GetActiveEvents",
+                "/booking.v1.BookingService/ListEvents",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("booking.v1.BookingService", "GetActiveEvents"));
+                .insert(GrpcMethod::new("booking.v1.BookingService", "ListEvents"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_event_instances(
@@ -314,11 +314,11 @@ pub mod booking_service_server {
             tonic::Response<super::GetEventResponse>,
             tonic::Status,
         >;
-        async fn get_active_events(
+        async fn list_events(
             &self,
-            request: tonic::Request<super::GetActiveEventsRequest>,
+            request: tonic::Request<super::ListEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetActiveEventsResponse>,
+            tonic::Response<super::ListEventsResponse>,
             tonic::Status,
         >;
         async fn get_event_instances(
@@ -528,26 +528,25 @@ pub mod booking_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/booking.v1.BookingService/GetActiveEvents" => {
+                "/booking.v1.BookingService/ListEvents" => {
                     #[allow(non_camel_case_types)]
-                    struct GetActiveEventsSvc<T: BookingService>(pub Arc<T>);
+                    struct ListEventsSvc<T: BookingService>(pub Arc<T>);
                     impl<
                         T: BookingService,
-                    > tonic::server::UnaryService<super::GetActiveEventsRequest>
-                    for GetActiveEventsSvc<T> {
-                        type Response = super::GetActiveEventsResponse;
+                    > tonic::server::UnaryService<super::ListEventsRequest>
+                    for ListEventsSvc<T> {
+                        type Response = super::ListEventsResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::GetActiveEventsRequest>,
+                            request: tonic::Request<super::ListEventsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as BookingService>::get_active_events(&inner, request)
-                                    .await
+                                <T as BookingService>::list_events(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -559,7 +558,7 @@ pub mod booking_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = GetActiveEventsSvc(inner);
+                        let method = ListEventsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

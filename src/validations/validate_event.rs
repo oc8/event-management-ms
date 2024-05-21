@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest, EventType, GetActiveEventsInstancesRequest, GetActiveEventsRequest, GetEventInstancesRequest, GetEventRequest};
+use protos::booking::v1::{CreateEventRequest, EventType, GetActiveEventsInstancesRequest, GetEventInstancesRequest, GetEventRequest, ListEventsRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
@@ -102,7 +102,7 @@ pub fn validate_get_event_request(req: &GetEventRequest) -> Result<(), Status> {
     Ok(())
 }
 
-pub fn validate_get_active_events(req: &GetActiveEventsRequest) -> Result<(), Status> {
+pub fn validate_list_events(req: &ListEventsRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
 
     match validate_date_filters(&req.filters) {

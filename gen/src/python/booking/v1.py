@@ -108,8 +108,10 @@ class Filters(betterproto.Message):
     from_: str = betterproto.string_field(1)
     to: str = betterproto.string_field(2)
     organizer_key: str = betterproto.string_field(3)
-    limit: int = betterproto.int64_field(4)
-    offset: int = betterproto.int64_field(5)
+    status: "EventStatus" = betterproto.enum_field(4)
+    event_type: "EventType" = betterproto.enum_field(5)
+    limit: int = betterproto.int64_field(6)
+    offset: int = betterproto.int64_field(7)
 
 
 @dataclass
@@ -142,12 +144,12 @@ class GetEventResponse(betterproto.Message):
 
 
 @dataclass
-class GetActiveEventsRequest(betterproto.Message):
+class ListEventsRequest(betterproto.Message):
     filters: "Filters" = betterproto.message_field(1)
 
 
 @dataclass
-class GetActiveEventsResponse(betterproto.Message):
+class ListEventsResponse(betterproto.Message):
     events: List["Event"] = betterproto.message_field(1)
 
 
@@ -250,17 +252,17 @@ class BookingServiceStub(betterproto.ServiceStub):
             GetEventResponse,
         )
 
-    async def get_active_events(
+    async def list_events(
         self, *, filters: Optional["Filters"] = None
-    ) -> GetActiveEventsResponse:
-        request = GetActiveEventsRequest()
+    ) -> ListEventsResponse:
+        request = ListEventsRequest()
         if filters is not None:
             request.filters = filters
 
         return await self._unary_unary(
-            "/booking.v1.BookingService/GetActiveEvents",
+            "/booking.v1.BookingService/ListEvents",
             request,
-            GetActiveEventsResponse,
+            ListEventsResponse,
         )
 
     async def get_event_instances(

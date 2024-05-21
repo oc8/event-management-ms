@@ -1,6 +1,7 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName};
 use diesel::data_types::{PgInterval};
+use log::debug;
 use rrule::RRuleSet;
 use uuid::Uuid;
 use booking_ms::format_datetime;
@@ -105,7 +106,10 @@ impl Event {
         }
     }
 
-    pub fn find_active_events(conn: &mut PgConnection, filters: Filters) -> Vec<EventWithSlots> {
+    pub fn find_events(conn: &mut PgConnection, filters: Filters) -> Vec<EventWithSlots> {
+
+        debug!("Finding events with filters: {:?}", filters);
+
         let mut query = events::table
             .select(Event::as_select())
             .order(events::start_time.asc())
@@ -124,6 +128,16 @@ impl Event {
         if let Some(organizer_key) = &filters.organizer_key {
             query = query.filter(events::organizer_key.eq(organizer_key));
         }
+        if let Some(status) = &filters.status {
+            if status != &EventStatus::Unspecified {
+                query = query.filter(events::status.eq(status.as_str_name()));
+            }
+        }
+        if let Some(event_type) = &filters.event_type {
+            if event_type != &EventType::Unspecified {
+                query = query.filter(events::event_type.eq(event_type.as_str_name()));
+            }
+        }
         if let Some(limit) = filters.limit {
             query = query.limit(limit);
         }
@@ -135,16 +149,17 @@ impl Event {
             .load::<Event>(conn)
             .unwrap_or_else(|_| vec![]);
 
+        debug!("Found events: {:?}", events);
+
         events
             .into_iter()
             .filter_map(|event| {
-                // Some(EventWithSlots::new(event, vec![]));
-                let slots = Slot::find_by_event_id(conn, event.id)
-                    .unwrap_or_else(|| vec![]);
-                if slots.is_empty() {
-                    None
-                } else {
+                if event.event_type == EventType::as_str_name(&EventType::Meeting) {
+                    let slots = Slot::find_by_event_id(conn, event.id)
+                        .unwrap_or_else(|| vec![]);
                     Some(EventWithSlots::new(event, slots))
+                } else {
+                    Some(EventWithSlots::new(event, vec![]))
                 }
             })
             .collect()
