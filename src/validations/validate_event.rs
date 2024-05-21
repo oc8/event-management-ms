@@ -8,6 +8,7 @@ use rrule::ParseError::MissingStartDate;
 use uuid::Uuid;
 use validator::{ValidateRange};
 use crate::errors::{format_errors};
+use crate::validations::validate_date_filters;
 
 fn validate_recurrence_rule(rule: &str) -> bool {
     if rule.is_empty() {
@@ -103,6 +104,11 @@ pub fn validate_get_event_request(req: &GetEventRequest) -> Result<(), Status> {
 
 pub fn validate_get_active_events(req: &GetActiveEventsRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
+
+    match validate_date_filters(&req.filters) {
+        Ok(_) => (),
+        Err(mut e) => errors.append(&mut e)
+    }
 
     if req.filters.is_none() {
         errors.push(errors::INVALID_FILTERS)

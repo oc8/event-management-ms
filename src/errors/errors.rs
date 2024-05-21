@@ -186,6 +186,18 @@ pub const EVENT_CREATION_FAILED: ApiError = ApiError {
     message: "Failed to create event"
 };
 
+pub const INVALID_DATE: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "invalid_date",
+    message: "Invalid date"
+};
+
+pub const INVALID_DATE_RANGE: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "invalid_date_range",
+    message: "Invalid date range"
+};
+
 // format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);
