@@ -11,12 +11,6 @@ service BookingService {
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
-//  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
-//  rpc AddGuest(AddGuestRequest) returns (AddGuestResponse);
-//  rpc RemoveGuest(RemoveGuestRequest) returns (RemoveGuestResponse);
-//  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
-//  rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
-//  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
 }
 
 enum EventStatus {
