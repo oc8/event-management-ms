@@ -1,3 +1,4 @@
+use std::error::Error;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName};
 use diesel::data_types::{PgInterval};
@@ -206,25 +207,25 @@ impl Event {
         Ok(slots)
     }
 
-    pub fn get_available_dates(&self, limit: u16) -> Vec<NaiveDate> {
+    pub fn get_available_dates(&self, limit: u16) -> Result<Vec<NaiveDate>, String> {
         if let Some(recurrence_rule) = &self.recurrence_rule {
             let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(self.start_time), recurrence_rule);
             let recurrence = recurrence_rule.parse::<RRuleSet>();
 
             match recurrence {
                 Ok(recurrence) => {
-                    recurrence.all(limit).dates
+                    Ok(recurrence.all(limit).dates
                         .into_iter()
                         .map(|date| date.naive_utc().date())
-                        .collect()
+                        .collect())
                 },
                 Err(e) => {
                     log::error!("Failed to parse recurrence rule: {}", e);
-                    vec![]
+                    Err("Failed to parse recurrence rule".to_string())
                 }
             }
         } else {
-            vec![]
+            Ok(vec![self.start_time.date()])
         }
     }
 }

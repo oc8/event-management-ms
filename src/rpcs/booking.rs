@@ -26,11 +26,14 @@ pub fn create_booking(
         return Err(format_error(errors::BOOKING_DATE_IN_PAST))
     }
 
-    debug!("available dates: {:?}", event.get_available_dates(5));
+    let available_dates = event.get_available_dates(5)
+        .map_err(|_| format_error(errors::INTERNAL))?;
+
+    debug!("available dates: {:?}", available_dates);
 
     if
         date_time.time() != slot.start_time ||
-        (event.recurrence_rule.is_some() && !event.get_available_dates(5).contains(&date_time.date()))
+        (event.recurrence_rule.is_some() && !available_dates.contains(&date_time.date()))
     {
         return Err(format_error(errors::BOOKING_DATE_TIME_MISMATCH))
     }

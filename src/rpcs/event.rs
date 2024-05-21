@@ -132,7 +132,9 @@ pub fn get_active_events_instances(
     let events = Event::find_events(conn, filters);
 
     if events.is_empty() {
-        return Err(format_error(errors::EVENT_NOT_FOUND))
+        return Ok(GetActiveEventsInstancesResponse{
+            events: vec![]
+        })
     }
 
     let organizer_key = events[0].event.organizer_key.clone();
