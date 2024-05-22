@@ -166,7 +166,7 @@ impl Event {
             .collect()
     }
 
-    pub fn generate_time_slots(conn: &mut PgConnection, event: Event) -> QueryResult<Vec<Slot>> {
+    fn generate_time_slots(conn: &mut PgConnection, event: Event) -> QueryResult<Vec<Slot>> {
         conn.transaction(|pg_conn| {
             diesel::sql_query("
                 WITH RECURSIVE slot_times AS (

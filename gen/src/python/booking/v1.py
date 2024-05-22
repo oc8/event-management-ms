@@ -209,6 +209,19 @@ class CreateClosureResponse(betterproto.Message):
     closure: "Closure" = betterproto.message_field(1)
 
 
+@dataclass
+class GetTimelineRequest(betterproto.Message):
+    organizer_key: str = betterproto.string_field(1)
+    from_: str = betterproto.string_field(2)
+    to: str = betterproto.string_field(3)
+
+
+@dataclass
+class GetTimelineResponse(betterproto.Message):
+    events: List["Event"] = betterproto.message_field(1)
+    closures: List["Closure"] = betterproto.message_field(2)
+
+
 class BookingServiceStub(betterproto.ServiceStub):
     async def create_event(
         self,
@@ -334,4 +347,18 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/CreateClosure",
             request,
             CreateClosureResponse,
+        )
+
+    async def get_timeline(
+        self, *, organizer_key: str = "", from_: str = "", to: str = ""
+    ) -> GetTimelineResponse:
+        request = GetTimelineRequest()
+        request.organizer_key = organizer_key
+        request.from_ = from_
+        request.to = to
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/GetTimeline",
+            request,
+            GetTimelineResponse,
         )

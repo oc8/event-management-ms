@@ -5,3 +5,4 @@ pub mod booking;
 pub mod closure;
 pub mod event_instances;
 pub mod filters;
+pub mod timeline;

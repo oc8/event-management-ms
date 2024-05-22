@@ -44,7 +44,7 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
     }
 
     if start.is_ok() && end.is_ok() && (start.unwrap() >= end.unwrap()) {
-        errors.push(errors::INVALID_EVENT_END_DATE)
+        errors.push(errors::INVALID_DATE_RANGE)
     }
 
     if !req.timezone.is_empty() && Tz::from_str(req.timezone.as_str()).is_err() {

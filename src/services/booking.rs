@@ -2,25 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use protos::booking::v1::{
-  booking_service_server::BookingService,
-  CreateBookingRequest,
-  CreateBookingResponse,
-  CreateEventRequest,
-  CreateEventResponse,
-  CreateClosureRequest,
-  CreateClosureResponse,
-  GetBookingRequest,
-  GetBookingResponse,
-  GetEventRequest,
-  GetEventResponse,
-  GetEventInstancesRequest,
-  GetEventInstancesResponse,
-  GetActiveEventsInstancesRequest,
-  GetActiveEventsInstancesResponse,
-  ListEventsRequest,
-  ListEventsResponse
-};
+use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse, ListEventsRequest, ListEventsResponse, GetTimelineRequest, GetTimelineResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 
@@ -88,6 +70,11 @@ impl BookingService for BookingServiceServerImpl {
     async fn create_closure(&self, request: Request<CreateClosureRequest>) -> Result<Response<CreateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         rpcs::create_closure(request.into_inner(), &mut conn).map(Response::new)
+    }
+
+    async fn get_timeline(&self, request: Request<GetTimelineRequest>) -> Result<Response<GetTimelineResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::get_timeline(request.into_inner(), &mut conn).map(Response::new)
     }
 }
 

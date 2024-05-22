@@ -101,9 +101,6 @@ impl From<EventInstances> for protos::booking::v1::EventInstances {
         };
         proto_instances.items = items.into_iter().map(|item| {
             let mut proto_item = protos::booking::v1::Event::from(item.clone());
-            proto_item.slots = item.slots.iter().map(|slot| {
-                protos::booking::v1::Slot::from(slot.clone())
-            }).collect();
             proto_item
         }).collect();
         proto_instances.capacity = instance.event.capacity.unwrap_or(1);

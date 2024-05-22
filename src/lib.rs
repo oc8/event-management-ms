@@ -1,8 +1,9 @@
 use std::env;
 use std::net::{Ipv6Addr, SocketAddr, SocketAddrV6};
 use ::log::{error, info};
-use chrono::{Duration, NaiveDateTime, NaiveTime};
+use chrono::{Datelike, DateTime, Duration, MappedLocalTime, NaiveDateTime, NaiveTime, Timelike, TimeZone};
 use diesel::data_types::PgTime;
+use rrule::Tz;
 
 pub fn init_service_logging() {
     env_logger::builder()
@@ -56,4 +57,8 @@ pub fn add_time_to_datetime(datetime: NaiveDateTime, time: NaiveTime) -> NaiveDa
     let time_part = time;
 
     NaiveDateTime::new(date_part, time_part)
+}
+
+pub fn naive_datetime_to_rrule_datetime(datetime: NaiveDateTime) -> MappedLocalTime<DateTime<Tz>> {
+    Tz::UTC.with_ymd_and_hms(datetime.year(), datetime.month(), datetime.day(), datetime.hour(), datetime.minute(), datetime.second())
 }
