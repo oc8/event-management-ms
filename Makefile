@@ -4,7 +4,7 @@ debug ?= 0
 
 $(info debug is $(debug))
 
-ifdef debug
+ifneq ($(debug), 0)
   release :=
   target :=debug
   extension :=debug
@@ -13,7 +13,7 @@ else
   release :=--release
   target :=release
   extension :=
-    rust_log :=info
+  rust_log :=info
 endif
 
 build:
