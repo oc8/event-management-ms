@@ -70,17 +70,9 @@ impl Booking {
             .first(conn)
             .ok();
 
-        // TODO: Refactor this
-        match booking {
-            Some(b) => {
-                let slot = Slot::find_by_id(conn, b.slot_id);
-                match slot {
-                    Some(s) => Some(BookingWithSlot::new(b, s)),
-                    None => None
-                }
-            },
-            None => None
-        }
+        booking.and_then(|b| {
+            Slot::find_by_id(conn, b.slot_id).map(|s| BookingWithSlot::new(b, s))
+        })
     }
 
     pub fn find_duplicated_booking(conn: &mut PgConnection, slot_id: Uuid, booking_holder: String, date_time: NaiveDateTime) -> Option<Booking> {

@@ -92,8 +92,6 @@ message Filters {
   EventStatus status = 4;
   EventType event_type = 5;
   bool only_active = 6;
-  int64 limit = 7;
-  int64 offset = 8;
 }
 
 message CreateEventRequest {

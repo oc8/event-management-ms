@@ -95,8 +95,6 @@ class Filters(betterproto.Message):
     status: "EventStatus" = betterproto.enum_field(4)
     event_type: "EventType" = betterproto.enum_field(5)
     only_active: bool = betterproto.bool_field(6)
-    limit: int = betterproto.int64_field(7)
-    offset: int = betterproto.int64_field(8)
 
 
 @dataclass

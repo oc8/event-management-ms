@@ -138,12 +138,6 @@ impl Event {
                 query = query.filter(events::event_type.eq(event_type.as_str_name()));
             }
         }
-        if let Some(limit) = filters.limit {
-            query = query.limit(limit);
-        }
-        if let Some(offset) = filters.offset {
-            query = query.offset(offset);
-        }
 
         let events = query
             .load::<Event>(conn)

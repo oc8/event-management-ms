@@ -24,8 +24,6 @@ pub fn get_timeline(
         status: None,
         event_type: None,
         only_active: Some(true),
-        limit: None,
-        offset: None,
     };
 
     let events = Event::find_events(conn, &filters);

@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::{NaiveDateTime};
 use rrule::{RRuleSet};
 use booking_ms::{add_time_to_datetime, format_datetime, naive_datetime_to_rrule_datetime};
 use protos::booking::v1::EventType;
@@ -45,6 +45,8 @@ impl Timeline {
                                     .filter(|slot| {
                                         let slot_start = add_time_to_datetime(ve.event.start_time, slot.start_time);
                                         let slot_end = add_time_to_datetime(ve.event.end_time, slot.end_time);
+
+                                        // TODO: remove full slots
 
                                         // Check if the slot is within the closure
                                         !self.closures.iter().any(|closure| {
@@ -95,10 +97,5 @@ impl Timeline {
         events.sort_by_key(|e| e.event.start_time);
 
         events
-    }
-
-    // return all active events that are included in the given time range
-    pub fn on_date(&self, date: NaiveDate) -> Vec<EventWithSlots> {
-        self.events.iter().filter(|e| e.event.start_time.date() == date).cloned().collect()
     }
 }

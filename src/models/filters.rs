@@ -9,8 +9,6 @@ pub struct Filters {
     pub status: Option<EventStatus>,
     pub event_type: Option<EventType>,
     pub only_active: Option<bool>,
-    pub limit: Option<i64>,
-    pub offset: Option<i64>,
 }
 
 impl Filters {
@@ -21,8 +19,6 @@ impl Filters {
         status: Option<EventStatus>,
         event_type: Option<EventType>,
         only_active: Option<bool>,
-        limit: Option<i64>,
-        offset: Option<i64>
     ) -> Self {
         Filters {
             from,
@@ -31,8 +27,6 @@ impl Filters {
             status,
             event_type,
             only_active,
-            limit,
-            offset,
         }
     }
 }
@@ -53,12 +47,6 @@ impl From<Option<FiltersProto>> for Filters {
             Some(NaiveDateTime::parse_from_str(format!("{}T23:59:59", proto.to).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap())
         };
 
-        let limit = if proto.limit == 0 {
-            Some(50)
-        } else {
-            Some(proto.limit)
-        };
-
         Filters {
             from,
             to,
@@ -66,8 +54,6 @@ impl From<Option<FiltersProto>> for Filters {
             status: Some(EventStatus::try_from(proto.status).unwrap()),
             event_type: Some(EventType::try_from(proto.event_type).unwrap()),
             only_active: Some(proto.only_active),
-            limit,
-            offset: Some(proto.offset),
         }
     }
 }

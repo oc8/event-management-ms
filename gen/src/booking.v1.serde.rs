@@ -1858,12 +1858,6 @@ impl serde::Serialize for Filters {
         if self.only_active {
             len += 1;
         }
-        if self.limit != 0 {
-            len += 1;
-        }
-        if self.offset != 0 {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("booking.v1.Filters", len)?;
         if !self.from.is_empty() {
             struct_ser.serialize_field("from", &self.from)?;
@@ -1887,14 +1881,6 @@ impl serde::Serialize for Filters {
         if self.only_active {
             struct_ser.serialize_field("onlyActive", &self.only_active)?;
         }
-        if self.limit != 0 {
-            #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("limit", ToString::to_string(&self.limit).as_str())?;
-        }
-        if self.offset != 0 {
-            #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("offset", ToString::to_string(&self.offset).as_str())?;
-        }
         struct_ser.end()
     }
 }
@@ -1914,8 +1900,6 @@ impl<'de> serde::Deserialize<'de> for Filters {
             "eventType",
             "only_active",
             "onlyActive",
-            "limit",
-            "offset",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -1926,8 +1910,6 @@ impl<'de> serde::Deserialize<'de> for Filters {
             Status,
             EventType,
             OnlyActive,
-            Limit,
-            Offset,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1955,8 +1937,6 @@ impl<'de> serde::Deserialize<'de> for Filters {
                             "status" => Ok(GeneratedField::Status),
                             "eventType" | "event_type" => Ok(GeneratedField::EventType),
                             "onlyActive" | "only_active" => Ok(GeneratedField::OnlyActive),
-                            "limit" => Ok(GeneratedField::Limit),
-                            "offset" => Ok(GeneratedField::Offset),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1982,8 +1962,6 @@ impl<'de> serde::Deserialize<'de> for Filters {
                 let mut status__ = None;
                 let mut event_type__ = None;
                 let mut only_active__ = None;
-                let mut limit__ = None;
-                let mut offset__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::From => {
@@ -2022,22 +2000,6 @@ impl<'de> serde::Deserialize<'de> for Filters {
                             }
                             only_active__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Limit => {
-                            if limit__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("limit"));
-                            }
-                            limit__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::Offset => {
-                            if offset__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("offset"));
-                            }
-                            offset__ = 
-                                Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
                     }
                 }
                 Ok(Filters {
@@ -2047,8 +2009,6 @@ impl<'de> serde::Deserialize<'de> for Filters {
                     status: status__.unwrap_or_default(),
                     event_type: event_type__.unwrap_or_default(),
                     only_active: only_active__.unwrap_or_default(),
-                    limit: limit__.unwrap_or_default(),
-                    offset: offset__.unwrap_or_default(),
                 })
             }
         }
