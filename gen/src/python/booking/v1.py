@@ -48,22 +48,6 @@ class Event(betterproto.Message):
 
 
 @dataclass
-class EventInstances(betterproto.Message):
-    id: str = betterproto.string_field(1)
-    name: str = betterproto.string_field(2)
-    event_type: "EventType" = betterproto.enum_field(3)
-    status: "EventStatus" = betterproto.enum_field(4)
-    organizer_key: str = betterproto.string_field(5)
-    cancellation: "Cancellation" = betterproto.message_field(6)
-    slot_duration: int = betterproto.int64_field(8)
-    capacity: int = betterproto.int32_field(9)
-    slot_capacity: int = betterproto.int32_field(10)
-    items: List["Event"] = betterproto.message_field(11)
-    created_at: int = betterproto.int64_field(12)
-    updated_at: int = betterproto.int64_field(13)
-
-
-@dataclass
 class Cancellation(betterproto.Message):
     canceled_by: str = betterproto.string_field(1)
     reason: str = betterproto.string_field(2)
@@ -151,27 +135,6 @@ class ListEventsRequest(betterproto.Message):
 @dataclass
 class ListEventsResponse(betterproto.Message):
     events: List["Event"] = betterproto.message_field(1)
-
-
-@dataclass
-class GetEventInstancesRequest(betterproto.Message):
-    event_id: str = betterproto.string_field(1)
-    filters: "Filters" = betterproto.message_field(2)
-
-
-@dataclass
-class GetEventInstancesResponse(betterproto.Message):
-    event: "EventInstances" = betterproto.message_field(1)
-
-
-@dataclass
-class GetActiveEventsInstancesRequest(betterproto.Message):
-    filters: "Filters" = betterproto.message_field(1)
-
-
-@dataclass
-class GetActiveEventsInstancesResponse(betterproto.Message):
-    events: List["EventInstances"] = betterproto.message_field(1)
 
 
 @dataclass
@@ -276,33 +239,6 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/ListEvents",
             request,
             ListEventsResponse,
-        )
-
-    async def get_event_instances(
-        self, *, event_id: str = "", filters: Optional["Filters"] = None
-    ) -> GetEventInstancesResponse:
-        request = GetEventInstancesRequest()
-        request.event_id = event_id
-        if filters is not None:
-            request.filters = filters
-
-        return await self._unary_unary(
-            "/booking.v1.BookingService/GetEventInstances",
-            request,
-            GetEventInstancesResponse,
-        )
-
-    async def get_active_events_instances(
-        self, *, filters: Optional["Filters"] = None
-    ) -> GetActiveEventsInstancesResponse:
-        request = GetActiveEventsInstancesRequest()
-        if filters is not None:
-            request.filters = filters
-
-        return await self._unary_unary(
-            "/booking.v1.BookingService/GetActiveEventsInstances",
-            request,
-            GetActiveEventsInstancesResponse,
         )
 
     async def create_booking(

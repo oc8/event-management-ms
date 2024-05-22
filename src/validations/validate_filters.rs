@@ -1,8 +1,6 @@
-use tonic::{Code, Status};
-use uuid::Uuid;
 use protos::booking::v1::{Filters};
 use crate::errors;
-use crate::errors::{ApiError, format_errors};
+use crate::errors::{ApiError};
 
 pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ApiError>> {
     if filters.is_none() {

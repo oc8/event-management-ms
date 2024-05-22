@@ -1,5 +1,4 @@
 use tonic::{Code, Status};
-use uuid::Uuid;
 use protos::booking::v1::{GetTimelineRequest};
 use crate::errors;
 use crate::errors::format_errors;

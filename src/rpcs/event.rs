@@ -1,16 +1,13 @@
 use diesel::data_types::PgInterval;
-use log::error;
 use tonic::Status;
 use uuid::Uuid;
 use booking_ms::report_error;
-use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetActiveEventsInstancesRequest, GetActiveEventsInstancesResponse, GetEventInstancesRequest, GetEventInstancesResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse};
+use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
-use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
-use crate::models::event_instances::{EventInstances};
 use crate::models::filters::Filters;
-use crate::validations::{validate_create_event_request, validate_list_events, validate_get_active_events_instances, validate_get_event_instances, validate_get_event_request};
+use crate::validations::{validate_create_event_request, validate_list_events, validate_get_event_request};
 
 pub fn create_event(
     request: CreateEventRequest,
@@ -97,55 +94,5 @@ pub fn list_events(
 
     Ok(ListEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()
-    })
-}
-
-pub fn get_event_instances(
-    request: GetEventInstancesRequest,
-    conn: &mut PgPooledConnection
-) -> Result<GetEventInstancesResponse, Status> {
-    validate_get_event_instances(&request)?;
-
-    let event_id = Uuid::parse_str(&request.event_id)
-        .map_err(|_| format_error(errors::INVALID_EVENT_ID))?;
-
-    let event = Event::find_by_id(conn, event_id)
-        .ok_or_else(|| format_error(errors::EVENT_NOT_FOUND))?;
-
-    let closures = Closure::find_by_organizer_key(conn, &event.event.organizer_key);
-
-    let instances = EventInstances::new(event.event, event.slots, closures);
-
-    Ok(GetEventInstancesResponse{
-        event: Some(instances.into()),
-    })
-}
-
-pub fn get_active_events_instances(
-    request: GetActiveEventsInstancesRequest,
-    conn: &mut PgPooledConnection
-) -> Result<GetActiveEventsInstancesResponse, Status> {
-    validate_get_active_events_instances(&request)?;
-
-    let filters: Filters = request.filters.into();
-
-    let events = Event::find_events(conn, filters);
-
-    if events.is_empty() {
-        return Ok(GetActiveEventsInstancesResponse{
-            events: vec![]
-        })
-    }
-
-    let organizer_key = events[0].event.organizer_key.clone();
-    let closures = Closure::find_by_organizer_key(conn, &organizer_key);
-    let events_instances: Vec<EventInstances> = events.iter()
-        .map(|event| {
-            EventInstances::new(event.event.clone(), event.slots.clone(), closures.clone())
-        })
-        .collect();
-
-    Ok(GetActiveEventsInstancesResponse{
-        events: events_instances.into_iter().map(|e| e.into()).collect()
     })
 }

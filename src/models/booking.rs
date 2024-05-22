@@ -1,7 +1,6 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
-use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryableByName, NullableExpressionMethods, OptionalExtension, QueryResult, sql_query};
-use diesel::dsl::{Nullable, sum};
-use serde::Serialize;
+use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryableByName};
+use diesel::dsl::{sum};
 use uuid::Uuid;
 use protos::booking::v1::TimeData;
 use crate::models::slot::Slot;

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest, EventType, GetActiveEventsInstancesRequest, GetEventInstancesRequest, GetEventRequest, ListEventsRequest};
+use protos::booking::v1::{CreateEventRequest, EventType, GetEventRequest, ListEventsRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
@@ -109,38 +109,6 @@ pub fn validate_list_events(req: &ListEventsRequest) -> Result<(), Status> {
         Ok(_) => (),
         Err(mut e) => errors.append(&mut e)
     }
-
-    if req.filters.is_none() {
-        errors.push(errors::INVALID_FILTERS)
-    }
-
-    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
-        errors.push(errors::INVALID_ORGANIZER_KEY)
-    }
-
-    if !errors.is_empty() {
-        return Err(format_errors(Code::InvalidArgument, errors))
-    }
-
-    Ok(())
-}
-
-pub fn validate_get_event_instances(req: &GetEventInstancesRequest) -> Result<(), Status> {
-    let mut errors = Vec::new();
-
-    if Uuid::parse_str(&req.event_id).is_err() {
-        errors.push(errors::INVALID_EVENT_ID)
-    }
-
-    if !errors.is_empty() {
-        return Err(format_errors(Code::InvalidArgument, errors))
-    }
-
-    Ok(())
-}
-
-pub fn validate_get_active_events_instances(req: &GetActiveEventsInstancesRequest) -> Result<(), Status> {
-    let mut errors = Vec::new();
 
     if req.filters.is_none() {
         errors.push(errors::INVALID_FILTERS)

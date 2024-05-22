@@ -1,4 +1,3 @@
-use std::error::Error;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods};
 use diesel::data_types::{PgInterval};
