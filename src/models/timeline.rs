@@ -76,27 +76,25 @@ impl Timeline {
     }
 
     // Return all events that are included in the given time range
-    pub fn included(&self, start: NaiveDateTime, end: NaiveDateTime) -> Vec<EventWithSlots> {
-        let events: Vec<EventWithSlots> = self.events.iter().flat_map(|e| {
-            self.generate_events_by_rrule(e, start, end, false)
-        }).collect();
+    // if only_active is true, only return events that have at least one active slot
+    // if end is None, it will default to 7 days after the start time
+    pub fn included(&self, start: NaiveDateTime, end: Option<NaiveDateTime>, only_active: bool) -> Vec<EventWithSlots> {
+        let end = end.unwrap_or(start + chrono::Duration::days(7));
 
-        // Filter out events that are not within the given time range
-        events.iter().filter(|e| e.event.start_time <= end && e.event.end_time >= start).cloned().collect()
-    }
-
-    // Return all active events that are included in the given time range
-    pub fn active_included(&self, start: NaiveDateTime, end: NaiveDateTime) -> Vec<EventWithSlots> {
-        let events: Vec<EventWithSlots> = self.events.iter().flat_map(|e| {
-            self.generate_events_by_rrule(e, start, end, true)
+        let mut events: Vec<EventWithSlots> = self.events.iter().flat_map(|e| {
+            self.generate_events_by_rrule(e, start, end, only_active)
         }).collect();
 
         // Filter out events that are not within the given time range
         // if the event is a meeting, it should have at least one slot to be active
-        events.iter().filter(|e|
+        events.retain(|e|
             (e.event.event_type == EventType::as_str_name(&EventType::Meeting) && !e.slots.is_empty()) &&
-            (e.event.start_time <= end && e.event.end_time >= start)
-        ).cloned().collect()
+                (e.event.start_time <= end && e.event.end_time >= start)
+        );
+
+        events.sort_by_key(|e| e.event.start_time);
+
+        events
     }
 
     // return all active events that are included in the given time range

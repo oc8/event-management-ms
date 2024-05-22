@@ -1855,6 +1855,9 @@ impl serde::Serialize for Filters {
         if self.event_type != 0 {
             len += 1;
         }
+        if self.only_active {
+            len += 1;
+        }
         if self.limit != 0 {
             len += 1;
         }
@@ -1881,6 +1884,9 @@ impl serde::Serialize for Filters {
                 .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.event_type)))?;
             struct_ser.serialize_field("eventType", &v)?;
         }
+        if self.only_active {
+            struct_ser.serialize_field("onlyActive", &self.only_active)?;
+        }
         if self.limit != 0 {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("limit", ToString::to_string(&self.limit).as_str())?;
@@ -1906,6 +1912,8 @@ impl<'de> serde::Deserialize<'de> for Filters {
             "status",
             "event_type",
             "eventType",
+            "only_active",
+            "onlyActive",
             "limit",
             "offset",
         ];
@@ -1917,6 +1925,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
             OrganizerKey,
             Status,
             EventType,
+            OnlyActive,
             Limit,
             Offset,
         }
@@ -1945,6 +1954,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "status" => Ok(GeneratedField::Status),
                             "eventType" | "event_type" => Ok(GeneratedField::EventType),
+                            "onlyActive" | "only_active" => Ok(GeneratedField::OnlyActive),
                             "limit" => Ok(GeneratedField::Limit),
                             "offset" => Ok(GeneratedField::Offset),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1971,6 +1981,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
                 let mut organizer_key__ = None;
                 let mut status__ = None;
                 let mut event_type__ = None;
+                let mut only_active__ = None;
                 let mut limit__ = None;
                 let mut offset__ = None;
                 while let Some(k) = map_.next_key()? {
@@ -2005,6 +2016,12 @@ impl<'de> serde::Deserialize<'de> for Filters {
                             }
                             event_type__ = Some(map_.next_value::<EventType>()? as i32);
                         }
+                        GeneratedField::OnlyActive => {
+                            if only_active__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("onlyActive"));
+                            }
+                            only_active__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::Limit => {
                             if limit__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("limit"));
@@ -2029,6 +2046,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
                     organizer_key: organizer_key__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
                     event_type: event_type__.unwrap_or_default(),
+                    only_active: only_active__.unwrap_or_default(),
                     limit: limit__.unwrap_or_default(),
                     offset: offset__.unwrap_or_default(),
                 })
@@ -2538,15 +2556,9 @@ impl serde::Serialize for GetTimelineResponse {
         if !self.events.is_empty() {
             len += 1;
         }
-        if !self.closures.is_empty() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("booking.v1.GetTimelineResponse", len)?;
         if !self.events.is_empty() {
             struct_ser.serialize_field("events", &self.events)?;
-        }
-        if !self.closures.is_empty() {
-            struct_ser.serialize_field("closures", &self.closures)?;
         }
         struct_ser.end()
     }
@@ -2559,13 +2571,11 @@ impl<'de> serde::Deserialize<'de> for GetTimelineResponse {
     {
         const FIELDS: &[&str] = &[
             "events",
-            "closures",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Events,
-            Closures,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2588,7 +2598,6 @@ impl<'de> serde::Deserialize<'de> for GetTimelineResponse {
                     {
                         match value {
                             "events" => Ok(GeneratedField::Events),
-                            "closures" => Ok(GeneratedField::Closures),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2609,7 +2618,6 @@ impl<'de> serde::Deserialize<'de> for GetTimelineResponse {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut events__ = None;
-                let mut closures__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Events => {
@@ -2618,17 +2626,10 @@ impl<'de> serde::Deserialize<'de> for GetTimelineResponse {
                             }
                             events__ = Some(map_.next_value()?);
                         }
-                        GeneratedField::Closures => {
-                            if closures__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("closures"));
-                            }
-                            closures__ = Some(map_.next_value()?);
-                        }
                     }
                 }
                 Ok(GetTimelineResponse {
                     events: events__.unwrap_or_default(),
-                    closures: closures__.unwrap_or_default(),
                 })
             }
         }

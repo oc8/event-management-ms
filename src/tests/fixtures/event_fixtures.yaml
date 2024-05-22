@@ -1,0 +1,11 @@
+fixtures:
+  - model: Event
+    fields:
+      id: "7454c93b-5468-4658-91c2-f4daf4ba60fa"
+      name: "test-basic-event"
+      status: "EVENT_STATUS_ACTIVE"
+      event_type: "EVENT_TYPE_EVENT"
+      start_time: "2024-05-26 09:00:00.000000"
+      end_time: "2024-05-26 17:00:00.000000"
+      timezone: "Europe/Paris"
+      organizer_key: "test-organizer"

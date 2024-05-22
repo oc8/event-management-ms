@@ -7,6 +7,7 @@ use crate::models::filters::Filters;
 use crate::models::timeline::Timeline;
 use crate::validations::validate_get_timeline;
 
+// THIS IS A TEST ROUTE, NEEDS TO BE REMOVED
 pub fn get_timeline(
     request: GetTimelineRequest,
     conn: &mut PgPooledConnection
@@ -22,19 +23,19 @@ pub fn get_timeline(
         organizer_key: Some(request.organizer_key.clone()),
         status: None,
         event_type: None,
+        only_active: Some(true),
         limit: None,
         offset: None,
     };
 
-    let events = Event::find_events(conn, filters);
+    let events = Event::find_events(conn, &filters);
     let closures = Closure::find_by_organizer_key(conn, request.organizer_key.as_str());
 
     let timeline = Timeline::new(events.clone(), closures);
 
-    let timeline_events = timeline.active_included(from, to);
+    let timeline_events = timeline.included(from, Some(to), true);
 
     Ok(GetTimelineResponse {
         events: timeline_events.into_iter().map(|e| e.into()).collect(),
-        closures: vec![],
     })
 }

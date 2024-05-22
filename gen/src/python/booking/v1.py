@@ -94,8 +94,9 @@ class Filters(betterproto.Message):
     organizer_key: str = betterproto.string_field(3)
     status: "EventStatus" = betterproto.enum_field(4)
     event_type: "EventType" = betterproto.enum_field(5)
-    limit: int = betterproto.int64_field(6)
-    offset: int = betterproto.int64_field(7)
+    only_active: bool = betterproto.bool_field(6)
+    limit: int = betterproto.int64_field(7)
+    offset: int = betterproto.int64_field(8)
 
 
 @dataclass
@@ -182,7 +183,6 @@ class GetTimelineRequest(betterproto.Message):
 @dataclass
 class GetTimelineResponse(betterproto.Message):
     events: List["Event"] = betterproto.message_field(1)
-    closures: List["Closure"] = betterproto.message_field(2)
 
 
 class BookingServiceStub(betterproto.ServiceStub):

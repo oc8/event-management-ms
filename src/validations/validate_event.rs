@@ -34,13 +34,13 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
 
     let start = chrono::NaiveDateTime::parse_from_str(&req.start, "%Y-%m-%dT%H:%M:%S");
     if start.is_err() {
-        errors.push(errors::INVALID_EVENT_START_DATE)
+        errors.push(errors::INVALID_DATETIME)
     }
 
     // TODO: limit the event to one day
     let end = chrono::NaiveDateTime::parse_from_str(&req.end, "%Y-%m-%dT%H:%M:%S");
     if end.is_err() {
-        errors.push(errors::INVALID_EVENT_END_DATE)
+        errors.push(errors::INVALID_DATETIME)
     }
 
     if start.is_ok() && end.is_ok() && (start.unwrap() >= end.unwrap()) {

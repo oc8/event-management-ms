@@ -104,7 +104,7 @@ impl Event {
         }
     }
 
-    pub fn find_events(conn: &mut PgConnection, filters: Filters) -> Vec<EventWithSlots> {
+    pub fn find_events(conn: &mut PgConnection, filters: &Filters) -> Vec<EventWithSlots> {
 
         log::debug!("finding events with filters={:?}", filters);
 

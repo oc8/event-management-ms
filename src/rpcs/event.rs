@@ -5,8 +5,10 @@ use booking_ms::report_error;
 use protos::booking::v1::{CreateEventRequest, CreateEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
+use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
 use crate::models::filters::Filters;
+use crate::models::timeline::Timeline;
 use crate::validations::{validate_create_event_request, validate_list_events, validate_get_event_request};
 
 pub fn create_event(
@@ -16,9 +18,9 @@ pub fn create_event(
     validate_create_event_request(&request)?;
 
     let start_time = chrono::NaiveDateTime::parse_from_str(&request.start, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_EVENT_START_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
     let end_time = chrono::NaiveDateTime::parse_from_str(&request.end, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_EVENT_END_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
 
     let tz = match request.timezone.is_empty() {
         true => chrono::Utc.to_string(),
@@ -90,7 +92,20 @@ pub fn list_events(
 
     let filters: Filters = request.filters.into();
 
-    let events = Event::find_events(conn, filters);
+    let mut events = Event::find_events(conn, &filters);
+
+    let mut closures: Vec<Closure> = vec![];
+    if let Some(organizer_key) = &filters.organizer_key {
+        closures = Closure::find_by_organizer_key(conn, organizer_key);
+    }
+
+    let timeline = Timeline::new(events.clone(), closures.clone());
+
+    let from = filters.from.clone();
+    let to = filters.to.clone();
+    if from.is_some() {
+        events = timeline.included(from.unwrap(), to, filters.only_active.unwrap());
+    }
 
     Ok(ListEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()

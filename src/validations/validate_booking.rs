@@ -18,7 +18,7 @@ pub fn validate_create_booking_request(req: &CreateBookingRequest) -> Result<(),
 
     let date_time = chrono::NaiveDateTime::parse_from_str(&req.date_time, "%Y-%m-%dT%H:%M:%S");
     if date_time.is_err() {
-        errors.push(errors::INVALID_BOOKING_DATE)
+        errors.push(errors::INVALID_DATETIME)
     }
 
     if !req.persons.validate_range(Option::from(0), Option::from(10000), Option::from(0), Option::from(10000)) {

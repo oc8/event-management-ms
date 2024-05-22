@@ -1,13 +1,14 @@
 use chrono::NaiveDateTime;
 use protos::booking::v1::{EventStatus, EventType, Filters as FiltersProto};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Filters {
     pub from: Option<NaiveDateTime>,
     pub to: Option<NaiveDateTime>,
     pub organizer_key: Option<String>,
     pub status: Option<EventStatus>,
     pub event_type: Option<EventType>,
+    pub only_active: Option<bool>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
 }
@@ -19,6 +20,7 @@ impl Filters {
         organizer_key: Option<String>,
         status: Option<EventStatus>,
         event_type: Option<EventType>,
+        only_active: Option<bool>,
         limit: Option<i64>,
         offset: Option<i64>
     ) -> Self {
@@ -28,6 +30,7 @@ impl Filters {
             organizer_key,
             status,
             event_type,
+            only_active,
             limit,
             offset,
         }
@@ -41,13 +44,13 @@ impl From<Option<FiltersProto>> for Filters {
         let from = if proto.from.is_empty() {
             None
         } else {
-            Some(NaiveDateTime::parse_from_str(&proto.from, "%Y-%m-%dT%H:%M:%S").unwrap())
+            Some(NaiveDateTime::parse_from_str(format!("{}T00:00:00", proto.from).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap())
         };
 
         let to = if proto.to.is_empty() {
             None
         } else {
-            Some(NaiveDateTime::parse_from_str(&proto.to, "%Y-%m-%dT%H:%M:%S").unwrap())
+            Some(NaiveDateTime::parse_from_str(format!("{}T23:59:59", proto.to).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap())
         };
 
         let limit = if proto.limit == 0 {
@@ -62,6 +65,7 @@ impl From<Option<FiltersProto>> for Filters {
             organizer_key: Some(proto.organizer_key),
             status: Some(EventStatus::try_from(proto.status).unwrap()),
             event_type: Some(EventType::try_from(proto.event_type).unwrap()),
+            only_active: Some(proto.only_active),
             limit,
             offset: Some(proto.offset),
         }

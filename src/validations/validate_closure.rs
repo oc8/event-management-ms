@@ -8,16 +8,16 @@ pub fn validate_create_closing_exception_request(req: &CreateClosureRequest) -> 
 
     let start = chrono::NaiveDateTime::parse_from_str(&req.closing_from, "%Y-%m-%dT%H:%M:%S");
     if start.is_err() {
-        errors.push(errors::INVALID_CLOSING_START_DATE)
+        errors.push(errors::INVALID_DATETIME)
     }
 
     let end = chrono::NaiveDateTime::parse_from_str(&req.closing_to, "%Y-%m-%dT%H:%M:%S");
     if end.is_err() {
-        errors.push(errors::INVALID_CLOSING_END_DATE)
+        errors.push(errors::INVALID_DATETIME)
     }
 
     if start.is_ok() && end.is_ok() && (start.unwrap() >= end.unwrap()) {
-        errors.push(errors::INVALID_CLOSING_DATE_RANGE)
+        errors.push(errors::INVALID_DATE_RANGE)
     }
 
     if req.organizer_key.is_empty() {

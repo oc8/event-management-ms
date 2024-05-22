@@ -11,7 +11,7 @@ pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ApiErr
 
     let mut errors = Vec::new();
 
-    let from = chrono::NaiveDateTime::parse_from_str(&filters.from, "%Y-%m-%dT%H:%M:%S");
+    let from = chrono::NaiveDate::parse_from_str(&filters.from, "%Y-%m-%d");
     if !filters.from.is_empty() {
         match from {
             Ok(_) => (),
@@ -19,7 +19,7 @@ pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ApiErr
         }
     }
 
-    let to = chrono::NaiveDateTime::parse_from_str(&filters.to, "%Y-%m-%dT%H:%M:%S");
+    let to = chrono::NaiveDate::parse_from_str(&filters.to, "%Y-%m-%d");
     if !filters.to.is_empty() {
         match to {
             Ok(_) => (),

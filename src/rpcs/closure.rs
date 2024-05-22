@@ -12,9 +12,9 @@ pub fn create_closure(
     validate_create_closing_exception_request(&request)?;
 
     let closing_from = chrono::NaiveDateTime::parse_from_str(&request.closing_from, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_CLOSING_START_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
     let closing_to = chrono::NaiveDateTime::parse_from_str(&request.closing_to, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_CLOSING_END_DATE))?;
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
 
     let new_exception = NewClosure {
         closing_from: &closing_from,

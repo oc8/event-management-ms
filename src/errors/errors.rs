@@ -30,18 +30,6 @@ pub const INVALID_EVENT_NAME: ApiError = ApiError {
     message: "Invalid event name"
 };
 
-pub const INVALID_EVENT_START_DATE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_event_start_date",
-    message: "Invalid event start date"
-};
-
-pub const INVALID_EVENT_END_DATE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_event_end_date",
-    message: "Invalid event end date"
-};
-
 pub const INVALID_TIMEZONE: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_timezone",
@@ -108,24 +96,6 @@ pub const INVALID_BOOKING_ID: ApiError = ApiError {
     message: "Invalid booking id"
 };
 
-pub const INVALID_CLOSING_START_DATE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_closing_start_date",
-    message: "Invalid closing start date"
-};
-
-pub const INVALID_CLOSING_END_DATE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_closing_end_date",
-    message: "Invalid closing end date"
-};
-
-pub const INVALID_CLOSING_DATE_RANGE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_closing_date_range",
-    message: "Invalid closing date range"
-};
-
 pub const INVALID_ORGANIZER_KEY: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_organizer_key",
@@ -186,10 +156,16 @@ pub const EVENT_CREATION_FAILED: ApiError = ApiError {
     message: "Failed to create event"
 };
 
+pub const INVALID_DATETIME: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "invalid_date",
+    message: "Invalid datetime format: %Y-%m-%dT%H:%M:%S"
+};
+
 pub const INVALID_DATE: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_date",
-    message: "Invalid date"
+    message: "Invalid date format: %Y-%m-%d"
 };
 
 pub const INVALID_DATE_RANGE: ApiError = ApiError {
