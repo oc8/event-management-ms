@@ -9,7 +9,6 @@ service BookingService {
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
-  rpc GetTimeline(GetTimelineRequest) returns (GetTimelineResponse);
 }
 
 enum EventStatus {
@@ -154,14 +153,4 @@ message CreateClosureRequest {
 
 message CreateClosureResponse {
   Closure closure = 1;
-}
-
-message GetTimelineRequest {
-  string organizer_key = 1;
-  string from = 2;
-  string to = 3;
-}
-
-message GetTimelineResponse {
-  repeated Event events = 1;
 }

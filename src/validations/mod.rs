@@ -6,5 +6,3 @@ mod validate_closure;
 pub use validate_closure::*;
 mod validate_filters;
 pub use validate_filters::*;
-mod validate_timeline;
-pub use validate_timeline::*;
