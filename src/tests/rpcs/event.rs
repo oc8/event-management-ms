@@ -163,7 +163,7 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "create_meeting_event", "redis://:@localhost:6382", 50302);
+    let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "create_meeting_event", "redis://:@localhost:6382", 50303);
     let (tx, rx) = oneshot::channel();
     let service = ctx.service.clone();
 
