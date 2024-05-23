@@ -80,6 +80,7 @@ impl Closure {
         closures::dsl::closures
             .select(Closure::as_select())
             .filter(closures::dsl::organizer_key.eq(organizer_key))
+            .filter(closures::dsl::closing_to.gt(Utc::now().naive_utc()))
             .load(conn)
             .expect("Error loading closures")
     }
