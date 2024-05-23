@@ -2,7 +2,8 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryableByName};
 use diesel::dsl::{sum};
 use uuid::Uuid;
-use protos::booking::v1::TimeData;
+use protos::booking::v1::{TimeData};
+use crate::models::filters::{BookingFilters, Filters};
 use crate::models::slot::Slot;
 
 use crate::schema::{bookings, event_slots};
@@ -14,6 +15,7 @@ pub struct Booking {
     pub id: Uuid,
     pub slot_id: Uuid,
     pub booking_holder_key: String,
+    pub organizer_key: String,
     pub date_time: NaiveDateTime,
     pub persons: i32,
     pub created_at: NaiveDateTime,
@@ -25,6 +27,7 @@ pub struct Booking {
 pub struct NewBooking<'a> {
     pub slot_id: &'a Uuid,
     pub booking_holder_key: &'a str,
+    pub organizer_key: &'a str,
     pub date_time: &'a NaiveDateTime,
     pub persons: &'a i32,
 }
@@ -73,6 +76,47 @@ impl Booking {
         booking.and_then(|b| {
             Slot::find_by_id(conn, b.slot_id).map(|s| BookingWithSlot::new(b, s))
         })
+    }
+
+    pub fn find(conn: &mut PgConnection, filters: &Filters<BookingFilters>) -> Vec<BookingWithSlot> {
+        log::debug!("finding bookings with filters={:?}", filters);
+
+        let mut query = bookings::dsl::bookings
+            .select(Booking::as_select())
+            .into_boxed();
+
+        if let Some(from) = &filters.from {
+            query = query.filter(bookings::dsl::date_time.ge(from));
+        }
+        if let Some(to) = &filters.to {
+            query = query.filter(bookings::dsl::date_time.le(to));
+        }
+
+        // if let Some(slot_id) = &filters.type_filters.slot_id {
+        //     query = query.filter(bookings::dsl::slot_id.eq(slot_id));
+        // }
+
+        if let Some(booking_holder_key) = &filters.type_filters.booking_holder_key {
+            if !booking_holder_key.is_empty() {
+                query = query.filter(bookings::dsl::booking_holder_key.eq(booking_holder_key));
+            }
+        }
+
+        if let Some(organizer_key) = &filters.type_filters.organizer_key {
+            query = query.filter(bookings::dsl::organizer_key.eq(organizer_key));
+        }
+
+        log::debug!("query={:?}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
+
+        query
+            .load::<Booking>(conn)
+            .expect("Error loading bookings")
+            .into_iter()
+            .map(|b| {
+                let slot = Slot::find_by_id(conn, b.slot_id).unwrap();
+                BookingWithSlot::new(b, slot)
+            })
+            .collect()
     }
 
     pub fn delete(conn: &mut PgConnection, id: Uuid) -> Result<usize, diesel::result::Error> {

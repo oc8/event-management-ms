@@ -92,9 +92,13 @@ class Filters(betterproto.Message):
     from_: str = betterproto.string_field(1)
     to: str = betterproto.string_field(2)
     organizer_key: str = betterproto.string_field(3)
+    # Event filters
     status: "EventStatus" = betterproto.enum_field(4)
     event_type: "EventType" = betterproto.enum_field(5)
     only_active: bool = betterproto.bool_field(6)
+    # Booking filters
+    booking_holder_key: str = betterproto.string_field(7)
+    slot_id: str = betterproto.string_field(8)
 
 
 @dataclass
@@ -197,6 +201,16 @@ class DeleteBookingResponse(betterproto.Message):
 
 
 @dataclass
+class ListBookingsRequest(betterproto.Message):
+    filters: "Filters" = betterproto.message_field(1)
+
+
+@dataclass
+class ListBookingsResponse(betterproto.Message):
+    bookings: List["Booking"] = betterproto.message_field(1)
+
+
+@dataclass
 class CreateClosureRequest(betterproto.Message):
     closing_from: str = betterproto.string_field(1)
     closing_to: str = betterproto.string_field(2)
@@ -228,6 +242,16 @@ class DeleteClosureRequest(betterproto.Message):
 @dataclass
 class DeleteClosureResponse(betterproto.Message):
     message: str = betterproto.string_field(1)
+
+
+@dataclass
+class ListClosuresRequest(betterproto.Message):
+    filters: "Filters" = betterproto.message_field(1)
+
+
+@dataclass
+class ListClosuresResponse(betterproto.Message):
+    closures: List["Closure"] = betterproto.message_field(1)
 
 
 class BookingServiceStub(betterproto.ServiceStub):
@@ -364,6 +388,19 @@ class BookingServiceStub(betterproto.ServiceStub):
             DeleteBookingResponse,
         )
 
+    async def list_bookings(
+        self, *, filters: Optional["Filters"] = None
+    ) -> ListBookingsResponse:
+        request = ListBookingsRequest()
+        if filters is not None:
+            request.filters = filters
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/ListBookings",
+            request,
+            ListBookingsResponse,
+        )
+
     async def create_closure(
         self, *, closing_from: str = "", closing_to: str = "", organizer_key: str = ""
     ) -> CreateClosureResponse:
@@ -400,4 +437,17 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/DeleteClosure",
             request,
             DeleteClosureResponse,
+        )
+
+    async def list_closures(
+        self, *, filters: Optional["Filters"] = None
+    ) -> ListClosuresResponse:
+        request = ListClosuresRequest()
+        if filters is not None:
+            request.filters = filters
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/ListClosures",
+            request,
+            ListClosuresResponse,
         )

@@ -6,10 +6,10 @@ use uuid::Uuid;
 use booking_ms::format_datetime;
 use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
 use crate::models::slot::{Slot};
-use crate::models::filters::{Filters};
+use crate::models::filters::{EventFilters, Filters};
 use crate::schema::{events};
 
-#[derive(Queryable, Selectable, QueryableByName, AsChangeset, PartialEq, Debug, Clone)]
+#[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = events)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Event {
@@ -129,7 +129,7 @@ impl Event {
             .execute(conn)
     }
 
-    pub fn find_events(conn: &mut PgConnection, filters: &Filters) -> Vec<EventWithSlots> {
+    pub fn find_events(conn: &mut PgConnection, filters: &Filters<EventFilters>) -> Vec<EventWithSlots> {
 
         log::debug!("finding events with filters={:?}", filters);
 
@@ -142,27 +142,30 @@ impl Event {
         //     .load::<Event>(conn)
         //     .unwrap_or_else(|_| vec![]);
 
-        if let Some(from) = filters.from {
+        if let Some(from) = &filters.from {
             query = query.filter(
                 events::start_time.ge(from).or(events::recurrence_rule.is_not_null())
             );
         }
-        if let Some(to) = filters.to {
+        if let Some(to) = &filters.to {
             query = query.filter(events::start_time.le(to));
         }
-        if let Some(organizer_key) = &filters.organizer_key {
+
+        if let Some(organizer_key) = &filters.type_filters.organizer_key {
             query = query.filter(events::organizer_key.eq(organizer_key));
         }
-        if let Some(status) = &filters.status {
+        if let Some(status) = &filters.type_filters.status {
             if status != &EventStatus::Unspecified {
                 query = query.filter(events::status.eq(status.as_str_name()));
             }
         }
-        if let Some(event_type) = &filters.event_type {
+        if let Some(event_type) = &filters.type_filters.event_type {
             if event_type != &EventType::Unspecified {
                 query = query.filter(events::event_type.eq(event_type.as_str_name()));
             }
         }
+
+        log::debug!("query={:?}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
 
         let events = query
             .load::<Event>(conn)

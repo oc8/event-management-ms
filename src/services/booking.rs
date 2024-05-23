@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse, DeleteEventRequest, DeleteEventResponse, DeleteBookingRequest, DeleteBookingResponse, UpdateClosureRequest, UpdateClosureResponse, DeleteClosureRequest, DeleteClosureResponse};
+use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse, DeleteEventRequest, DeleteEventResponse, DeleteBookingRequest, DeleteBookingResponse, UpdateClosureRequest, UpdateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListBookingsRequest, ListBookingsResponse, ListClosuresRequest, ListClosuresResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 
@@ -72,6 +72,11 @@ impl BookingService for BookingServiceServerImpl {
         rpcs::delete_booking(request.into_inner(), &mut conn).map(Response::new)
     }
 
+    async fn list_bookings(&self, request: Request<ListBookingsRequest>) -> Result<Response<ListBookingsResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::list_bookings(request.into_inner(), &mut conn).map(Response::new)
+    }
+
     async fn create_closure(&self, request: Request<CreateClosureRequest>) -> Result<Response<CreateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         rpcs::create_closure(request.into_inner(), &mut conn).map(Response::new)
@@ -85,6 +90,11 @@ impl BookingService for BookingServiceServerImpl {
     async fn delete_closure(&self, request: Request<DeleteClosureRequest>) -> Result<Response<DeleteClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         rpcs::delete_closure(request.into_inner(), &mut conn).map(Response::new)
+    }
+
+    async fn list_closures(&self, request: Request<ListClosuresRequest>) -> Result<Response<ListClosuresResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::list_closures(request.into_inner(), &mut conn).map(Response::new)
     }
 }
 

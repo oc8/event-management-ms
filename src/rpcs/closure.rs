@@ -1,16 +1,17 @@
 use tonic::Status;
 use uuid::Uuid;
-use protos::booking::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, UpdateClosureRequest, UpdateClosureResponse};
+use protos::booking::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::closure::{Closure, NewClosure};
-use crate::validations::{validate_create_closing_exception_request, validate_delete_closure_request, validate_update_closure_request};
+use crate::models::filters::{ClosureFilters, Filters};
+use crate::validations::{validate_create_closure_request, validate_delete_closure_request, validate_list_closures_request, validate_update_closure_request};
 
 pub fn create_closure(
     request: CreateClosureRequest,
     conn: &mut PgPooledConnection
 ) -> Result<CreateClosureResponse, Status> {
-    validate_create_closing_exception_request(&request)?;
+    validate_create_closure_request(&request)?;
 
     let closing_from = chrono::NaiveDateTime::parse_from_str(&request.closing_from, "%Y-%m-%dT%H:%M:%S")
         .map_err(|_| format_error(errors::INVALID_DATETIME))?;
@@ -70,5 +71,20 @@ pub fn delete_closure(
 
     Ok(DeleteClosureResponse{
         message: "Closure deleted successfully".to_string()
+    })
+}
+
+pub fn list_closures(
+    request: ListClosuresRequest,
+    conn: &mut PgPooledConnection
+) -> Result<ListClosuresResponse, Status> {
+    validate_list_closures_request(&request)?;
+
+    let filters: Filters<ClosureFilters> = request.filters.into();
+
+    let closures = Closure::find(conn, &filters);
+
+    Ok(ListClosuresResponse{
+        closures: closures.into_iter().map(|closure| closure.into()).collect()
     })
 }

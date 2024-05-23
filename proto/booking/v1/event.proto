@@ -11,9 +11,11 @@ service BookingService {
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc DeleteBooking(DeleteBookingRequest) returns (DeleteBookingResponse);
+  rpc ListBookings(ListBookingsRequest) returns (ListBookingsResponse);
   rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
   rpc UpdateClosure(UpdateClosureRequest) returns (UpdateClosureResponse);
   rpc DeleteClosure(DeleteClosureRequest) returns (DeleteClosureResponse);
+  rpc ListClosures(ListClosuresRequest) returns (ListClosuresResponse);
 }
 
 enum EventStatus {
@@ -93,9 +95,15 @@ message Filters {
   string from = 1;
   string to = 2;
   string organizer_key = 3;
+
+  // Event filters
   EventStatus status = 4;
   EventType event_type = 5;
   bool only_active = 6;
+
+  // Booking filters
+  string booking_holder_key = 7;
+  string slot_id = 8;
 }
 
 message CreateEventRequest {
@@ -181,6 +189,14 @@ message DeleteBookingResponse {
   string message = 1;
 }
 
+message ListBookingsRequest {
+  Filters filters = 1;
+}
+
+message ListBookingsResponse {
+  repeated Booking bookings = 1;
+}
+
 message CreateClosureRequest {
   string closing_from = 1;
   string closing_to = 2;
@@ -207,4 +223,12 @@ message DeleteClosureRequest {
 
 message DeleteClosureResponse {
   string message = 1;
+}
+
+message ListClosuresRequest {
+  Filters filters = 1;
+}
+
+message ListClosuresResponse {
+  repeated Closure closures = 1;
 }

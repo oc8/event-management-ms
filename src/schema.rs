@@ -5,6 +5,8 @@ diesel::table! {
         id -> Uuid,
         #[max_length = 255]
         booking_holder_key -> Varchar,
+        #[max_length = 255]
+        organizer_key -> Varchar,
         slot_id -> Uuid,
         date_time -> Timestamp,
         persons -> Int4,

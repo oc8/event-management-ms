@@ -2,6 +2,7 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, AsChangeset};
 use uuid::Uuid;
 use protos::booking::v1::{TimeData};
+use crate::models::filters::{ClosureFilters, Filters};
 use crate::schema::{closures};
 
 #[derive(Queryable, Selectable, Debug, Clone)]
@@ -81,6 +82,24 @@ impl Closure {
             .select(Closure::as_select())
             .filter(closures::dsl::organizer_key.eq(organizer_key))
             .filter(closures::dsl::closing_to.gt(Utc::now().naive_utc()))
+            .load(conn)
+            .expect("Error loading closures")
+    }
+
+    pub fn find(conn: &mut PgConnection, filters: &Filters<ClosureFilters>) -> Vec<Closure> {
+        log::debug!("Finding closures with filters: {:?}", filters);
+
+        let mut query = closures::dsl::closures
+            .select(Closure::as_select())
+            .into_boxed();
+
+        if let Some(organizer_key) = &filters.type_filters.organizer_key {
+            query = query.filter(closures::dsl::organizer_key.eq(organizer_key));
+        }
+
+        log::debug!("query={:?}", diesel::debug_query::<diesel::pg::Pg, _>(&query));
+
+        query
             .load(conn)
             .expect("Error loading closures")
     }

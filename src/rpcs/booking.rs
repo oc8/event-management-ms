@@ -2,12 +2,13 @@ use log::debug;
 use tonic::Status;
 use uuid::Uuid;
 use booking_ms::add_time_to_datetime;
-use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse};
+use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::booking::{Booking, NewBooking};
+use crate::models::filters::{BookingFilters, Filters};
 use crate::models::slot::Slot;
-use crate::validations::{validate_create_booking_request, validate_delete_booking_request, validate_get_booking_request};
+use crate::validations::{validate_create_booking_request, validate_delete_booking_request, validate_get_booking_request, validate_list_bookings_request};
 
 pub fn create_booking(
     request: CreateBookingRequest,
@@ -70,6 +71,7 @@ pub fn create_booking(
     let new_booking = NewBooking {
         slot_id: &slot_id,
         booking_holder_key: &request.booking_holder_key,
+        organizer_key: &event.organizer_key,
         date_time: &date_time,
         persons: &request.persons,
     };
@@ -116,5 +118,20 @@ pub fn delete_booking(
 
     Ok(DeleteBookingResponse{
         message: "Booking successfully deleted".to_string()
+    })
+}
+
+pub fn list_bookings(
+    request: ListBookingsRequest,
+    conn: &mut PgPooledConnection
+) -> Result<ListBookingsResponse, Status> {
+    validate_list_bookings_request(&request)?;
+
+    let filters: Filters<BookingFilters> = request.filters.into();
+
+    let bookings = Booking::find(conn, &filters);
+
+    Ok(ListBookingsResponse{
+        bookings: bookings.into_iter().map(|booking| booking.into()).collect()
     })
 }

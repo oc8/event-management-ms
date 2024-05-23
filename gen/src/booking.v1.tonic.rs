@@ -284,6 +284,31 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "DeleteBooking"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn list_bookings(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListBookingsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListBookingsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/ListBookings",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "ListBookings"));
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn create_closure(
             &mut self,
             request: impl tonic::IntoRequest<super::CreateClosureRequest>,
@@ -359,6 +384,31 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "DeleteClosure"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn list_closures(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListClosuresRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListClosuresResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/ListClosures",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "ListClosures"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -424,6 +474,13 @@ pub mod booking_service_server {
             tonic::Response<super::DeleteBookingResponse>,
             tonic::Status,
         >;
+        async fn list_bookings(
+            &self,
+            request: tonic::Request<super::ListBookingsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListBookingsResponse>,
+            tonic::Status,
+        >;
         async fn create_closure(
             &self,
             request: tonic::Request<super::CreateClosureRequest>,
@@ -443,6 +500,13 @@ pub mod booking_service_server {
             request: tonic::Request<super::DeleteClosureRequest>,
         ) -> std::result::Result<
             tonic::Response<super::DeleteClosureResponse>,
+            tonic::Status,
+        >;
+        async fn list_closures(
+            &self,
+            request: tonic::Request<super::ListClosuresRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListClosuresResponse>,
             tonic::Status,
         >;
     }
@@ -893,6 +957,52 @@ pub mod booking_service_server {
                     };
                     Box::pin(fut)
                 }
+                "/booking.v1.BookingService/ListBookings" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListBookingsSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::ListBookingsRequest>
+                    for ListBookingsSvc<T> {
+                        type Response = super::ListBookingsResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ListBookingsRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::list_bookings(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ListBookingsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/booking.v1.BookingService/CreateClosure" => {
                     #[allow(non_camel_case_types)]
                     struct CreateClosureSvc<T: BookingService>(pub Arc<T>);
@@ -1016,6 +1126,52 @@ pub mod booking_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = DeleteClosureSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.v1.BookingService/ListClosures" => {
+                    #[allow(non_camel_case_types)]
+                    struct ListClosuresSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::ListClosuresRequest>
+                    for ListClosuresSvc<T> {
+                        type Response = super::ListClosuresResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ListClosuresRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::list_closures(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ListClosuresSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

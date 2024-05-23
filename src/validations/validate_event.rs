@@ -7,7 +7,7 @@ use rrule::{RRuleSet};
 use rrule::ParseError::MissingStartDate;
 use uuid::Uuid;
 use validator::{ValidateRange};
-use crate::errors::{format_errors};
+use crate::errors::{format_error, format_errors};
 use crate::validations::validate_date_filters;
 
 fn validate_recurrence_rule(rule: &str) -> bool {
@@ -155,13 +155,13 @@ pub fn validate_delete_event_request(req: &DeleteEventRequest) -> Result<(), Sta
 pub fn validate_list_events_request(req: &ListEventsRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
 
+    if req.filters.is_none() {
+        return Err(format_error(errors::INVALID_FILTERS))
+    }
+
     match validate_date_filters(&req.filters) {
         Ok(_) => (),
         Err(mut e) => errors.append(&mut e)
-    }
-
-    if req.filters.is_none() {
-        errors.push(errors::INVALID_FILTERS)
     }
 
     if req.filters.as_ref().unwrap().organizer_key.is_empty() {

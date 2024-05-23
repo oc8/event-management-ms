@@ -1,6 +1,7 @@
 CREATE TABLE bookings (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     booking_holder_key VARCHAR(255) NOT NULL,
+    organizer_key VARCHAR(255) NOT NULL,
     slot_id uuid NOT NULL,
     date_time TIMESTAMP NOT NULL,
     persons INT DEFAULT 1 NOT NULL,

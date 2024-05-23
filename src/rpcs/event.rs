@@ -7,7 +7,7 @@ use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
-use crate::models::filters::Filters;
+use crate::models::filters::{EventFilters, Filters};
 use crate::models::timeline::Timeline;
 use crate::validations::{validate_create_event_request, validate_delete_event_request, validate_get_event_request, validate_list_events_request, validate_update_event_request};
 
@@ -184,12 +184,12 @@ pub fn list_events(
 ) -> Result<ListEventsResponse, Status> {
     validate_list_events_request(&request)?;
 
-    let filters: Filters = request.filters.into();
+    let filters: Filters<EventFilters> = request.filters.into();
 
     let mut events = Event::find_events(conn, &filters);
 
     let mut closures: Vec<Closure> = vec![];
-    if let Some(organizer_key) = &filters.organizer_key {
+    if let Some(organizer_key) = &filters.type_filters.organizer_key {
         closures = Closure::find_by_organizer_key(conn, organizer_key);
     }
 
@@ -198,7 +198,7 @@ pub fn list_events(
     let from = filters.from.clone();
     let to = filters.to.clone();
     if from.is_some() {
-        events = timeline.included(from.unwrap(), to, filters.only_active.unwrap());
+        events = timeline.included(from.unwrap(), to, filters.type_filters.only_active.unwrap());
     }
 
     Ok(ListEventsResponse{

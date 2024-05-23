@@ -1,7 +1,7 @@
 use tonic::{Code, Status};
 use uuid::Uuid;
 use validator::{ValidateRange};
-use protos::booking::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest};
+use protos::booking::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest};
 use crate::errors;
 use crate::errors::{format_error, format_errors};
 
@@ -43,6 +43,24 @@ pub fn validate_get_booking_request(req: &GetBookingRequest) -> Result<(), Statu
 pub fn validate_delete_booking_request(req: &DeleteBookingRequest) -> Result<(), Status> {
     if Uuid::parse_str(&req.id).is_err() {
         return Err(format_error(errors::INVALID_BOOKING_ID))
+    }
+
+    Ok(())
+}
+
+pub fn validate_list_bookings_request(req: &ListBookingsRequest) -> Result<(), Status> {
+    let mut errors = Vec::new();
+
+    if req.filters.is_none() {
+        return Err(format_error(errors::INVALID_FILTERS))
+    }
+
+    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
+        errors.push(errors::INVALID_ORGANIZER_KEY)
+    }
+
+    if !errors.is_empty() {
+        return Err(format_errors(Code::InvalidArgument, errors))
     }
 
     Ok(())

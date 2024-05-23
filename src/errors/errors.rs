@@ -1,3 +1,4 @@
+use std::string::ToString;
 use tonic::{Code};
 
 pub struct ApiError {
@@ -159,13 +160,13 @@ pub const EVENT_CREATION_FAILED: ApiError = ApiError {
 pub const INVALID_DATETIME: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_date",
-    message: "Invalid datetime format: %Y-%m-%dT%H:%M:%S"
+    message: "Invalid datetime format: Y-m-dTH:M:S"
 };
 
 pub const INVALID_DATE: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_date",
-    message: "Invalid date format: %Y-%m-%d"
+    message: "Invalid date format: Y-m-d"
 };
 
 pub const INVALID_DATE_RANGE: ApiError = ApiError {
