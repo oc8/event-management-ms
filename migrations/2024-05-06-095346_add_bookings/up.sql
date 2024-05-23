@@ -6,5 +6,7 @@ CREATE TABLE bookings (
     persons INT DEFAULT 1 NOT NULL,
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
-    FOREIGN KEY (slot_id) REFERENCES event_slots(id)
+    FOREIGN KEY (slot_id) REFERENCES event_slots(id) ON DELETE CASCADE
 );
+
+SELECT diesel_manage_updated_at('bookings');

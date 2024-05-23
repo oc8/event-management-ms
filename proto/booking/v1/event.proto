@@ -5,10 +5,15 @@ package booking.v1;
 service BookingService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
+  rpc DeleteBooking(DeleteBookingRequest) returns (DeleteBookingResponse);
   rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
+  rpc UpdateClosure(UpdateClosureRequest) returns (UpdateClosureResponse);
+  rpc DeleteClosure(DeleteClosureRequest) returns (DeleteClosureResponse);
 }
 
 enum EventStatus {
@@ -118,6 +123,29 @@ message GetEventResponse {
   Event event = 1;
 }
 
+message UpdateEventRequest {
+  string id = 1;
+  string name = 2;
+  string start = 3;
+  string end = 4;
+  string timezone = 5;
+  int32 capacity = 7;
+  int32 slot_capacity = 8;
+  string recurrence_rule = 9;
+}
+
+message UpdateEventResponse {
+  Event event = 1;
+}
+
+message DeleteEventRequest {
+  string id = 1;
+}
+
+message DeleteEventResponse {
+  string message = 1;
+}
+
 message ListEventsRequest {
   Filters filters = 1;
 }
@@ -145,6 +173,14 @@ message GetBookingResponse {
   Booking booking = 1;
 }
 
+message DeleteBookingRequest {
+  string id = 1;
+}
+
+message DeleteBookingResponse {
+  string message = 1;
+}
+
 message CreateClosureRequest {
   string closing_from = 1;
   string closing_to = 2;
@@ -153,4 +189,22 @@ message CreateClosureRequest {
 
 message CreateClosureResponse {
   Closure closure = 1;
+}
+
+message UpdateClosureRequest {
+  string id = 1;
+  string closing_from = 2;
+  string closing_to = 3;
+}
+
+message UpdateClosureResponse {
+  Closure closure = 1;
+}
+
+message DeleteClosureRequest {
+  string id = 1;
+}
+
+message DeleteClosureResponse {
+  string message = 1;
 }

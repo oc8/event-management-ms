@@ -134,6 +134,56 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "GetEvent"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn update_event(
+            &mut self,
+            request: impl tonic::IntoRequest<super::UpdateEventRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UpdateEventResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/UpdateEvent",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "UpdateEvent"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn delete_event(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteEventRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteEventResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/DeleteEvent",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "DeleteEvent"));
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn list_events(
             &mut self,
             request: impl tonic::IntoRequest<super::ListEventsRequest>,
@@ -209,6 +259,31 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "GetBooking"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn delete_booking(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteBookingRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteBookingResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/DeleteBooking",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "DeleteBooking"));
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn create_closure(
             &mut self,
             request: impl tonic::IntoRequest<super::CreateClosureRequest>,
@@ -234,6 +309,56 @@ pub mod booking_service_client {
                 .insert(GrpcMethod::new("booking.v1.BookingService", "CreateClosure"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn update_closure(
+            &mut self,
+            request: impl tonic::IntoRequest<super::UpdateClosureRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UpdateClosureResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/UpdateClosure",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "UpdateClosure"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn delete_closure(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DeleteClosureRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteClosureResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/booking.v1.BookingService/DeleteClosure",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("booking.v1.BookingService", "DeleteClosure"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -257,6 +382,20 @@ pub mod booking_service_server {
             tonic::Response<super::GetEventResponse>,
             tonic::Status,
         >;
+        async fn update_event(
+            &self,
+            request: tonic::Request<super::UpdateEventRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UpdateEventResponse>,
+            tonic::Status,
+        >;
+        async fn delete_event(
+            &self,
+            request: tonic::Request<super::DeleteEventRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteEventResponse>,
+            tonic::Status,
+        >;
         async fn list_events(
             &self,
             request: tonic::Request<super::ListEventsRequest>,
@@ -278,11 +417,32 @@ pub mod booking_service_server {
             tonic::Response<super::GetBookingResponse>,
             tonic::Status,
         >;
+        async fn delete_booking(
+            &self,
+            request: tonic::Request<super::DeleteBookingRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteBookingResponse>,
+            tonic::Status,
+        >;
         async fn create_closure(
             &self,
             request: tonic::Request<super::CreateClosureRequest>,
         ) -> std::result::Result<
             tonic::Response<super::CreateClosureResponse>,
+            tonic::Status,
+        >;
+        async fn update_closure(
+            &self,
+            request: tonic::Request<super::UpdateClosureRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UpdateClosureResponse>,
+            tonic::Status,
+        >;
+        async fn delete_closure(
+            &self,
+            request: tonic::Request<super::DeleteClosureRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DeleteClosureResponse>,
             tonic::Status,
         >;
     }
@@ -457,6 +617,98 @@ pub mod booking_service_server {
                     };
                     Box::pin(fut)
                 }
+                "/booking.v1.BookingService/UpdateEvent" => {
+                    #[allow(non_camel_case_types)]
+                    struct UpdateEventSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::UpdateEventRequest>
+                    for UpdateEventSvc<T> {
+                        type Response = super::UpdateEventResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::UpdateEventRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::update_event(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = UpdateEventSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.v1.BookingService/DeleteEvent" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteEventSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::DeleteEventRequest>
+                    for DeleteEventSvc<T> {
+                        type Response = super::DeleteEventResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteEventRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::delete_event(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = DeleteEventSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/booking.v1.BookingService/ListEvents" => {
                     #[allow(non_camel_case_types)]
                     struct ListEventsSvc<T: BookingService>(pub Arc<T>);
@@ -595,6 +847,52 @@ pub mod booking_service_server {
                     };
                     Box::pin(fut)
                 }
+                "/booking.v1.BookingService/DeleteBooking" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteBookingSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::DeleteBookingRequest>
+                    for DeleteBookingSvc<T> {
+                        type Response = super::DeleteBookingResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteBookingRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::delete_booking(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = DeleteBookingSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/booking.v1.BookingService/CreateClosure" => {
                     #[allow(non_camel_case_types)]
                     struct CreateClosureSvc<T: BookingService>(pub Arc<T>);
@@ -626,6 +924,98 @@ pub mod booking_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = CreateClosureSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.v1.BookingService/UpdateClosure" => {
+                    #[allow(non_camel_case_types)]
+                    struct UpdateClosureSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::UpdateClosureRequest>
+                    for UpdateClosureSvc<T> {
+                        type Response = super::UpdateClosureResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::UpdateClosureRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::update_closure(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = UpdateClosureSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/booking.v1.BookingService/DeleteClosure" => {
+                    #[allow(non_camel_case_types)]
+                    struct DeleteClosureSvc<T: BookingService>(pub Arc<T>);
+                    impl<
+                        T: BookingService,
+                    > tonic::server::UnaryService<super::DeleteClosureRequest>
+                    for DeleteClosureSvc<T> {
+                        type Response = super::DeleteClosureResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::DeleteClosureRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as BookingService>::delete_closure(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = DeleteClosureSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

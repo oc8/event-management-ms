@@ -127,6 +127,33 @@ class GetEventResponse(betterproto.Message):
 
 
 @dataclass
+class UpdateEventRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+    name: str = betterproto.string_field(2)
+    start: str = betterproto.string_field(3)
+    end: str = betterproto.string_field(4)
+    timezone: str = betterproto.string_field(5)
+    capacity: int = betterproto.int32_field(7)
+    slot_capacity: int = betterproto.int32_field(8)
+    recurrence_rule: str = betterproto.string_field(9)
+
+
+@dataclass
+class UpdateEventResponse(betterproto.Message):
+    event: "Event" = betterproto.message_field(1)
+
+
+@dataclass
+class DeleteEventRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+
+
+@dataclass
+class DeleteEventResponse(betterproto.Message):
+    message: str = betterproto.string_field(1)
+
+
+@dataclass
 class ListEventsRequest(betterproto.Message):
     filters: "Filters" = betterproto.message_field(1)
 
@@ -160,6 +187,16 @@ class GetBookingResponse(betterproto.Message):
 
 
 @dataclass
+class DeleteBookingRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+
+
+@dataclass
+class DeleteBookingResponse(betterproto.Message):
+    message: str = betterproto.string_field(1)
+
+
+@dataclass
 class CreateClosureRequest(betterproto.Message):
     closing_from: str = betterproto.string_field(1)
     closing_to: str = betterproto.string_field(2)
@@ -169,6 +206,28 @@ class CreateClosureRequest(betterproto.Message):
 @dataclass
 class CreateClosureResponse(betterproto.Message):
     closure: "Closure" = betterproto.message_field(1)
+
+
+@dataclass
+class UpdateClosureRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+    closing_from: str = betterproto.string_field(2)
+    closing_to: str = betterproto.string_field(3)
+
+
+@dataclass
+class UpdateClosureResponse(betterproto.Message):
+    closure: "Closure" = betterproto.message_field(1)
+
+
+@dataclass
+class DeleteClosureRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+
+
+@dataclass
+class DeleteClosureResponse(betterproto.Message):
+    message: str = betterproto.string_field(1)
 
 
 class BookingServiceStub(betterproto.ServiceStub):
@@ -214,6 +273,44 @@ class BookingServiceStub(betterproto.ServiceStub):
             GetEventResponse,
         )
 
+    async def update_event(
+        self,
+        *,
+        id: str = "",
+        name: str = "",
+        start: str = "",
+        end: str = "",
+        timezone: str = "",
+        capacity: int = 0,
+        slot_capacity: int = 0,
+        recurrence_rule: str = "",
+    ) -> UpdateEventResponse:
+        request = UpdateEventRequest()
+        request.id = id
+        request.name = name
+        request.start = start
+        request.end = end
+        request.timezone = timezone
+        request.capacity = capacity
+        request.slot_capacity = slot_capacity
+        request.recurrence_rule = recurrence_rule
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/UpdateEvent",
+            request,
+            UpdateEventResponse,
+        )
+
+    async def delete_event(self, *, id: str = "") -> DeleteEventResponse:
+        request = DeleteEventRequest()
+        request.id = id
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/DeleteEvent",
+            request,
+            DeleteEventResponse,
+        )
+
     async def list_events(
         self, *, filters: Optional["Filters"] = None
     ) -> ListEventsResponse:
@@ -257,6 +354,16 @@ class BookingServiceStub(betterproto.ServiceStub):
             GetBookingResponse,
         )
 
+    async def delete_booking(self, *, id: str = "") -> DeleteBookingResponse:
+        request = DeleteBookingRequest()
+        request.id = id
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/DeleteBooking",
+            request,
+            DeleteBookingResponse,
+        )
+
     async def create_closure(
         self, *, closing_from: str = "", closing_to: str = "", organizer_key: str = ""
     ) -> CreateClosureResponse:
@@ -269,4 +376,28 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/CreateClosure",
             request,
             CreateClosureResponse,
+        )
+
+    async def update_closure(
+        self, *, id: str = "", closing_from: str = "", closing_to: str = ""
+    ) -> UpdateClosureResponse:
+        request = UpdateClosureRequest()
+        request.id = id
+        request.closing_from = closing_from
+        request.closing_to = closing_to
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/UpdateClosure",
+            request,
+            UpdateClosureResponse,
+        )
+
+    async def delete_closure(self, *, id: str = "") -> DeleteClosureResponse:
+        request = DeleteClosureRequest()
+        request.id = id
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/DeleteClosure",
+            request,
+            DeleteClosureResponse,
         )

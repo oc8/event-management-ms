@@ -31,3 +31,5 @@ CREATE TABLE events (
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
+
+SELECT diesel_manage_updated_at('events');

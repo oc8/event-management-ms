@@ -75,6 +75,11 @@ impl Booking {
         })
     }
 
+    pub fn delete(conn: &mut PgConnection, id: Uuid) -> Result<usize, diesel::result::Error> {
+        diesel::delete(bookings::dsl::bookings.filter(bookings::dsl::id.eq(id)))
+            .execute(conn)
+    }
+
     pub fn find_duplicated_booking(conn: &mut PgConnection, slot_id: Uuid, booking_holder: String, date_time: NaiveDateTime) -> Option<Booking> {
         bookings::dsl::bookings
             .select(Booking::as_select())

@@ -174,6 +174,60 @@ pub const INVALID_DATE_RANGE: ApiError = ApiError {
     message: "Invalid date range"
 };
 
+pub const EVENT_UPDATE_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "event_update_failed",
+    message: "Failed to update event"
+};
+
+pub const EVENT_DELETION_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "event_deletion_failed",
+    message: "Failed to delete event"
+};
+
+pub const BOOKING_CREATION_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "booking_creation_failed",
+    message: "Failed to create booking"
+};
+
+pub const BOOKING_DELETION_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "booking_deletion_failed",
+    message: "Failed to delete booking"
+};
+
+pub const CLOSURE_CREATION_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "closure_creation_failed",
+    message: "Failed to create closure"
+};
+
+pub const CLOSURE_NOT_FOUND: ApiError = ApiError {
+    grpc_code: Code::NotFound,
+    code: "closure_not_found",
+    message: "Closure not found"
+};
+
+pub const INVALID_CLOSURE_ID: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "invalid_closure_id",
+    message: "Invalid closure id"
+};
+
+pub const CLOSURE_UPDATE_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "closure_update_failed",
+    message: "Failed to update closure"
+};
+
+pub const CLOSURE_DELETION_FAILED: ApiError = ApiError {
+    grpc_code: Code::Internal,
+    code: "closure_deletion_failed",
+    message: "Failed to delete closure"
+};
+
 // format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);

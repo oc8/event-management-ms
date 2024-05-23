@@ -1,5 +1,5 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
-use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
+use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, AsChangeset};
 use uuid::Uuid;
 use protos::booking::v1::{TimeData};
 use crate::schema::{closures};
@@ -16,7 +16,7 @@ pub struct Closure {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Insertable, Debug)]
+#[derive(Insertable, AsChangeset, Debug)]
 #[diesel(table_name = closures)]
 pub struct NewClosure<'a> {
     pub closing_from: &'a NaiveDateTime,
@@ -48,6 +48,32 @@ impl Closure {
             .filter(closures::dsl::id.eq(slot_id))
             .first(conn)
             .ok()
+    }
+
+    pub fn update(
+        conn: &mut PgConnection,
+        closure_id: Uuid,
+        exception: NewClosure,
+    ) -> Result<Closure, diesel::result::Error> {
+        match diesel::update(closures::dsl::closures.filter(closures::dsl::id.eq(closure_id)))
+            .set(exception)
+            .returning(Closure::as_returning())
+            .get_result(conn)
+        {
+            Ok(exception) => Ok(exception),
+            Err(e) => {
+                log::error!("Failed to update closure: {}", e);
+                Err(e)
+            },
+        }
+    }
+
+    pub fn delete(
+        conn: &mut PgConnection,
+        closure_id: Uuid,
+    ) -> Result<usize, diesel::result::Error> {
+        diesel::delete(closures::dsl::closures.filter(closures::dsl::id.eq(closure_id)))
+            .execute(conn)
     }
 
     pub fn find_by_organizer_key(conn: &mut PgConnection, organizer_key: &str) -> Vec<Closure> {

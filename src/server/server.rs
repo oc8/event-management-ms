@@ -30,7 +30,7 @@ pub fn start_server(
                 }
                 Err(details) => {
                     info!("Error configuring TLS. Connections are not secure.");
-                    report_error(details);
+                    report_error(&details);
                     (Server::builder(), false)
                 }
             }
@@ -57,7 +57,7 @@ pub fn start_server(
             Ok(_) => info!("Server finished on {}", tonic_addr),
             Err(e) => {
                 warn!("Unable to start server on port {}", port);
-                report_error(e);
+                report_error(&e);
             }
         };
         ()

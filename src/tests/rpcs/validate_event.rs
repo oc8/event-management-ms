@@ -4,7 +4,7 @@ use crate::tests::{TestContext};
 use futures_util::FutureExt;
 use protos::booking::v1::booking_service_client::BookingServiceClient;
 use protos::booking::v1::booking_service_server::BookingServiceServer;
-use protos::booking::v1::{CreateEventRequest, EventType, Filters, GetActiveEventsInstancesRequest, GetActiveEventsRequest, GetEventInstancesRequest, GetEventRequest};
+use protos::booking::v1::{CreateEventRequest, EventType, Filters, GetEventRequest};
 
 //
 // validate create event tests
@@ -407,125 +407,125 @@ async fn get_event_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 // validate get active events tests
 //
 
-#[tokio::test]
-async fn get_active_events_invalid_filters() -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "get_active_events_invalid_filters", "redis://:@localhost:6382", 50201);
-    let (tx, rx) = oneshot::channel();
-    let service = ctx.service.clone();
-
-    let jh = tokio::spawn(async move {
-        Server::builder()
-            .add_service(BookingServiceServer::new(service))
-            .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
-            .await
-            .unwrap();
-    });
-
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
-
-    let request = tonic::Request::new(GetActiveEventsRequest {
-        filters: Some(Filters {
-            from: "".to_string(),
-            to: "".to_string(),
-            organizer_key: "".to_string(),
-            limit: 0,
-            offset: 0,
-        })
-    });
-
-    match client.get_active_events(request).await {
-        Ok(_) => panic!("Expected error"),
-        Err(e) => {
-            assert_eq!(e.code(), tonic::Code::InvalidArgument);
-        }
-    }
-
-    tx.send(()).unwrap();
-    jh.await.unwrap();
-    Ok(())
-}
-
+// #[tokio::test]
+// async fn get_active_events_invalid_filters() -> Result<(), Box<dyn std::error::Error>> {
+//     let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "get_active_events_invalid_filters", "redis://:@localhost:6382", 50201);
+//     let (tx, rx) = oneshot::channel();
+//     let service = ctx.service.clone();
 //
-// validate get event instances tests
+//     let jh = tokio::spawn(async move {
+//         Server::builder()
+//             .add_service(BookingServiceServer::new(service))
+//             .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
+//             .await
+//             .unwrap();
+//     });
 //
-
-#[tokio::test]
-async fn get_event_instances_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "get_event_instances_invalid_id", "redis://:@localhost:6382", 50202);
-    let (tx, rx) = oneshot::channel();
-    let service = ctx.service.clone();
-
-    let jh = tokio::spawn(async move {
-        Server::builder()
-            .add_service(BookingServiceServer::new(service))
-            .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
-            .await
-            .unwrap();
-    });
-
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
-
-    let request = tonic::Request::new(GetEventInstancesRequest {
-        event_id: "".to_string(),
-        filters: None,
-    });
-
-    match client.get_event_instances(request).await {
-        Ok(_) => panic!("Expected error"),
-        Err(e) => {
-            assert_eq!(e.code(), tonic::Code::InvalidArgument);
-        }
-    }
-
-    tx.send(()).unwrap();
-    jh.await.unwrap();
-    Ok(())
-}
-
+//     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 //
-// validate get active events instances tests
+//     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 //
-
-#[tokio::test]
-async fn get_active_events_instances_invalid_filters() -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "get_active_events_instances_invalid_filters", "redis://:@localhost:6382", 50203);
-    let (tx, rx) = oneshot::channel();
-    let service = ctx.service.clone();
-
-    let jh = tokio::spawn(async move {
-        Server::builder()
-            .add_service(BookingServiceServer::new(service))
-            .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
-            .await
-            .unwrap();
-    });
-
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
-
-    let request = tonic::Request::new(GetActiveEventsInstancesRequest {
-        filters: Some(Filters {
-            from: "".to_string(),
-            to: "".to_string(),
-            organizer_key: "".to_string(),
-            limit: 0,
-            offset: 0,
-        })
-    });
-
-    match client.get_active_events_instances(request).await {
-        Ok(_) => panic!("Expected error"),
-        Err(e) => {
-            assert_eq!(e.code(), tonic::Code::InvalidArgument);
-        }
-    }
-
-    tx.send(()).unwrap();
-    jh.await.unwrap();
-    Ok(())
-}
+//     let request = tonic::Request::new(GetActiveEventsRequest {
+//         filters: Some(Filters {
+//             from: "".to_string(),
+//             to: "".to_string(),
+//             organizer_key: "".to_string(),
+//             limit: 0,
+//             offset: 0,
+//         })
+//     });
+//
+//     match client.get_active_events(request).await {
+//         Ok(_) => panic!("Expected error"),
+//         Err(e) => {
+//             assert_eq!(e.code(), tonic::Code::InvalidArgument);
+//         }
+//     }
+//
+//     tx.send(()).unwrap();
+//     jh.await.unwrap();
+//     Ok(())
+// }
+//
+// //
+// // validate get event instances tests
+// //
+//
+// #[tokio::test]
+// async fn get_event_instances_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
+//     let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "get_event_instances_invalid_id", "redis://:@localhost:6382", 50202);
+//     let (tx, rx) = oneshot::channel();
+//     let service = ctx.service.clone();
+//
+//     let jh = tokio::spawn(async move {
+//         Server::builder()
+//             .add_service(BookingServiceServer::new(service))
+//             .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
+//             .await
+//             .unwrap();
+//     });
+//
+//     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+//
+//     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+//
+//     let request = tonic::Request::new(GetEventInstancesRequest {
+//         event_id: "".to_string(),
+//         filters: None,
+//     });
+//
+//     match client.get_event_instances(request).await {
+//         Ok(_) => panic!("Expected error"),
+//         Err(e) => {
+//             assert_eq!(e.code(), tonic::Code::InvalidArgument);
+//         }
+//     }
+//
+//     tx.send(()).unwrap();
+//     jh.await.unwrap();
+//     Ok(())
+// }
+//
+// //
+// // validate get active events instances tests
+// //
+//
+// #[tokio::test]
+// async fn get_active_events_instances_invalid_filters() -> Result<(), Box<dyn std::error::Error>> {
+//     let ctx = TestContext::new("postgres://postgres:postgres@localhost:5433", "get_active_events_instances_invalid_filters", "redis://:@localhost:6382", 50203);
+//     let (tx, rx) = oneshot::channel();
+//     let service = ctx.service.clone();
+//
+//     let jh = tokio::spawn(async move {
+//         Server::builder()
+//             .add_service(BookingServiceServer::new(service))
+//             .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
+//             .await
+//             .unwrap();
+//     });
+//
+//     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+//
+//     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+//
+//     let request = tonic::Request::new(GetActiveEventsInstancesRequest {
+//         filters: Some(Filters {
+//             from: "".to_string(),
+//             to: "".to_string(),
+//             organizer_key: "".to_string(),
+//             limit: 0,
+//             offset: 0,
+//         })
+//     });
+//
+//     match client.get_active_events_instances(request).await {
+//         Ok(_) => panic!("Expected error"),
+//         Err(e) => {
+//             assert_eq!(e.code(), tonic::Code::InvalidArgument);
+//         }
+//     }
+//
+//     tx.send(()).unwrap();
+//     jh.await.unwrap();
+//     Ok(())
+// }

@@ -7,3 +7,5 @@ CREATE TABLE closures (
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
+
+SELECT diesel_manage_updated_at('closures');

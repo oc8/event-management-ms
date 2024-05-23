@@ -2,12 +2,12 @@ use log::debug;
 use tonic::Status;
 use uuid::Uuid;
 use booking_ms::add_time_to_datetime;
-use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, GetBookingRequest, GetBookingResponse};
+use protos::booking::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::booking::{Booking, NewBooking};
 use crate::models::slot::Slot;
-use crate::validations::{validate_create_booking_request, validate_get_booking_request};
+use crate::validations::{validate_create_booking_request, validate_delete_booking_request, validate_get_booking_request};
 
 pub fn create_booking(
     request: CreateBookingRequest,
@@ -75,7 +75,7 @@ pub fn create_booking(
     };
 
     let booking = Booking::create(conn, new_booking)
-        .map_err(|_| Status::internal("Failed to create booking"))?;
+        .map_err(|_| format_error(errors::BOOKING_CREATION_FAILED))?;
 
     Ok(CreateBookingResponse{
         booking: Some(booking.into())
@@ -91,13 +91,30 @@ pub fn get_booking_by_id(
     let booking_id = Uuid::parse_str(&request.id)
         .map_err(|_| format_error(errors::INVALID_BOOKING_ID))?;
 
-    let booking = Booking::find_by_id(conn, booking_id);
-
-    if booking.is_none() {
-        return Err(format_error(errors::BOOKING_NOT_FOUND))
-    }
+    let booking = Booking::find_by_id(conn, booking_id)
+        .ok_or_else(|| format_error(errors::BOOKING_NOT_FOUND))?;
 
     Ok(GetBookingResponse{
-        booking: Some(booking.unwrap().into())
+        booking: Some(booking.into())
+    })
+}
+
+pub fn delete_booking(
+    request: DeleteBookingRequest,
+    conn: &mut PgPooledConnection
+) -> Result<DeleteBookingResponse, Status> {
+    validate_delete_booking_request(&request)?;
+
+    let booking_id = Uuid::parse_str(&request.id)
+        .map_err(|_| format_error(errors::INVALID_BOOKING_ID))?;
+
+    let _ = Booking::find_by_id(conn, booking_id)
+        .ok_or_else(|| format_error(errors::BOOKING_NOT_FOUND))?;
+
+    Booking::delete(conn, booking_id)
+        .map_err(|_| format_error(errors::BOOKING_DELETION_FAILED))?;
+
+    Ok(DeleteBookingResponse{
+        message: "Booking successfully deleted".to_string()
     })
 }

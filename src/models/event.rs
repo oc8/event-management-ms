@@ -1,5 +1,5 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
-use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods};
+use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods, AsChangeset};
 use diesel::data_types::{PgInterval};
 use rrule::RRuleSet;
 use uuid::Uuid;
@@ -9,7 +9,7 @@ use crate::models::slot::{Slot};
 use crate::models::filters::{Filters};
 use crate::schema::{events};
 
-#[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
+#[derive(Queryable, Selectable, QueryableByName, AsChangeset, PartialEq, Debug, Clone)]
 #[diesel(table_name = events)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Event {
@@ -32,7 +32,7 @@ pub struct Event {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Insertable, Debug)]
+#[derive(Insertable, AsChangeset, Debug)]
 #[diesel(table_name = events)]
 pub struct NewEvent<'a> {
     pub name: &'a str,
@@ -47,8 +47,8 @@ pub struct NewEvent<'a> {
     pub canceled_at: Option<&'a NaiveDateTime>,
     pub canceled_reason: Option<&'a str>,
     pub slot_duration: Option<&'a PgInterval>,
-    pub capacity: Option<&'a i32>,
-    pub slot_capacity: Option<&'a i32>,
+    pub capacity: Option<i32>,
+    pub slot_capacity: Option<i32>,
 }
 
 #[derive(Debug, Clone)]
@@ -102,6 +102,31 @@ impl Event {
             },
             None => None
         }
+    }
+
+    pub fn update(
+        conn: &mut PgConnection,
+        id: Uuid,
+        event: NewEvent,
+    ) -> Result<EventWithSlots, diesel::result::Error> {
+        match diesel::update(events::table.find(id))
+            .set(event)
+            .returning(Event::as_returning())
+            .get_result(conn)
+        {
+            Ok(e) => {
+                Ok(EventWithSlots::new(e, vec![]))
+            },
+            Err(e) => {
+                log::error!("failed to update event: {}", e);
+                Err(e)
+            },
+        }
+    }
+
+    pub fn delete(conn: &mut PgConnection, id: Uuid) -> Result<usize, diesel::result::Error> {
+        diesel::delete(events::table.find(id))
+            .execute(conn)
     }
 
     pub fn find_events(conn: &mut PgConnection, filters: &Filters) -> Vec<EventWithSlots> {

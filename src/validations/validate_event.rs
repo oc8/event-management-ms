@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest, EventType, GetEventRequest, ListEventsRequest};
+use protos::booking::v1::{CreateEventRequest, DeleteEventRequest, EventType, GetEventRequest, ListEventsRequest, UpdateEventRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
@@ -102,7 +102,57 @@ pub fn validate_get_event_request(req: &GetEventRequest) -> Result<(), Status> {
     Ok(())
 }
 
-pub fn validate_list_events(req: &ListEventsRequest) -> Result<(), Status> {
+pub fn validate_update_event_request(req: &UpdateEventRequest) -> Result<(), Status> {
+    let mut errors = Vec::new();
+
+    if Uuid::parse_str(&req.id).is_err() {
+        errors.push(errors::INVALID_EVENT_ID)
+    }
+
+    if !req.start.is_empty() {
+        let start = chrono::NaiveDateTime::parse_from_str(&req.start, "%Y-%m-%dT%H:%M:%S");
+        if start.is_err() {
+            errors.push(errors::INVALID_DATETIME)
+        }
+    }
+
+    if !req.end.is_empty() {
+        let end = chrono::NaiveDateTime::parse_from_str(&req.end, "%Y-%m-%dT%H:%M:%S");
+        if end.is_err() {
+            errors.push(errors::INVALID_DATETIME)
+        }
+    }
+
+    if !req.timezone.is_empty() && Tz::from_str(&req.timezone).is_err() {
+        errors.push(errors::INVALID_TIMEZONE)
+    }
+
+    if !req.recurrence_rule.is_empty() && !validate_recurrence_rule(&req.recurrence_rule) {
+        errors.push(errors::INVALID_RECURRENCE_RULE)
+    }
+
+    if !errors.is_empty() {
+        return Err(format_errors(Code::InvalidArgument, errors))
+    }
+
+    Ok(())
+}
+
+pub fn validate_delete_event_request(req: &DeleteEventRequest) -> Result<(), Status> {
+    let mut errors = Vec::new();
+
+    if Uuid::parse_str(&req.id).is_err() {
+        errors.push(errors::INVALID_EVENT_ID)
+    }
+
+    if !errors.is_empty() {
+        return Err(format_errors(Code::InvalidArgument, errors))
+    }
+
+    Ok(())
+}
+
+pub fn validate_list_events_request(req: &ListEventsRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
 
     match validate_date_filters(&req.filters) {

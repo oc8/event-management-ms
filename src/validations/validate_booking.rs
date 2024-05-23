@@ -1,7 +1,7 @@
 use tonic::{Code, Status};
 use uuid::Uuid;
 use validator::{ValidateRange};
-use protos::booking::v1::{CreateBookingRequest, GetBookingRequest};
+use protos::booking::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest};
 use crate::errors;
 use crate::errors::{format_error, format_errors};
 
@@ -33,6 +33,14 @@ pub fn validate_create_booking_request(req: &CreateBookingRequest) -> Result<(),
 }
 
 pub fn validate_get_booking_request(req: &GetBookingRequest) -> Result<(), Status> {
+    if Uuid::parse_str(&req.id).is_err() {
+        return Err(format_error(errors::INVALID_BOOKING_ID))
+    }
+
+    Ok(())
+}
+
+pub fn validate_delete_booking_request(req: &DeleteBookingRequest) -> Result<(), Status> {
     if Uuid::parse_str(&req.id).is_err() {
         return Err(format_error(errors::INVALID_BOOKING_ID))
     }

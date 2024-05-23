@@ -17,7 +17,7 @@ pub fn env_var(name: &str) -> Option<String> {
     env::var(name).ok().filter(|s| !s.is_empty())
 }
 
-pub fn report_error<E: 'static>(err: E)
+pub fn report_error<E: 'static>(err: &E)
     where
         E: std::error::Error,
         E: Send + Sync,
