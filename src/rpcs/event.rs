@@ -189,7 +189,7 @@ pub fn list_events(
     let mut events = Event::find_events(conn, &filters);
 
     let mut closures: Vec<Closure> = vec![];
-    if let Some(organizer_key) = &filters.type_filters.organizer_key {
+    if let Some(organizer_key) = &filters.organizer_key {
         closures = Closure::find_by_organizer_key(conn, organizer_key);
     }
 

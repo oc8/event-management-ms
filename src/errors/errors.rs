@@ -1,4 +1,3 @@
-use std::string::ToString;
 use tonic::{Code};
 
 pub struct ApiError {

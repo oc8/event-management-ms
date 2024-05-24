@@ -93,7 +93,7 @@ impl Closure {
             .select(Closure::as_select())
             .into_boxed();
 
-        if let Some(organizer_key) = &filters.type_filters.organizer_key {
+        if let Some(organizer_key) = &filters.organizer_key {
             query = query.filter(closures::dsl::organizer_key.eq(organizer_key));
         }
 

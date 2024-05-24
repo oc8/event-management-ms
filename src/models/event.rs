@@ -1,4 +1,6 @@
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use std::str::FromStr;
+use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
+use chrono_tz::Tz;
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods, AsChangeset};
 use diesel::data_types::{PgInterval};
 use rrule::RRuleSet;
@@ -151,7 +153,7 @@ impl Event {
             query = query.filter(events::start_time.le(to));
         }
 
-        if let Some(organizer_key) = &filters.type_filters.organizer_key {
+        if let Some(organizer_key) = &filters.organizer_key {
             query = query.filter(events::organizer_key.eq(organizer_key));
         }
         if let Some(status) = &filters.type_filters.status {

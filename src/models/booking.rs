@@ -102,7 +102,7 @@ impl Booking {
             }
         }
 
-        if let Some(organizer_key) = &filters.type_filters.organizer_key {
+        if let Some(organizer_key) = &filters.organizer_key {
             query = query.filter(bookings::dsl::organizer_key.eq(organizer_key));
         }
 

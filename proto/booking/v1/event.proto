@@ -95,15 +95,16 @@ message Filters {
   string from = 1;
   string to = 2;
   string organizer_key = 3;
+  string tz = 4;
 
   // Event filters
-  EventStatus status = 4;
-  EventType event_type = 5;
-  bool only_active = 6;
+  EventStatus status = 5;
+  EventType event_type = 6;
+  bool only_active = 7;
 
   // Booking filters
-  string booking_holder_key = 7;
-  string slot_id = 8;
+  string booking_holder_key = 8;
+  string slot_id = 9;
 }
 
 message CreateEventRequest {

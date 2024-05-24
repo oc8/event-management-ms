@@ -2395,6 +2395,9 @@ impl serde::Serialize for Filters {
         if !self.organizer_key.is_empty() {
             len += 1;
         }
+        if !self.tz.is_empty() {
+            len += 1;
+        }
         if self.status != 0 {
             len += 1;
         }
@@ -2419,6 +2422,9 @@ impl serde::Serialize for Filters {
         }
         if !self.organizer_key.is_empty() {
             struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+        }
+        if !self.tz.is_empty() {
+            struct_ser.serialize_field("tz", &self.tz)?;
         }
         if self.status != 0 {
             let v = EventStatus::try_from(self.status)
@@ -2453,6 +2459,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
             "to",
             "organizer_key",
             "organizerKey",
+            "tz",
             "status",
             "event_type",
             "eventType",
@@ -2469,6 +2476,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
             From,
             To,
             OrganizerKey,
+            Tz,
             Status,
             EventType,
             OnlyActive,
@@ -2498,6 +2506,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
                             "from" => Ok(GeneratedField::From),
                             "to" => Ok(GeneratedField::To),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
+                            "tz" => Ok(GeneratedField::Tz),
                             "status" => Ok(GeneratedField::Status),
                             "eventType" | "event_type" => Ok(GeneratedField::EventType),
                             "onlyActive" | "only_active" => Ok(GeneratedField::OnlyActive),
@@ -2525,6 +2534,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
                 let mut from__ = None;
                 let mut to__ = None;
                 let mut organizer_key__ = None;
+                let mut tz__ = None;
                 let mut status__ = None;
                 let mut event_type__ = None;
                 let mut only_active__ = None;
@@ -2549,6 +2559,12 @@ impl<'de> serde::Deserialize<'de> for Filters {
                                 return Err(serde::de::Error::duplicate_field("organizerKey"));
                             }
                             organizer_key__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Tz => {
+                            if tz__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("tz"));
+                            }
+                            tz__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Status => {
                             if status__.is_some() {
@@ -2586,6 +2602,7 @@ impl<'de> serde::Deserialize<'de> for Filters {
                     from: from__.unwrap_or_default(),
                     to: to__.unwrap_or_default(),
                     organizer_key: organizer_key__.unwrap_or_default(),
+                    tz: tz__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
                     event_type: event_type__.unwrap_or_default(),
                     only_active: only_active__.unwrap_or_default(),

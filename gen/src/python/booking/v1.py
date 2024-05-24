@@ -92,13 +92,14 @@ class Filters(betterproto.Message):
     from_: str = betterproto.string_field(1)
     to: str = betterproto.string_field(2)
     organizer_key: str = betterproto.string_field(3)
+    tz: str = betterproto.string_field(4)
     # Event filters
-    status: "EventStatus" = betterproto.enum_field(4)
-    event_type: "EventType" = betterproto.enum_field(5)
-    only_active: bool = betterproto.bool_field(6)
+    status: "EventStatus" = betterproto.enum_field(5)
+    event_type: "EventType" = betterproto.enum_field(6)
+    only_active: bool = betterproto.bool_field(7)
     # Booking filters
-    booking_holder_key: str = betterproto.string_field(7)
-    slot_id: str = betterproto.string_field(8)
+    booking_holder_key: str = betterproto.string_field(8)
+    slot_id: str = betterproto.string_field(9)
 
 
 @dataclass

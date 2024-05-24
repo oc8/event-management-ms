@@ -37,7 +37,6 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
         errors.push(errors::INVALID_DATETIME)
     }
 
-    // TODO: limit the event to one day
     let end = chrono::NaiveDateTime::parse_from_str(&req.end, "%Y-%m-%dT%H:%M:%S");
     if end.is_err() {
         errors.push(errors::INVALID_DATETIME)

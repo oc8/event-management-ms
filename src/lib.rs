@@ -1,8 +1,7 @@
 use std::env;
 use std::net::{Ipv6Addr, SocketAddr, SocketAddrV6};
 use ::log::{error, info};
-use chrono::{Datelike, DateTime, Duration, MappedLocalTime, NaiveDateTime, NaiveTime, Timelike, TimeZone};
-use diesel::data_types::PgTime;
+use chrono::{Datelike, DateTime, MappedLocalTime, NaiveDateTime, NaiveTime, Timelike, TimeZone};
 use rrule::Tz;
 
 pub fn init_service_logging() {
