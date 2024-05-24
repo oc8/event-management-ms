@@ -6,7 +6,7 @@ use chrono_tz::Tz;
 use rrule::{RRuleSet};
 use rrule::ParseError::MissingStartDate;
 use uuid::Uuid;
-use validator::{ValidateRange};
+use validator::{ValidateLength, ValidateRange};
 use crate::errors::{format_error, format_errors};
 use crate::validations::validate_date_filters;
 
@@ -76,7 +76,7 @@ pub fn validate_create_event_request(req: &CreateEventRequest) -> Result<(), Sta
         Err(_) => errors.push(errors::INVALID_EVENT_TYPE)
     }
 
-    if req.organizer_key.is_empty() {
+    if !req.organizer_key.validate_length(Some(1), Some(100), None) {
         errors.push(errors::INVALID_ORGANIZER_KEY)
     }
 
@@ -163,7 +163,7 @@ pub fn validate_list_events_request(req: &ListEventsRequest) -> Result<(), Statu
         Err(mut e) => errors.append(&mut e)
     }
 
-    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
+    if !req.filters.as_ref().unwrap().organizer_key.validate_length(Some(1), Some(100), None) {
         errors.push(errors::INVALID_ORGANIZER_KEY)
     }
 

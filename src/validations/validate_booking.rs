@@ -1,6 +1,6 @@
 use tonic::{Code, Status};
 use uuid::Uuid;
-use validator::{ValidateRange};
+use validator::{ValidateLength, ValidateRange};
 use protos::booking::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest};
 use crate::errors;
 use crate::errors::{format_error, format_errors};
@@ -8,7 +8,7 @@ use crate::errors::{format_error, format_errors};
 pub fn validate_create_booking_request(req: &CreateBookingRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
 
-    if req.booking_holder_key.is_empty() {
+    if !req.booking_holder_key.validate_length(Some(1), Some(100), None) {
         errors.push(errors::INVALID_BOOKING_HOLDER_KEY)
     }
 
@@ -21,7 +21,7 @@ pub fn validate_create_booking_request(req: &CreateBookingRequest) -> Result<(),
         errors.push(errors::INVALID_DATETIME)
     }
 
-    if !req.persons.validate_range(Option::from(0), Option::from(10000), Option::from(0), Option::from(10000)) {
+    if !req.persons.validate_range(Some(0), Some(10000), Some(0), Some(10000)) {
         errors.push(errors::INVALID_PERSONS_NUMBER)
     }
 
@@ -55,7 +55,7 @@ pub fn validate_list_bookings_request(req: &ListBookingsRequest) -> Result<(), S
         return Err(format_error(errors::INVALID_FILTERS))
     }
 
-    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
+    if !req.filters.as_ref().unwrap().organizer_key.validate_length(Some(1), Some(100), None) {
         errors.push(errors::INVALID_ORGANIZER_KEY)
     }
 

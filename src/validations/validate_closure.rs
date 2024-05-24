@@ -1,5 +1,6 @@
 use tonic::{Code, Status};
 use uuid::Uuid;
+use validator::ValidateLength;
 use protos::booking::v1::{CreateClosureRequest, DeleteClosureRequest, ListClosuresRequest, UpdateClosureRequest};
 use crate::errors;
 use crate::errors::{format_error, format_errors};
@@ -21,7 +22,7 @@ pub fn validate_create_closure_request(req: &CreateClosureRequest) -> Result<(),
         errors.push(errors::INVALID_DATE_RANGE)
     }
 
-    if req.organizer_key.is_empty() {
+    if !req.organizer_key.validate_length(Some(1), Some(100), None) {
         errors.push(errors::INVALID_ORGANIZER_KEY)
     }
 
@@ -71,7 +72,7 @@ pub fn validate_list_closures_request(req: &ListClosuresRequest) -> Result<(), S
         return Err(format_error(errors::INVALID_FILTERS))
     }
 
-    if req.filters.as_ref().unwrap().organizer_key.is_empty() {
+    if !req.filters.as_ref().unwrap().organizer_key.validate_length(Some(1), Some(100), None) {
         errors.push(errors::INVALID_ORGANIZER_KEY)
     }
 
