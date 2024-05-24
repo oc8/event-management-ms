@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse, DeleteEventRequest, DeleteEventResponse, DeleteBookingRequest, DeleteBookingResponse, UpdateClosureRequest, UpdateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListBookingsRequest, ListBookingsResponse, ListClosuresRequest, ListClosuresResponse};
+use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse, DeleteEventRequest, DeleteEventResponse, DeleteBookingRequest, DeleteBookingResponse, UpdateClosureRequest, UpdateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListBookingsRequest, ListBookingsResponse, ListClosuresRequest, ListClosuresResponse, CancelEventRequest, CancelEventResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 
@@ -55,6 +55,11 @@ impl BookingService for BookingServiceServerImpl {
     async fn list_events(&self, request: Request<ListEventsRequest>) -> Result<Response<ListEventsResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         rpcs::list_events(request.into_inner(), &mut conn).map(Response::new)
+    }
+
+    async fn cancel_event(&self, request: Request<CancelEventRequest>) -> Result<Response<CancelEventResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        rpcs::cancel_event(request.into_inner(), &mut conn).map(Response::new)
     }
 
     async fn create_booking(&self, request: Request<CreateBookingRequest>) -> Result<Response<CreateBookingResponse>, Status> {

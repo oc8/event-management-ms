@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CreateEventRequest, DeleteEventRequest, EventType, GetEventRequest, ListEventsRequest, UpdateEventRequest};
+use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, EventType, GetEventRequest, ListEventsRequest, UpdateEventRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
@@ -165,6 +165,20 @@ pub fn validate_list_events_request(req: &ListEventsRequest) -> Result<(), Statu
 
     if req.filters.as_ref().unwrap().organizer_key.is_empty() {
         errors.push(errors::INVALID_ORGANIZER_KEY)
+    }
+
+    if !errors.is_empty() {
+        return Err(format_errors(Code::InvalidArgument, errors))
+    }
+
+    Ok(())
+}
+
+pub fn validate_cancel_event_request(req: &CancelEventRequest) -> Result<(), Status> {
+    let mut errors = Vec::new();
+
+    if Uuid::parse_str(&req.id).is_err() {
+        errors.push(errors::INVALID_EVENT_ID)
     }
 
     if !errors.is_empty() {

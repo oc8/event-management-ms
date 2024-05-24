@@ -2,14 +2,14 @@ use diesel::data_types::PgInterval;
 use tonic::Status;
 use uuid::Uuid;
 use booking_ms::report_error;
-use protos::booking::v1::{CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse};
+use protos::booking::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
 use crate::models::filters::{EventFilters, Filters};
 use crate::models::timeline::Timeline;
-use crate::validations::{validate_create_event_request, validate_delete_event_request, validate_get_event_request, validate_list_events_request, validate_update_event_request};
+use crate::validations::{validate_cancel_event_request, validate_create_event_request, validate_delete_event_request, validate_get_event_request, validate_list_events_request, validate_update_event_request};
 
 pub fn create_event(
     request: CreateEventRequest,
@@ -140,11 +140,26 @@ pub fn update_event(
         start_time: &start_time,
         end_time: &end_time,
         organizer_key: &event.event.organizer_key,
-        canceled_at: None,
-        canceled_by: None,
-        canceled_reason: None,
-        slot_duration: None,
-        recurrence_rule: Some(recurrence_rule.as_ref().unwrap()),
+        canceled_at: match event.event.canceled_at.is_some() {
+            true => Some(event.event.canceled_at.as_ref().unwrap()),
+            false => None
+        },
+        canceled_by: match event.event.canceled_by.is_some() {
+            true => Some(event.event.canceled_by.as_ref().unwrap()),
+            false => None
+        },
+        canceled_reason: match event.event.canceled_reason.is_some() {
+            true => Some(event.event.canceled_reason.as_ref().unwrap()),
+            false => None
+        },
+        slot_duration: match event.event.slot_duration.is_some() {
+            true => Some(event.event.slot_duration.as_ref().unwrap()),
+            false => None
+        },
+        recurrence_rule: match recurrence_rule.is_some() {
+            true => Some(recurrence_rule.as_ref().unwrap()),
+            false => None
+        },
         slot_capacity,
         capacity,
     }).map_err(|e| {
@@ -203,5 +218,58 @@ pub fn list_events(
 
     Ok(ListEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()
+    })
+}
+
+pub fn cancel_event(
+    request: CancelEventRequest,
+    conn: &mut PgPooledConnection
+) -> Result<CancelEventResponse, Status> {
+    validate_cancel_event_request(&request)?;
+
+    let event_id = Uuid::parse_str(&request.id).unwrap();
+
+    let event = Event::find_by_id(conn, event_id)
+        .ok_or_else(|| format_error(errors::EVENT_NOT_FOUND))?;
+
+    let canceled_at = chrono::Utc::now().naive_utc();
+
+    let updated_event = Event::update(conn, event_id, NewEvent {
+        name: &event.event.name,
+        status: EventStatus::Canceled.as_str_name(),
+        event_type: &event.event.event_type,
+        timezone: &event.event.timezone,
+        start_time: &event.event.start_time,
+        end_time: &event.event.end_time,
+        organizer_key: &event.event.organizer_key,
+        canceled_at: Some(&canceled_at),
+        canceled_by: match request.canceled_by.is_empty() {
+            true => None,
+            false => Some(&request.canceled_by)
+        },
+        canceled_reason: match request.reason.is_empty() {
+            true => None,
+            false => Some(&request.reason)
+        },
+        slot_duration: Option::from(&event.event.slot_duration),
+        recurrence_rule: match event.event.recurrence_rule.is_some() {
+            true => Some(event.event.recurrence_rule.as_ref().unwrap()),
+            false => None
+        },
+        slot_capacity: match event.event.slot_capacity.is_some() {
+            true => Some(event.event.slot_capacity.unwrap()),
+            false => None
+        },
+        capacity: match event.event.capacity.is_some() {
+            true => Some(event.event.capacity.unwrap()),
+            false => None
+        }
+    }).map_err(|e| {
+        report_error(&e);
+        format_error(errors::EVENT_UPDATE_FAILED)
+    })?;
+
+    Ok(CancelEventResponse{
+        event: Some(updated_event.event.into())
     })
 }
