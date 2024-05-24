@@ -1,11 +1,10 @@
-use std::str::FromStr;
-use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use chrono_tz::Tz;
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods, AsChangeset};
 use diesel::data_types::{PgInterval};
 use rrule::RRuleSet;
 use uuid::Uuid;
-use booking_ms::format_datetime;
+use booking_ms::{format_datetime, naive_datetime_to_rrule_datetime};
 use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
 use crate::models::slot::{Slot};
 use crate::models::filters::{EventFilters, Filters};
@@ -140,10 +139,6 @@ impl Event {
             .order(events::start_time.asc())
             .into_boxed();
 
-        // let events = utils::apply_filters(query.into_boxed(), &filters)
-        //     .load::<Event>(conn)
-        //     .unwrap_or_else(|_| vec![]);
-
         if let Some(from) = &filters.from {
             query = query.filter(
                 events::start_time.ge(from).or(events::recurrence_rule.is_not_null())
@@ -230,15 +225,15 @@ impl Event {
         Ok(slots)
     }
 
-    pub fn get_available_dates(&self, limit: u16) -> Result<Vec<NaiveDate>, String> {
+    pub fn get_available_dates(&self, datetime: NaiveDateTime, limit: u16) -> Result<Vec<NaiveDate>, String> {
         if let Some(recurrence_rule) = &self.recurrence_rule {
-            Self::generate_available_dates(recurrence_rule.clone(), self.start_time, limit)
+            Self::generate_available_dates(recurrence_rule.clone(), self.start_time, datetime, limit)
         } else {
             Ok(vec![self.start_time.date()])
         }
     }
 
-    pub fn generate_available_dates(recurrence_rule: String, datetime: NaiveDateTime, limit: u16) -> Result<Vec<NaiveDate>, String> {
+    pub fn generate_available_dates(recurrence_rule: String, datetime: NaiveDateTime, after: NaiveDateTime, limit: u16) -> Result<Vec<NaiveDate>, String> {
         let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(datetime), recurrence_rule);
         let recurrence = recurrence_rule.parse::<RRuleSet>();
 
@@ -246,7 +241,9 @@ impl Event {
 
         match recurrence {
             Ok(recurrence) => {
-                Ok(recurrence.all(limit).dates
+                let after = naive_datetime_to_rrule_datetime(after).unwrap();
+                let rrule = recurrence.after(after);
+                Ok(rrule.all(limit).dates
                     .into_iter()
                     .map(|date| date.naive_utc().date())
                     .collect())

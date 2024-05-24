@@ -27,7 +27,7 @@ pub fn create_booking(
         return Err(format_error(errors::BOOKING_DATE_IN_PAST))
     }
 
-    let available_dates = event.get_available_dates(5)
+    let available_dates = event.get_available_dates(date_time, 1)
         .map_err(|_| format_error(errors::INTERNAL))?;
 
     debug!("available dates: {:?}", available_dates);
