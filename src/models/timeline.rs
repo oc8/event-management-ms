@@ -1,7 +1,7 @@
 use chrono::{NaiveDateTime};
 use rrule::{RRuleSet};
 use booking_ms::{add_time_to_datetime, format_datetime, naive_datetime_to_rrule_datetime};
-use protos::booking::v1::EventType;
+use protos::booking::v1::{EventStatus, EventType};
 use crate::models::closure::Closure;
 use crate::models::event::EventWithSlots;
 
@@ -34,6 +34,7 @@ impl Timeline {
                         let mut ve = EventWithSlots {
                             event: event.event.clone(),
                             slots: Vec::new(),
+                            overlap: false,
                         };
 
                         ve.event.end_time = d.naive_utc() + (ve.event.end_time - ve.event.start_time);
@@ -73,28 +74,38 @@ impl Timeline {
                 }
             }
         } else {
-            vec![]
+            vec![event.clone()]
         }
     }
 
     // Return all events that are included in the given time range
     // if only_active is true, only return events that have at least one active slot
     // if end is None, it will default to 7 days after the start time
-    pub fn included(&self, start: NaiveDateTime, end: Option<NaiveDateTime>, only_active: bool) -> Vec<EventWithSlots> {
-        let end = end.unwrap_or(start + chrono::Duration::days(7));
+    pub fn included(&self, start: NaiveDateTime, end: NaiveDateTime, only_active: bool) -> Vec<EventWithSlots> {
+        log::debug!("Start: {}, End: {}", start, end);
 
         let mut events: Vec<EventWithSlots> = self.events.iter().flat_map(|e| {
             self.generate_events_by_rrule(e, start, end, only_active)
         }).collect();
 
-        // Filter out events that are not within the given time range
+        // Filter out inactive events if only_active is true
         // if the event is a meeting, it should have at least one slot to be active
         events.retain(|e|
-            (e.event.event_type == EventType::as_str_name(&EventType::Meeting) && !e.slots.is_empty()) &&
-                (e.event.start_time <= end && e.event.end_time >= start)
+            (only_active && e.event.status == EventStatus::as_str_name(&EventStatus::Active) || !only_active) &&
+            (e.event.event_type == EventType::as_str_name(&EventType::Meeting) && !e.slots.is_empty() ||
+            e.event.event_type != EventType::as_str_name(&EventType::Meeting))
         );
 
         events.sort_by_key(|e| e.event.start_time);
+
+        for i in 0..events.len() {
+            for j in (i + 1)..events.len() {
+                if events[i].event.end_time > events[j].event.start_time {
+                    events[i].overlap = true;
+                    events[j].overlap = true;
+                }
+            }
+        }
 
         events
     }

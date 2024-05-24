@@ -115,13 +115,13 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
         let proto = proto.unwrap();
 
         let from = match proto.from.is_empty() {
-            true => None,
-            false => Some(NaiveDateTime::parse_from_str(format!("{}T00:00:00", proto.from).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap())
+            true => chrono::Utc::now().naive_utc(),
+            false => NaiveDateTime::parse_from_str(format!("{}T00:00:00", proto.from).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap()
         };
 
         let to = match proto.to.is_empty() {
-            true => None,
-            false => Some(NaiveDateTime::parse_from_str(format!("{}T23:59:59", proto.to).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap())
+            true => from + chrono::Duration::days(7),
+            false => NaiveDateTime::parse_from_str(format!("{}T23:59:59", proto.to).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap()
         };
 
         let organizer_key = match proto.organizer_key.is_empty() {
@@ -143,8 +143,8 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
         );
 
         Filters {
-            from,
-            to,
+            from: Some(from),
+            to: Some(to),
             organizer_key,
             tz,
             type_filters,

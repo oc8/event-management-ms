@@ -1,5 +1,4 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
-use chrono_tz::Tz;
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper, QueryResult, Connection, QueryableByName, BoolExpressionMethods, AsChangeset};
 use diesel::data_types::{PgInterval};
 use rrule::RRuleSet;
@@ -56,11 +55,12 @@ pub struct NewEvent<'a> {
 pub struct EventWithSlots {
     pub event: Event,
     pub slots: Vec<Slot>,
+    pub overlap: bool,
 }
 
 impl EventWithSlots {
     pub fn new(event: Event, slots: Vec<Slot>) -> Self {
-        EventWithSlots { event, slots }
+        EventWithSlots { event, slots, overlap: false }
     }
 }
 
@@ -306,6 +306,7 @@ impl From<EventWithSlots> for protos::booking::v1::Event {
         });
 
         proto_event.slots = slots.collect();
+        proto_event.overlap = event_with_slots.overlap;
 
         proto_event
     }

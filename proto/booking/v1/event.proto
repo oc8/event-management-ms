@@ -8,6 +8,7 @@ service BookingService {
   rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
   rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
   rpc DeleteBooking(DeleteBookingRequest) returns (DeleteBookingResponse);
@@ -48,11 +49,12 @@ message Event {
   string recurrence_rule = 7;
   string organizer_key = 8;
   Cancellation cancellation = 9;
-  repeated Slot slots = 10;
-  int64 slot_duration = 11;
-  int32 capacity = 12;
-  int64 created_at = 13;
-  int64 updated_at = 14;
+  bool overlap = 10;
+  repeated Slot slots = 11;
+  int64 slot_duration = 12;
+  int32 capacity = 13;
+  int64 created_at = 14;
+  int64 updated_at = 15;
 }
 
 message Cancellation {
@@ -161,6 +163,16 @@ message ListEventsRequest {
 
 message ListEventsResponse {
   repeated Event events = 1;
+}
+
+message CancelEventRequest {
+  string id = 1;
+  string canceled_by = 2;
+  string reason = 3;
+}
+
+message CancelEventResponse {
+  Event event = 1;
 }
 
 message CreateBookingRequest {

@@ -40,11 +40,12 @@ class Event(betterproto.Message):
     recurrence_rule: str = betterproto.string_field(7)
     organizer_key: str = betterproto.string_field(8)
     cancellation: "Cancellation" = betterproto.message_field(9)
-    slots: List["Slot"] = betterproto.message_field(10)
-    slot_duration: int = betterproto.int64_field(11)
-    capacity: int = betterproto.int32_field(12)
-    created_at: int = betterproto.int64_field(13)
-    updated_at: int = betterproto.int64_field(14)
+    overlap: bool = betterproto.bool_field(10)
+    slots: List["Slot"] = betterproto.message_field(11)
+    slot_duration: int = betterproto.int64_field(12)
+    capacity: int = betterproto.int32_field(13)
+    created_at: int = betterproto.int64_field(14)
+    updated_at: int = betterproto.int64_field(15)
 
 
 @dataclass
@@ -166,6 +167,18 @@ class ListEventsRequest(betterproto.Message):
 @dataclass
 class ListEventsResponse(betterproto.Message):
     events: List["Event"] = betterproto.message_field(1)
+
+
+@dataclass
+class CancelEventRequest(betterproto.Message):
+    id: str = betterproto.string_field(1)
+    canceled_by: str = betterproto.string_field(2)
+    reason: str = betterproto.string_field(3)
+
+
+@dataclass
+class CancelEventResponse(betterproto.Message):
+    event: "Event" = betterproto.message_field(1)
 
 
 @dataclass
@@ -347,6 +360,20 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/ListEvents",
             request,
             ListEventsResponse,
+        )
+
+    async def cancel_event(
+        self, *, id: str = "", canceled_by: str = "", reason: str = ""
+    ) -> CancelEventResponse:
+        request = CancelEventRequest()
+        request.id = id
+        request.canceled_by = canceled_by
+        request.reason = reason
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/CancelEvent",
+            request,
+            CancelEventResponse,
         )
 
     async def create_booking(

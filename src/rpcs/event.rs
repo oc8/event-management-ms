@@ -210,11 +210,8 @@ pub fn list_events(
 
     let timeline = Timeline::new(events.clone(), closures.clone());
 
-    let from = filters.from.clone();
     let to = filters.to.clone();
-    if from.is_some() {
-        events = timeline.included(from.unwrap(), to, filters.type_filters.only_active.unwrap());
-    }
+    events = timeline.included(filters.from.unwrap(), to.unwrap(), filters.type_filters.only_active.unwrap());
 
     Ok(ListEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()
