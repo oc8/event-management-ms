@@ -31,3 +31,4 @@ buf generate
 - [ ] Add a validation error struct to improve errors messages
 - [x] Add overlapping event boolean field to the event struct
 - [x] Validate strings max size
+- [x] Add caching

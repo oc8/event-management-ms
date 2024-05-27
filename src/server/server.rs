@@ -18,7 +18,7 @@ pub fn start_server(
     r_client: redis::Client,
     port: u16,
 ) -> Result<TonicServer, Box<dyn std::error::Error>> {
-    let echo = BookingServiceServerImpl { pool,  r_client };
+    let booking_service = BookingServiceServerImpl::new(pool, r_client);
 
     let (mut tonic_server, secure_mode) = match get_tls_config() {
         Some(tls) => {
@@ -41,6 +41,8 @@ pub fn start_server(
         }
     };
 
+    let grpc_booking_service = BookingServiceServer::new(booking_service);
+
     let reflect = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(protos::booking::v1::FILE_DESCRIPTOR_SET)
         .build()
@@ -48,7 +50,7 @@ pub fn start_server(
 
     let tonic_router = tonic_server
         .add_service(reflect)
-        .add_service(BookingServiceServer::new(echo));
+        .add_service(grpc_booking_service);
 
     let server = tokio::spawn(async move {
         let tonic_addr = create_socket_addr(port);

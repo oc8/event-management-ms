@@ -4,7 +4,7 @@ use crate::tests::{TestContext};
 use futures_util::FutureExt;
 use protos::booking::v1::booking_service_client::BookingServiceClient;
 use protos::booking::v1::booking_service_server::BookingServiceServer;
-use protos::booking::v1::{CreateEventRequest, EventType, GetEventRequest};
+use protos::booking::v1::{CreateEventRequest, EventType, Filters, GetEventRequest, ListEventsRequest};
 
 #[tokio::test]
 async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
