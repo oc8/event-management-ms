@@ -3,10 +3,10 @@ use std::sync::Arc;
 use ::log::{info, warn};
 use tokio::task::JoinHandle;
 use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
-use protos::grpc::examples::echo::echo_server::EchoServer;
-use rust_server::{create_socket_addr, env_var, report_error};
+use protos::booking::v1::booking_service_server::BookingServiceServer;
+use booking_ms::{create_socket_addr, env_var, report_error};
 use crate::database::PgPool;
-use crate::services::echo::EchoService;
+use crate::services::booking::BookingServiceServerImpl;
 
 pub struct TonicServer {
     pub handle: JoinHandle<()>,
@@ -18,7 +18,7 @@ pub fn start_server(
     r_client: redis::Client,
     port: u16,
 ) -> Result<TonicServer, Box<dyn std::error::Error>> {
-    let echo = EchoService { pool,  r_client };
+    let booking_service = BookingServiceServerImpl::new(pool, r_client);
 
     let (mut tonic_server, secure_mode) = match get_tls_config() {
         Some(tls) => {
@@ -30,7 +30,7 @@ pub fn start_server(
                 }
                 Err(details) => {
                     info!("Error configuring TLS. Connections are not secure.");
-                    report_error(details);
+                    report_error(&details);
                     (Server::builder(), false)
                 }
             }
@@ -41,14 +41,16 @@ pub fn start_server(
         }
     };
 
+    let grpc_booking_service = BookingServiceServer::new(booking_service);
+
     let reflect = tonic_reflection::server::Builder::configure()
-        .register_encoded_file_descriptor_set(protos::grpc::examples::echo::FILE_DESCRIPTOR_SET)
+        .register_encoded_file_descriptor_set(protos::booking::v1::FILE_DESCRIPTOR_SET)
         .build()
         .unwrap();
 
     let tonic_router = tonic_server
         .add_service(reflect)
-        .add_service(EchoServer::new(echo));
+        .add_service(grpc_booking_service);
 
     let server = tokio::spawn(async move {
         let tonic_addr = create_socket_addr(port);
@@ -57,7 +59,7 @@ pub fn start_server(
             Ok(_) => info!("Server finished on {}", tonic_addr),
             Err(e) => {
                 warn!("Unable to start server on port {}", port);
-                report_error(e);
+                report_error(&e);
             }
         };
         ()

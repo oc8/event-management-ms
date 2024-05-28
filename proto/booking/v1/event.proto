@@ -1,0 +1,247 @@
+syntax = "proto3";
+
+package booking.v1;
+
+service BookingService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
+  rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
+  rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
+  rpc DeleteBooking(DeleteBookingRequest) returns (DeleteBookingResponse);
+  rpc ListBookings(ListBookingsRequest) returns (ListBookingsResponse);
+  rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
+  rpc UpdateClosure(UpdateClosureRequest) returns (UpdateClosureResponse);
+  rpc DeleteClosure(DeleteClosureRequest) returns (DeleteClosureResponse);
+  rpc ListClosures(ListClosuresRequest) returns (ListClosuresResponse);
+}
+
+enum EventStatus {
+  EVENT_STATUS_UNSPECIFIED = 0;
+  EVENT_STATUS_ACTIVE = 1;
+  EVENT_STATUS_CANCELED = 2;
+  EVENT_STATUS_FULL = 3;
+  EVENT_STATUS_DISABLE = 4;
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_EVENT = 1;
+  EVENT_TYPE_TASK = 2;
+  EVENT_TYPE_MEETING = 3;
+}
+
+message TimeData {
+  string timezone = 1;
+  string date_time = 2;
+}
+
+message Event {
+  string id = 1;
+  string name = 2;
+  EventType event_type = 3;
+  EventStatus status = 4;
+  TimeData start = 5;
+  TimeData end = 6;
+  string recurrence_rule = 7;
+  string organizer_key = 8;
+  Cancellation cancellation = 9;
+  bool overlap = 10;
+  repeated Slot slots = 11;
+  int64 slot_duration = 12;
+  int32 capacity = 13;
+  int64 created_at = 14;
+  int64 updated_at = 15;
+}
+
+message Cancellation {
+  string canceled_by = 1;
+  string reason = 2;
+  TimeData created_at = 3;
+}
+
+message Slot {
+  string id = 1;
+  string event_id = 2;
+  TimeData start = 3;
+  TimeData end = 4;
+  int32 capacity = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message Booking {
+  string id = 1;
+  string booking_holder_key = 2;
+  string slot_id = 3;
+  Slot slot = 4;
+  TimeData date_time = 5;
+  int32 persons = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
+}
+
+message Closure {
+  string id = 1;
+  TimeData closing_from = 2;
+  TimeData closing_to = 3;
+  string organizer_key = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message Filters {
+  string from = 1;
+  string to = 2;
+  string organizer_key = 3;
+  string tz = 4;
+
+  // Event filters
+  EventStatus status = 5;
+  EventType event_type = 6;
+  bool only_active = 7;
+
+  // Booking filters
+  string booking_holder_key = 8;
+  string slot_id = 9;
+}
+
+message CreateEventRequest {
+  string name = 1;
+  string start = 2;
+  string end = 3;
+  string timezone = 4;
+  string organizer_key = 5;
+  int64 slot_duration = 6;
+  int32 capacity = 7;
+  int32 slot_capacity = 8;
+  string recurrence_rule = 9;
+  EventType event_type = 10;
+}
+
+message CreateEventResponse {
+  Event event = 1;
+}
+
+message GetEventRequest {
+  string id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
+}
+
+message UpdateEventRequest {
+  string id = 1;
+  string name = 2;
+  string start = 3;
+  string end = 4;
+  string timezone = 5;
+  int32 capacity = 7;
+  int32 slot_capacity = 8;
+  string recurrence_rule = 9;
+}
+
+message UpdateEventResponse {
+  Event event = 1;
+}
+
+message DeleteEventRequest {
+  string id = 1;
+}
+
+message DeleteEventResponse {
+  string message = 1;
+}
+
+message ListEventsRequest {
+  Filters filters = 1;
+}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message CancelEventRequest {
+  string id = 1;
+  string canceled_by = 2;
+  string reason = 3;
+}
+
+message CancelEventResponse {
+  Event event = 1;
+}
+
+message CreateBookingRequest {
+  string booking_holder_key = 1;
+  string slot_id = 2;
+  string date_time = 3;
+  int32 persons = 4;
+}
+
+message CreateBookingResponse {
+  Booking booking = 1;
+}
+
+message GetBookingRequest {
+  string id = 1;
+}
+
+message GetBookingResponse {
+  Booking booking = 1;
+}
+
+message DeleteBookingRequest {
+  string id = 1;
+}
+
+message DeleteBookingResponse {
+  string message = 1;
+}
+
+message ListBookingsRequest {
+  Filters filters = 1;
+}
+
+message ListBookingsResponse {
+  repeated Booking bookings = 1;
+}
+
+message CreateClosureRequest {
+  string closing_from = 1;
+  string closing_to = 2;
+  string organizer_key = 3;
+}
+
+message CreateClosureResponse {
+  Closure closure = 1;
+}
+
+message UpdateClosureRequest {
+  string id = 1;
+  string closing_from = 2;
+  string closing_to = 3;
+}
+
+message UpdateClosureResponse {
+  Closure closure = 1;
+}
+
+message DeleteClosureRequest {
+  string id = 1;
+}
+
+message DeleteClosureResponse {
+  string message = 1;
+}
+
+message ListClosuresRequest {
+  Filters filters = 1;
+}
+
+message ListClosuresResponse {
+  repeated Closure closures = 1;
+}

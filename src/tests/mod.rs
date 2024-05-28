@@ -5,19 +5,19 @@ use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use redis::Client;
 use crate::database::{establish_pool, PgPooledConnection};
-use crate::services::echo::{EchoService, get_connection};
+use crate::services::booking::{BookingServiceServerImpl, get_connection};
 
-// const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
+const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
-pub mod integration;
 pub mod fixtures;
+pub mod rpcs;
 
 struct TestContext {
     db_url: String,
     db_name: String,
     addr: SocketAddr,
     url: String,
-    service: EchoService,
+    service: BookingServiceServerImpl,
 }
 
 // TODO: Add mock redis server
@@ -34,9 +34,9 @@ impl TestContext {
 
         let pool = Arc::new(establish_pool(format!("{}/{}", db_url, db_name)));
 
-        // let mut conn = get_connection(&pool)
-        //     .expect("Cannot connect to database");
-        // conn.run_pending_migrations(MIGRATIONS).unwrap();
+        let mut conn = get_connection(&pool)
+            .expect("Cannot connect to database");
+        conn.run_pending_migrations(MIGRATIONS).unwrap();
 
         let addr: SocketAddr = format!("0.0.0.0:{}", port).parse().unwrap();
         let url = format!("http://{}:{}", addr.ip(), addr.port());
@@ -44,7 +44,7 @@ impl TestContext {
         let r_client = Client::open(r_url)
             .expect("Cannot connect to redis server");
 
-        let echo = EchoService {
+        let echo = BookingServiceServerImpl {
             pool,
             r_client,
         };

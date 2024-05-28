@@ -1,13 +1,5 @@
 version: "3.9"
 services:
-#  app:
-#    build: .
-#    container_name: "auth-service-rust"
-#    restart: always
-#    volumes:
-#      - .:/app
-#    command: sh -c "cargo watch -x run"
-
   db:
     image: postgres:13
     restart: always
@@ -15,18 +7,18 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=auth_service
+      - POSTGRES_DB=booking_service
     ports:
-      - "5432:5432"
+      - "5433:5432"
   redis:
     image: redis:latest
     restart: always
     container_name: "rust-server-redis"
     ports:
-      - "6379:6379"
+      - "6381:6379"
   redis-test:
     image: redis:latest
     restart: always
     container_name: "rust-server-redis-test"
     ports:
-      - "6380:6379"
+      - "6382:6379"
