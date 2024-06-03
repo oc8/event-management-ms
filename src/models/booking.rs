@@ -169,6 +169,7 @@ impl From<Booking> for protos::booking::v1::Booking {
             timezone: "UTC".to_string(),
             date_time: DateTime::<Utc>::from_naive_utc_and_offset(booking.date_time, Utc).to_rfc3339()
         });
+        proto_booking.persons = booking.persons;
         proto_booking.created_at = booking.created_at.and_utc().timestamp();
         proto_booking.updated_at = booking.updated_at.and_utc().timestamp();
 
