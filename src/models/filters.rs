@@ -6,7 +6,6 @@ pub struct Filters<T> {
     pub from: Option<NaiveDateTime>,
     pub to: Option<NaiveDateTime>,
     pub organizer_key: Option<String>,
-    pub tz: Option<String>,
     pub type_filters: T,
 }
 
@@ -15,14 +14,12 @@ impl<T> Filters<T> {
         from: Option<NaiveDateTime>,
         to: Option<NaiveDateTime>,
         organizer_key: Option<String>,
-        tz: Option<String>,
         type_filters: T,
     ) -> Self {
         Filters {
             from,
             to,
             organizer_key,
-            tz,
             type_filters,
         }
     }
@@ -34,7 +31,6 @@ trait AdditionalFilterFields {
     fn create_type_filters(
         status: Option<EventStatus>,
         event_type: Option<EventType>,
-        only_active: Option<bool>,
         booking_holder_key: Option<String>,
         slot_id: Option<String>,
     ) -> Self::TypeFilters;
@@ -44,7 +40,6 @@ trait AdditionalFilterFields {
 pub struct EventFilters {
     pub status: Option<EventStatus>,
     pub event_type: Option<EventType>,
-    pub only_active: Option<bool>,
 }
 
 impl AdditionalFilterFields for EventFilters {
@@ -53,14 +48,12 @@ impl AdditionalFilterFields for EventFilters {
     fn create_type_filters(
         status: Option<EventStatus>,
         event_type: Option<EventType>,
-        only_active: Option<bool>,
         _: Option<String>,
         _: Option<String>,
     ) -> Self {
         EventFilters {
             status,
             event_type,
-            only_active,
         }
     }
 }
@@ -77,7 +70,6 @@ impl AdditionalFilterFields for BookingFilters {
     fn create_type_filters(
         _: Option<EventStatus>, // Placeholder for EventFilters fields
         _: Option<EventType>,
-        _: Option<bool>,
         booking_holder_key: Option<String>,
         slot_id: Option<String>,
     ) -> Self {
@@ -97,7 +89,6 @@ impl AdditionalFilterFields for ClosureFilters {
     fn create_type_filters(
         _: Option<EventStatus>, // Placeholder for EventFilters fields
         _: Option<EventType>,
-        _: Option<bool>,
         _: Option<String>, // Placeholder for BookingFilters fields
         _: Option<String>,
     ) -> Self {
@@ -129,15 +120,9 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
             false => Some(proto.organizer_key)
         };
 
-        let tz = match proto.tz.is_empty() {
-            true => None,
-            false => Some(proto.tz)
-        };
-
         let type_filters = T::create_type_filters(
             Some(EventStatus::try_from(proto.status).unwrap()),
             Some(EventType::try_from(proto.event_type).unwrap()),
-            Some(proto.only_active),
             Some(proto.booking_holder_key),
             Some(proto.slot_id),
         );
@@ -146,7 +131,6 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
             from: Some(from),
             to: Some(to),
             organizer_key,
-            tz,
             type_filters,
         }
     }

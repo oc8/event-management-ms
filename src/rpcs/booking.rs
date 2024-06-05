@@ -7,7 +7,7 @@ use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::models::booking::{Booking, NewBooking};
 use crate::models::filters::{BookingFilters, Filters};
-use crate::models::slot::Slot;
+use crate::models::slot::DbSlot;
 use crate::validations::{validate_create_booking_request, validate_delete_booking_request, validate_get_booking_request, validate_list_bookings_request};
 
 pub fn create_booking(
@@ -17,7 +17,7 @@ pub fn create_booking(
     validate_create_booking_request(&request)?;
 
     let slot_id = Uuid::parse_str(&request.slot_id).map_err(|_| format_error(errors::INVALID_SLOT_ID))?;
-    let (slot, event) = Slot::find_by_id_with_event(conn, slot_id)
+    let (slot, event) = DbSlot::find_by_id_with_event(conn, slot_id)
         .ok_or_else(|| format_error(errors::SLOT_NOT_FOUND))?;
 
     let date_time = chrono::NaiveDateTime::parse_from_str(&request.date_time, "%Y-%m-%dT%H:%M:%S")
@@ -33,7 +33,7 @@ pub fn create_booking(
     debug!("available dates: {:?}", available_dates);
 
     if
-        date_time.time() != slot.start_time ||
+        date_time.time() != slot.slot.start_time ||
         (event.recurrence_rule.is_some() && !available_dates.contains(&date_time.date()))
     {
         return Err(format_error(errors::BOOKING_DATE_TIME_MISMATCH))
@@ -54,10 +54,10 @@ pub fn create_booking(
         },
         // Check capacity by slot
         None => {
-            let sum_persons = Booking::sum_persons_by_datetime(conn, slot.id, date_time)
+            let sum_persons = Booking::sum_persons_by_datetime(conn, slot.slot.id, date_time)
                 .unwrap_or(0);
 
-            if sum_persons + request.persons >= slot.capacity {
+            if sum_persons + request.persons >= slot.slot.capacity {
                 return Err(format_error(errors::BOOKING_CAPACITY_FULL))
             }
         }

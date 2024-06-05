@@ -5,7 +5,7 @@ use rrule::RRuleSet;
 use uuid::Uuid;
 use booking_ms::{format_datetime, naive_datetime_to_rrule_datetime};
 use protos::booking::v1::{Cancellation, EventStatus, EventType, TimeData};
-use crate::models::slot::{Slot};
+use crate::models::slot::{Slot, DbSlot};
 use crate::models::filters::{EventFilters, Filters};
 use crate::schema::{events};
 
@@ -97,7 +97,7 @@ impl Event {
 
         match event {
             Some(e) => {
-                let slots = Slot::find_by_event_id(conn, e.id)
+                let slots = DbSlot::find_by_event_id(conn, e.id)
                     .unwrap_or_else(|| vec![]);
                 Some(EventWithSlots::new(e, slots))
             },
@@ -174,7 +174,7 @@ impl Event {
             .into_iter()
             .filter_map(|event| {
                 if event.event_type == EventType::as_str_name(&EventType::Meeting) {
-                    let slots = Slot::find_by_event_id(conn, event.id)
+                    let slots = DbSlot::find_by_event_id(conn, event.id)
                         .unwrap_or_else(|| vec![]);
                     Some(EventWithSlots::new(event, slots))
                 } else {
@@ -219,7 +219,7 @@ impl Event {
         .expect("Failed to generate time slots");
 
         // TODO: find a way to return the slots without querying the database again
-        let slots = Slot::find_by_event_id(conn, event.id)
+        let slots = DbSlot::find_by_event_id(conn, event.id)
             .unwrap_or_else(|| vec![]);
 
         Ok(slots)

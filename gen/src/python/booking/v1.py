@@ -12,8 +12,9 @@ class EventStatus(betterproto.Enum):
     EVENT_STATUS_UNSPECIFIED = 0
     EVENT_STATUS_ACTIVE = 1
     EVENT_STATUS_CANCELED = 2
-    EVENT_STATUS_FULL = 3
-    EVENT_STATUS_DISABLE = 4
+    EVENT_STATUS_CLOSED = 3
+    EVENT_STATUS_FULL = 4
+    EVENT_STATUS_DISABLE = 5
 
 
 class EventType(betterproto.Enum):
@@ -21,6 +22,13 @@ class EventType(betterproto.Enum):
     EVENT_TYPE_EVENT = 1
     EVENT_TYPE_TASK = 2
     EVENT_TYPE_MEETING = 3
+
+
+class SlotStatus(betterproto.Enum):
+    SLOT_STATUS_UNSPECIFIED = 0
+    SLOT_STATUS_AVAILABLE = 1
+    SLOT_STATUS_FULL = 2
+    SLOT_STATUS_CLOSED = 3
 
 
 @dataclass
@@ -62,8 +70,9 @@ class Slot(betterproto.Message):
     start: "TimeData" = betterproto.message_field(3)
     end: "TimeData" = betterproto.message_field(4)
     capacity: int = betterproto.int32_field(5)
-    created_at: int = betterproto.int64_field(6)
-    updated_at: int = betterproto.int64_field(7)
+    status: "SlotStatus" = betterproto.enum_field(6)
+    created_at: int = betterproto.int64_field(7)
+    updated_at: int = betterproto.int64_field(8)
 
 
 @dataclass
@@ -93,11 +102,9 @@ class Filters(betterproto.Message):
     from_: str = betterproto.string_field(1)
     to: str = betterproto.string_field(2)
     organizer_key: str = betterproto.string_field(3)
-    tz: str = betterproto.string_field(4)
     # Event filters
     status: "EventStatus" = betterproto.enum_field(5)
     event_type: "EventType" = betterproto.enum_field(6)
-    only_active: bool = betterproto.bool_field(7)
     # Booking filters
     booking_holder_key: str = betterproto.string_field(8)
     slot_id: str = betterproto.string_field(9)
@@ -157,16 +164,6 @@ class DeleteEventRequest(betterproto.Message):
 @dataclass
 class DeleteEventResponse(betterproto.Message):
     message: str = betterproto.string_field(1)
-
-
-@dataclass
-class ListEventsRequest(betterproto.Message):
-    filters: "Filters" = betterproto.message_field(1)
-
-
-@dataclass
-class ListEventsResponse(betterproto.Message):
-    events: List["Event"] = betterproto.message_field(1)
 
 
 @dataclass
@@ -268,6 +265,16 @@ class ListClosuresResponse(betterproto.Message):
     closures: List["Closure"] = betterproto.message_field(1)
 
 
+@dataclass
+class GetTimelineRequest(betterproto.Message):
+    filters: "Filters" = betterproto.message_field(1)
+
+
+@dataclass
+class GetTimelineResponse(betterproto.Message):
+    events: List["Event"] = betterproto.message_field(1)
+
+
 class BookingServiceStub(betterproto.ServiceStub):
     async def create_event(
         self,
@@ -347,19 +354,6 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/DeleteEvent",
             request,
             DeleteEventResponse,
-        )
-
-    async def list_events(
-        self, *, filters: Optional["Filters"] = None
-    ) -> ListEventsResponse:
-        request = ListEventsRequest()
-        if filters is not None:
-            request.filters = filters
-
-        return await self._unary_unary(
-            "/booking.v1.BookingService/ListEvents",
-            request,
-            ListEventsResponse,
         )
 
     async def cancel_event(
@@ -478,4 +472,17 @@ class BookingServiceStub(betterproto.ServiceStub):
             "/booking.v1.BookingService/ListClosures",
             request,
             ListClosuresResponse,
+        )
+
+    async def get_timeline(
+        self, *, filters: Optional["Filters"] = None
+    ) -> GetTimelineResponse:
+        request = GetTimelineRequest()
+        if filters is not None:
+            request.filters = filters
+
+        return await self._unary_unary(
+            "/booking.v1.BookingService/GetTimeline",
+            request,
+            GetTimelineResponse,
         )

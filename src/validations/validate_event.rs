@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use tonic::{Code, Status};
-use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, EventType, GetEventRequest, ListEventsRequest, UpdateEventRequest};
+use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, EventType, GetEventRequest, GetTimelineRequest, UpdateEventRequest};
 use crate::errors;
 use chrono_tz::Tz;
 use rrule::{RRuleSet};
@@ -151,7 +151,7 @@ pub fn validate_delete_event_request(req: &DeleteEventRequest) -> Result<(), Sta
     Ok(())
 }
 
-pub fn validate_list_events_request(req: &ListEventsRequest) -> Result<(), Status> {
+pub fn validate_get_timeline_request(req: &GetTimelineRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
 
     if req.filters.is_none() {

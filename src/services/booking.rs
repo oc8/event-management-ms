@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse, DeleteEventRequest, DeleteEventResponse, DeleteBookingRequest, DeleteBookingResponse, UpdateClosureRequest, UpdateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListBookingsRequest, ListBookingsResponse, ListClosuresRequest, ListClosuresResponse, CancelEventRequest, CancelEventResponse};
+use protos::booking::v1::{booking_service_server::BookingService, CreateBookingRequest, CreateBookingResponse, CreateEventRequest, CreateEventResponse, CreateClosureRequest, CreateClosureResponse, GetBookingRequest, GetBookingResponse, GetEventRequest, GetEventResponse, UpdateEventRequest, UpdateEventResponse, DeleteEventRequest, DeleteEventResponse, DeleteBookingRequest, DeleteBookingResponse, UpdateClosureRequest, UpdateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListBookingsRequest, ListBookingsResponse, ListClosuresRequest, ListClosuresResponse, CancelEventRequest, CancelEventResponse, GetTimelineRequest, GetTimelineResponse};
 use crate::database::{PgPool, PgPooledConnection};
 use crate::{errors, rpcs};
 
@@ -224,16 +224,7 @@ impl BookingService for BookingServiceServerImpl {
 
         rpcs::delete_event(inner_request, &mut conn).map(Response::new)
     }
-
-    async fn list_events(&self, request: Request<ListEventsRequest>) -> Result<Response<ListEventsResponse>, Status> {
-        let mut conn = get_connection(&self.pool)?;
-        let request_inner = request.into_inner();
-
-        self.handle_cache("list_events", &request_inner, || {
-            rpcs::list_events(request_inner.clone(), &mut conn).map(Response::new)
-        }).await
-    }
-
+    
     async fn cancel_event(&self, request: Request<CancelEventRequest>) -> Result<Response<CancelEventResponse>, Status> {
         let mut conn = get_connection(&self.pool)?;
         let request_inner = request.into_inner();
@@ -322,6 +313,15 @@ impl BookingService for BookingServiceServerImpl {
 
         self.handle_cache("list_closures", &inner_request, || {
             rpcs::list_closures(inner_request.clone(), &mut conn).map(Response::new)
+        }).await
+    }
+
+    async fn get_timeline(&self, request: Request<GetTimelineRequest>) -> Result<Response<GetTimelineResponse>, Status> {
+        let mut conn = get_connection(&self.pool)?;
+        let request_inner = request.into_inner();
+
+        self.handle_cache("list_events", &request_inner, || {
+            rpcs::get_timeline(request_inner.clone(), &mut conn).map(Response::new)
         }).await
     }
 }

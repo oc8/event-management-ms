@@ -7,7 +7,6 @@ service BookingService {
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
   rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
   rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
-  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
   rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
@@ -17,14 +16,16 @@ service BookingService {
   rpc UpdateClosure(UpdateClosureRequest) returns (UpdateClosureResponse);
   rpc DeleteClosure(DeleteClosureRequest) returns (DeleteClosureResponse);
   rpc ListClosures(ListClosuresRequest) returns (ListClosuresResponse);
+  rpc GetTimeline(GetTimelineRequest) returns (GetTimelineResponse);
 }
 
 enum EventStatus {
   EVENT_STATUS_UNSPECIFIED = 0;
   EVENT_STATUS_ACTIVE = 1;
   EVENT_STATUS_CANCELED = 2;
-  EVENT_STATUS_FULL = 3;
-  EVENT_STATUS_DISABLE = 4;
+  EVENT_STATUS_CLOSED = 3;
+  EVENT_STATUS_FULL = 4;
+  EVENT_STATUS_DISABLE = 5;
 }
 
 enum EventType {
@@ -63,14 +64,22 @@ message Cancellation {
   TimeData created_at = 3;
 }
 
+enum SlotStatus {
+  SLOT_STATUS_UNSPECIFIED = 0;
+  SLOT_STATUS_AVAILABLE = 1;
+  SLOT_STATUS_FULL = 2;
+  SLOT_STATUS_CLOSED = 3;
+}
+
 message Slot {
   string id = 1;
   string event_id = 2;
   TimeData start = 3;
   TimeData end = 4;
   int32 capacity = 5;
-  int64 created_at = 6;
-  int64 updated_at = 7;
+  SlotStatus status = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
 }
 
 message Booking {
@@ -97,12 +106,10 @@ message Filters {
   string from = 1;
   string to = 2;
   string organizer_key = 3;
-  string tz = 4;
 
   // Event filters
   EventStatus status = 5;
   EventType event_type = 6;
-  bool only_active = 7;
 
   // Booking filters
   string booking_holder_key = 8;
@@ -155,14 +162,6 @@ message DeleteEventRequest {
 
 message DeleteEventResponse {
   string message = 1;
-}
-
-message ListEventsRequest {
-  Filters filters = 1;
-}
-
-message ListEventsResponse {
-  repeated Event events = 1;
 }
 
 message CancelEventRequest {
@@ -244,4 +243,12 @@ message ListClosuresRequest {
 
 message ListClosuresResponse {
   repeated Closure closures = 1;
+}
+
+message GetTimelineRequest {
+  Filters filters = 1;
+}
+
+message GetTimelineResponse {
+  repeated Event events = 1;
 }

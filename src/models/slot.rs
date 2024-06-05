@@ -2,7 +2,7 @@ use chrono::{NaiveDateTime, NaiveTime};
 use diesel::{ExpressionMethods, Insertable, PgConnection, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper};
 use diesel::data_types::{PgTime};
 use uuid::Uuid;
-use protos::booking::v1::{TimeData};
+use protos::booking::v1::{TimeData, SlotStatus as SlotStatusProto};
 use diesel::prelude::*;
 use diesel::sql_query;
 use crate::models::event::Event;
@@ -11,7 +11,7 @@ use crate::schema::{event_slots, events};
 #[derive(Queryable, Selectable, QueryableByName, PartialEq, Debug, Clone)]
 #[diesel(table_name = event_slots)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct Slot {
+pub struct DbSlot {
     pub id: Uuid,
     pub event_id: Uuid,
     pub start_time: NaiveTime,
@@ -30,17 +30,28 @@ pub struct NewSlot<'a> {
     pub capacity: &'a i32,
 }
 
-impl Slot {
+#[derive(Debug, Clone)]
+pub struct Slot {
+    pub slot: DbSlot,
+    pub status: SlotStatusProto,
+}
+
+impl DbSlot {
     pub fn create(
         conn: &mut PgConnection,
         slot: NewSlot,
     ) -> Result<Slot, diesel::result::Error> {
         match diesel::insert_into(event_slots::table)
             .values(slot)
-            .returning(Slot::as_returning())
+            .returning(DbSlot::as_returning())
             .get_result(conn)
         {
-            Ok(slot) => Ok(slot),
+            Ok(slot) => {
+                Ok(Slot {
+                    slot,
+                    status: SlotStatusProto::Available,
+                })
+            },
             Err(e) => {
                 log::error!("Failed to create slot: {}", e);
                 Err(e)
@@ -49,32 +60,56 @@ impl Slot {
     }
 
     pub fn find_by_id(conn: &mut PgConnection, p_slot_id: Uuid) -> Option<Slot> {
-        event_slots::dsl::event_slots
-            .select(Slot::as_select())
+        let slot = event_slots::dsl::event_slots
+            .select(DbSlot::as_select())
             .filter(event_slots::dsl::id.eq(p_slot_id))
             .first(conn)
-            .ok()
+            .ok();
+
+        match slot {
+            Some(slot) => Some(Slot {
+                slot,
+                status: SlotStatusProto::Available,
+            }),
+            None => None,
+        }
     }
 
     pub fn find_by_id_with_event(conn: &mut PgConnection, p_slot_id: Uuid) -> Option<(Slot, Event)> {
-        event_slots::table
+        let slot = event_slots::table
             .filter(event_slots::id.eq(p_slot_id))
             .inner_join(events::table.on(event_slots::event_id.eq(events::id)))
             .select((event_slots::all_columns, events::all_columns))
-            .first::<(Slot, Event)>(conn)
-            .ok()
+            .first::<(DbSlot, Event)>(conn)
+            .ok();
+
+        match slot {
+            Some((slot, event)) => Some((Slot {
+                slot,
+                status: SlotStatusProto::Available,
+            }, event)),
+            None => None,
+        }
     }
 
     pub fn find_by_event_id(conn: &mut PgConnection, p_event_id: Uuid) -> Option<Vec<Slot>> {
-        event_slots::dsl::event_slots
-            .select(Slot::as_select())
+        let slots = event_slots::dsl::event_slots
+            .select(DbSlot::as_select())
             .filter(event_slots::dsl::event_id.eq(p_event_id))
             .load(conn)
-            .ok()
+            .ok();
+
+        match slots {
+            Some(slots) => Some(slots.into_iter().map(|slot| Slot {
+                slot,
+                status: SlotStatusProto::Available,
+            }).collect()),
+            None => None,
+        }
     }
 
     pub fn find_active_by_event(conn: &mut PgConnection, event: &Event) -> Option<Vec<Slot>> {
-        sql_query("
+        let slots = sql_query("
             SELECT * FROM event_slots es
             WHERE NOT EXISTS (
                 SELECT 1
@@ -88,13 +123,32 @@ impl Slot {
         ")
             .bind::<diesel::sql_types::Uuid, _>(event.id)
             .bind::<diesel::sql_types::VarChar, _>(event.organizer_key.clone())
-            .load::<Slot>(conn)
-            .ok()
+            .load::<DbSlot>(conn)
+            .ok();
+
+        match slots {
+            Some(slots) => Some(slots.into_iter().map(|slot| Slot {
+                slot,
+                status: SlotStatusProto::Available,
+            }).collect()),
+            None => None,
+        }
     }
+
+    pub fn is_datetime_full(&self, conn: &mut PgConnection, datetime: NaiveDateTime) -> bool {
+        let bookings = crate::models::booking::Booking::sum_persons_by_datetime(conn, self.id, datetime);
+
+        match bookings {
+            Some(bookings) => bookings >= self.capacity,
+            None => false,
+        }
+    }
+
+
 }
 
-impl From<Slot> for protos::booking::v1::Slot {
-    fn from(slot: Slot) -> Self {
+impl From<DbSlot> for protos::booking::v1::Slot {
+    fn from(slot: DbSlot) -> Self {
         let mut proto_slot = protos::booking::v1::Slot::default();
 
         let start = slot.start_time.to_string();
@@ -113,6 +167,17 @@ impl From<Slot> for protos::booking::v1::Slot {
         proto_slot.capacity = slot.capacity;
         proto_slot.created_at = slot.created_at.and_utc().timestamp();
         proto_slot.updated_at = slot.updated_at.and_utc().timestamp();
+
+        proto_slot
+    }
+}
+
+impl From<Slot> for protos::booking::v1::Slot {
+    fn from(slot_status: Slot) -> Self {
+        let slot = slot_status.slot.clone();
+        let mut proto_slot = protos::booking::v1::Slot::from(slot);
+
+        proto_slot.set_status(slot_status.status);
 
         proto_slot
     }

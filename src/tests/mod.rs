@@ -4,6 +4,7 @@ use diesel::{Connection, PgConnection};
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use redis::Client;
+use tokio::sync::RwLock;
 use crate::database::{establish_pool, PgPooledConnection};
 use crate::services::booking::{BookingServiceServerImpl, get_connection};
 
@@ -46,7 +47,7 @@ impl TestContext {
 
         let echo = BookingServiceServerImpl {
             pool,
-            r_client,
+            cache: Arc::new(RwLock::new(r_client)),
         };
 
         Self {

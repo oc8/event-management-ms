@@ -1,26 +1,31 @@
 use chrono::{NaiveDateTime};
+use diesel::PgConnection;
 use rrule::{RRuleSet};
 use booking_ms::{add_time_to_datetime, format_datetime, naive_datetime_to_rrule_datetime};
-use protos::booking::v1::{EventStatus, EventType};
+use protos::booking::v1::{SlotStatus as SlotStatusProto, EventType, EventStatus};
+use crate::database::PgPooledConnection;
+use crate::errors::{errors, format_error};
+use crate::models::booking::{Booking, BookingWithSlot};
 use crate::models::closure::Closure;
 use crate::models::event::EventWithSlots;
 
 pub struct Timeline {
     pub events: Vec<EventWithSlots>,
     pub closures: Vec<Closure>,
+    pub bookings: Vec<BookingWithSlot>,
 }
 
 impl Timeline {
-    pub fn new(events: Vec<EventWithSlots>, closures: Vec<Closure>) -> Timeline {
+    pub fn new(events: Vec<EventWithSlots>, closures: Vec<Closure>, bookings: Vec<BookingWithSlot>) -> Timeline {
         Timeline {
             events,
             closures,
+            bookings,
         }
     }
 
     // Generate events by recurrence rule within the given time range
-    // If only_active is true, only return events that have at least one active slot
-    fn generate_events_by_rrule(&self, event: &EventWithSlots, start: NaiveDateTime, end: NaiveDateTime, only_active: bool) -> Vec<EventWithSlots> {
+    fn generate_events_by_rrule(&self, mut event: EventWithSlots, start: NaiveDateTime, end: NaiveDateTime) -> Vec<EventWithSlots> {
         if let Some(recurrence_rule) = &event.event.recurrence_rule {
             let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(event.event.start_time), recurrence_rule);
             let rrule = recurrence_rule.parse::<RRuleSet>();
@@ -40,28 +45,40 @@ impl Timeline {
                         ve.event.end_time = d.naive_utc() + (ve.event.end_time - ve.event.start_time);
                         ve.event.start_time = d.naive_utc();
 
-                        match only_active {
-                            true => {
-                                ve.slots = event.slots.iter()
-                                    .filter(|slot| {
-                                        let slot_start = add_time_to_datetime(ve.event.start_time, slot.start_time);
-                                        let slot_end = add_time_to_datetime(ve.event.end_time, slot.end_time);
+                        event.slots.iter_mut().for_each(|slot| {
+                            let slot_start = add_time_to_datetime(ve.event.start_time, slot.slot.start_time);
+                            let slot_end = add_time_to_datetime(ve.event.end_time, slot.slot.end_time);
 
-                                        // TODO: remove full slots
+                            // Check if the slot is within the closure
+                            let is_closed = self.closures.iter().any(|closure| {
+                                let closure_start = closure.closing_from;
+                                let closure_end = closure.closing_to;
+                                slot_start >= closure_start && slot_end <= closure_end
+                            });
 
-                                        // Check if the slot is within the closure
-                                        !self.closures.iter().any(|closure| {
-                                            let closure_start = closure.closing_from;
-                                            let closure_end = closure.closing_to;
-                                            slot_start >= closure_start && slot_end <= closure_end
-                                        })
-                                    })
-                                    .cloned()
-                                    .collect();
+                            // Check if slot is fully booked
+                            if !is_closed {
+                                if let Some(booking) = self.bookings.iter().find(|b| b.booking.slot_id == slot.slot.id) {
+                                    let booking_start = booking.booking.date_time;
+                                    if booking_start >= slot_start && booking_start <= slot_end {
+                                        slot.status = SlotStatusProto::Full;
+                                    }
+                                }
+                            } else {
+                                slot.status = SlotStatusProto::Closed;
                             }
-                            false => {
-                                ve.slots = event.slots.clone();
-                            }
+                        });
+
+                        ve.slots = event.slots.clone();
+
+                        let is_closed = self.closures.iter().any(|closure| {
+                            let closure_start = closure.closing_from;
+                            let closure_end = closure.closing_to;
+                            ve.event.start_time >= closure_start && ve.event.end_time <= closure_end
+                        });
+
+                        if is_closed {
+                            ve.event.status = EventStatus::Closed.as_str_name().parse().unwrap();
                         }
 
                         ve
@@ -81,17 +98,16 @@ impl Timeline {
     // Return all events that are included in the given time range
     // if only_active is true, only return events that have at least one active slot
     // if end is None, it will default to 7 days after the start time
-    pub fn included(&self, start: NaiveDateTime, end: NaiveDateTime, only_active: bool) -> Vec<EventWithSlots> {
+    pub fn included(&mut self, start: NaiveDateTime, end: NaiveDateTime) -> Vec<EventWithSlots> {
         log::debug!("Start: {}, End: {}", start, end);
 
         let mut events: Vec<EventWithSlots> = self.events.iter().flat_map(|e| {
-            self.generate_events_by_rrule(e, start, end, only_active)
+            self.generate_events_by_rrule(e.clone(), start, end)
         }).collect();
 
         // Filter out inactive events if only_active is true
         // if the event is a meeting, it should have at least one slot to be active
         events.retain(|e|
-            (only_active && e.event.status == EventStatus::as_str_name(&EventStatus::Active) || !only_active) &&
             (e.event.event_type == EventType::as_str_name(&EventType::Meeting) && !e.slots.is_empty() ||
             e.event.event_type != EventType::as_str_name(&EventType::Meeting))
         );

@@ -4,7 +4,7 @@ use diesel::dsl::{sum};
 use uuid::Uuid;
 use protos::booking::v1::{TimeData};
 use crate::models::filters::{BookingFilters, Filters};
-use crate::models::slot::Slot;
+use crate::models::slot::{DbSlot, Slot};
 
 use crate::schema::{bookings, event_slots};
 
@@ -56,7 +56,7 @@ impl Booking {
             .get_result(conn)
         {
             Ok(booking) => {
-                let slot = Slot::find_by_id(conn, booking.slot_id).unwrap();
+                let slot = DbSlot::find_by_id(conn, booking.slot_id).unwrap();
                 Ok(BookingWithSlot::new(booking, slot))
             },
             Err(e) => {
@@ -74,7 +74,7 @@ impl Booking {
             .ok();
 
         booking.and_then(|b| {
-            Slot::find_by_id(conn, b.slot_id).map(|s| BookingWithSlot::new(b, s))
+            DbSlot::find_by_id(conn, b.slot_id).map(|s| BookingWithSlot::new(b, s))
         })
     }
 
@@ -113,7 +113,7 @@ impl Booking {
             .expect("Error loading bookings")
             .into_iter()
             .map(|b| {
-                let slot = Slot::find_by_id(conn, b.slot_id).unwrap();
+                let slot = DbSlot::find_by_id(conn, b.slot_id).unwrap();
                 BookingWithSlot::new(b, slot)
             })
             .collect()
