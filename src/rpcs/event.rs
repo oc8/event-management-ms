@@ -5,11 +5,7 @@ use booking_ms::report_error;
 use protos::booking::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse, UpdateEventRequest, UpdateEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
-use crate::models::booking::{Booking, BookingWithSlot};
-use crate::models::closure::Closure;
 use crate::models::event::{Event, NewEvent};
-use crate::models::filters::{BookingFilters, EventFilters, Filters};
-use crate::models::timeline::Timeline;
 use crate::validations::{validate_cancel_event_request, validate_create_event_request, validate_delete_event_request, validate_get_event_request, validate_update_event_request};
 
 pub fn create_event(

@@ -1,11 +1,8 @@
 use chrono::{NaiveDateTime};
-use diesel::PgConnection;
 use rrule::{RRuleSet};
 use booking_ms::{add_time_to_datetime, format_datetime, naive_datetime_to_rrule_datetime};
-use protos::booking::v1::{SlotStatus as SlotStatusProto, EventType, EventStatus};
-use crate::database::PgPooledConnection;
-use crate::errors::{errors, format_error};
-use crate::models::booking::{Booking, BookingWithSlot};
+use protos::booking::v1::{SlotStatus as SlotStatusProto, EventStatus};
+use crate::models::booking::{BookingWithSlot};
 use crate::models::closure::Closure;
 use crate::models::event::EventWithSlots;
 
@@ -104,13 +101,6 @@ impl Timeline {
         let mut events: Vec<EventWithSlots> = self.events.iter().flat_map(|e| {
             self.generate_events_by_rrule(e.clone(), start, end)
         }).collect();
-
-        // Filter out inactive events if only_active is true
-        // if the event is a meeting, it should have at least one slot to be active
-        events.retain(|e|
-            (e.event.event_type == EventType::as_str_name(&EventType::Meeting) && !e.slots.is_empty() ||
-            e.event.event_type != EventType::as_str_name(&EventType::Meeting))
-        );
 
         events.sort_by_key(|e| e.event.start_time);
 

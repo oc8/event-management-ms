@@ -28,8 +28,7 @@ pub fn get_timeline(
 
     let mut timeline = Timeline::new(events.clone(), closures.clone(), bookings);
 
-    let to = filters.to.clone();
-    events = timeline.included(filters.from.unwrap(), to.unwrap());
+    events = timeline.included(filters.from.unwrap(), filters.to.unwrap());
 
     Ok(GetTimelineResponse{
         events: events.into_iter().map(|e| e.into()).collect()
