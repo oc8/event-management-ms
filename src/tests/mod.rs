@@ -32,6 +32,11 @@ impl TestContext {
         let mut conn =
             PgConnection::establish(&format!("{}/postgres", db_url)).expect("Cannot connect to postgres database.");
 
+        let query = diesel::sql_query(format!("DROP DATABASE IF EXISTS {}", db_name).as_str());
+        query
+            .execute(&mut conn)
+            .expect(format!("Could not drop database {}", db_name).as_str());
+
         let query = diesel::sql_query(format!("CREATE DATABASE {}", db_name).as_str());
         query
             .execute(&mut conn)
@@ -87,7 +92,6 @@ impl Drop for TestContext {
         diesel::sql_query(disconnect_users.as_str())
             .execute(&mut conn)
             .unwrap();
-
 
         let query = diesel::sql_query(format!("DROP DATABASE {}", self.db_name).as_str());
         query
