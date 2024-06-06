@@ -36,6 +36,10 @@ pub fn validate_create_closure_request(req: &CreateClosureRequest) -> Result<(),
 pub fn validate_update_closure_request(req: &UpdateClosureRequest) -> Result<(), Status> {
     let mut errors = Vec::new();
 
+    if Uuid::parse_str(&req.id).is_err() {
+        return Err(format_error(errors::INVALID_CLOSURE_ID))
+    }
+
     let start = chrono::NaiveDateTime::parse_from_str(&req.closing_from, "%Y-%m-%dT%H:%M:%S");
     if start.is_err() {
         errors.push(errors::INVALID_DATETIME)
