@@ -4,14 +4,18 @@ use diesel::{Connection, PgConnection};
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use redis::Client;
-use tokio::sync::RwLock;
+use tokio::sync::{oneshot, RwLock};
+use tonic::transport::Server;
+use protos::booking::v1::booking_service_server::BookingServiceServer;
 use crate::database::{establish_pool, PgPooledConnection};
 use crate::services::booking::{BookingServiceServerImpl, get_connection};
+use futures_util::FutureExt;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 pub mod fixtures;
 pub mod rpcs;
+mod validations;
 
 struct TestContext {
     db_url: String,
@@ -90,4 +94,27 @@ impl Drop for TestContext {
             .execute(&mut conn)
             .expect(&format!("Couldn't drop database {}", self.db_name));
     }
+}
+
+async fn setup_test_context(name: &str, port: u16) -> (TestContext, oneshot::Sender<()>, tokio::task::JoinHandle<()>) {
+    let ctx = TestContext::new(
+        "postgres://postgres:postgres@localhost:5433",
+        name,
+        "redis://:@localhost:6382",
+        port,
+    );
+    let (tx, rx) = oneshot::channel();
+    let service = ctx.service.clone();
+
+    let jh = tokio::spawn(async move {
+        Server::builder()
+            .add_service(BookingServiceServer::new(service))
+            .serve_with_shutdown(ctx.addr, rx.map(|_| ()))
+            .await
+            .unwrap();
+    });
+
+    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+    (ctx, tx, jh)
 }
