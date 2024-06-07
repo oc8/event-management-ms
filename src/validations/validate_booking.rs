@@ -18,7 +18,7 @@ pub fn validate_create_booking_request(req: &CreateBookingRequest) -> Result<(),
     }
 
     let _ = DateTime::parse_from_rfc3339(&req.date_time)
-        .map_err(|_| errors.push(validation_error(vec!["end"], "invalid datetime", errors::ValidationErrorCode::InvalidRfc3339)));
+        .map_err(|_| errors.push(validation_error(vec!["date_time"], "invalid datetime", errors::ValidationErrorCode::InvalidRfc3339)));
 
     if !req.persons.validate_range(Some(0), Some(10000), Some(0), Some(10000)) {
         errors.push(validation_error(vec!["persons"], "persons must be between 0 and 10000", errors::ValidationErrorCode::InvalidRange))
