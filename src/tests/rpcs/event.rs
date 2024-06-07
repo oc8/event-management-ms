@@ -7,13 +7,13 @@ use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventReq
 //
 #[tokio::test]
 async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_basic_event", 50300).await;
+    let (ctx, tx, jh) = setup_test_context("create_basic_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -31,7 +31,7 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn get_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("get_event_not_found", 50301).await;
+    let (ctx, tx, jh) = setup_test_context("get_event_not_found", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(GetEventRequest {
@@ -53,13 +53,13 @@ async fn get_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("get_event", 50302).await;
+    let (ctx, tx, jh) = setup_test_context("get_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_event_request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -86,13 +86,13 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_recurrent_event", 50303).await;
+    let (ctx, tx, jh) = setup_test_context("create_recurrent_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -110,13 +110,13 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_meeting_event", 50304).await;
+    let (ctx, tx, jh) = setup_test_context("create_meeting_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 15,
@@ -138,13 +138,13 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("update_event", 50400).await;
+    let (ctx, tx, jh) = setup_test_context("update_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_event_request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -159,8 +159,8 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let update_event_request = tonic::Request::new(UpdateEventRequest {
         id: event.id.clone(),
         name: "updated-event".to_string(),
-        start: "2024-05-26T10:00:00".to_string(),
-        end: "2024-05-26T11:00:00".to_string(),
+        start: "2024-05-26T10:00:00Z".to_string(),
+        end: "2024-05-26T11:00:00Z".to_string(),
         timezone: "Europe/Berlin".to_string(),
         capacity: 100,
         slot_capacity: 10,
@@ -180,14 +180,14 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn update_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("update_event_not_found", 50401).await;
+    let (ctx, tx, jh) = setup_test_context("update_event_not_found", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(UpdateEventRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
         name: "non-existent-event".to_string(),
-        start: "2024-05-26T10:00:00".to_string(),
-        end: "2024-05-26T11:00:00".to_string(),
+        start: "2024-05-26T10:00:00Z".to_string(),
+        end: "2024-05-26T11:00:00Z".to_string(),
         timezone: "Europe/Berlin".to_string(),
         capacity: 100,
         slot_capacity: 10,
@@ -211,13 +211,13 @@ async fn update_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 //
 #[tokio::test]
 async fn delete_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("delete_event", 50500).await;
+    let (ctx, tx, jh) = setup_test_context("delete_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_event_request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -242,7 +242,7 @@ async fn delete_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn delete_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("delete_event_not_found", 50501).await;
+    let (ctx, tx, jh) = setup_test_context("delete_event_not_found", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(DeleteEventRequest {
@@ -266,13 +266,13 @@ async fn delete_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 //
 #[tokio::test]
 async fn cancel_event() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("cancel_event", 50600).await;
+    let (ctx, tx, jh) = setup_test_context("cancel_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_event_request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00".to_string(),
-        end: "2024-05-26T12:00:00".to_string(),
+        start: "2024-05-26T09:00:00Z".to_string(),
+        end: "2024-05-26T12:00:00Z".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -301,7 +301,7 @@ async fn cancel_event() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn cancel_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("cancel_event_not_found", 50601).await;
+    let (ctx, tx, jh) = setup_test_context("cancel_event_not_found", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CancelEventRequest {

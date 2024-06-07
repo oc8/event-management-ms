@@ -12,7 +12,7 @@ async fn create_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>
 
     let request = tonic::Request::new(CreateClosureRequest {
         closing_from: "invalid-date".to_string(),
-        closing_to: "2024-05-26T12:00:00".to_string(),
+        closing_to: "2024-05-26T12:00:00Z".to_string(),
         organizer_key: "test-organizer".to_string(),
     });
 
@@ -24,7 +24,7 @@ async fn create_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>
     }
 
     let request = tonic::Request::new(CreateClosureRequest {
-        closing_from: "2024-05-26T12:00:00".to_string(),
+        closing_from: "2024-05-26T12:00:00Z".to_string(),
         closing_to: "invalid-date".to_string(),
         organizer_key: "test-organizer".to_string(),
     });
@@ -47,8 +47,8 @@ async fn create_closure_invalid_date_range() -> Result<(), Box<dyn std::error::E
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
-        closing_from: "2024-05-27T12:00:00".to_string(),
-        closing_to: "2024-05-26T12:00:00".to_string(),
+        closing_from: "2024-05-27T12:00:00Z".to_string(),
+        closing_to: "2024-05-26T12:00:00Z".to_string(),
         organizer_key: "test-organizer".to_string(),
     });
 
@@ -70,8 +70,8 @@ async fn create_closure_invalid_organizer_key() -> Result<(), Box<dyn std::error
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
-        closing_from: "2024-05-26T09:00:00".to_string(),
-        closing_to: "2024-05-26T12:00:00".to_string(),
+        closing_from: "2024-05-26T09:00:00Z".to_string(),
+        closing_to: "2024-05-26T12:00:00Z".to_string(),
         organizer_key: "".to_string(),
     });
 
@@ -98,7 +98,7 @@ async fn update_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>
     let request = tonic::Request::new(UpdateClosureRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
         closing_from: "invalid-date".to_string(),
-        closing_to: "2024-05-26T12:00:00".to_string(),
+        closing_to: "2024-05-26T12:00:00Z".to_string(),
     });
 
     match client.update_closure(request).await {
@@ -110,7 +110,7 @@ async fn update_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>
 
     let request = tonic::Request::new(UpdateClosureRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
-        closing_from: "2024-05-26T12:00:00".to_string(),
+        closing_from: "2024-05-26T12:00:00Z".to_string(),
         closing_to: "invalid-date".to_string(),
     });
 
@@ -133,8 +133,8 @@ async fn update_closure_invalid_date_range() -> Result<(), Box<dyn std::error::E
 
     let request = tonic::Request::new(UpdateClosureRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
-        closing_from: "2024-05-27T12:00:00".to_string(),
-        closing_to: "2024-05-26T12:00:00".to_string(),
+        closing_from: "2024-05-27T12:00:00Z".to_string(),
+        closing_to: "2024-05-26T12:00:00Z".to_string(),
     });
 
     match client.update_closure(request).await {
@@ -156,8 +156,8 @@ async fn update_closure_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let request = tonic::Request::new(UpdateClosureRequest {
         id: "".to_string(),
-        closing_from: "2024-05-26T09:00:00".to_string(),
-        closing_to: "2024-05-26T12:00:00".to_string(),
+        closing_from: "2024-05-26T09:00:00Z".to_string(),
+        closing_to: "2024-05-26T12:00:00Z".to_string(),
     });
 
     match client.update_closure(request).await {
