@@ -7,7 +7,7 @@ use crate::tests::setup_test_context;
 //
 #[tokio::test]
 async fn create_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_closure_invalid_dates", 53100).await;
+    let (ctx, tx, jh) = setup_test_context("create_closure_invalid_dates", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
@@ -43,7 +43,7 @@ async fn create_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>
 
 #[tokio::test]
 async fn create_closure_invalid_date_range() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_closure_invalid_date_range", 53101).await;
+    let (ctx, tx, jh) = setup_test_context("create_closure_invalid_date_range", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
@@ -66,7 +66,7 @@ async fn create_closure_invalid_date_range() -> Result<(), Box<dyn std::error::E
 
 #[tokio::test]
 async fn create_closure_invalid_organizer_key() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_closure_invalid_organizer_key", 53102).await;
+    let (ctx, tx, jh) = setup_test_context("create_closure_invalid_organizer_key", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
@@ -92,7 +92,7 @@ async fn create_closure_invalid_organizer_key() -> Result<(), Box<dyn std::error
 //
 #[tokio::test]
 async fn update_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("update_closure_invalid_dates", 53200).await;
+    let (ctx, tx, jh) = setup_test_context("update_closure_invalid_dates", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(UpdateClosureRequest {
@@ -128,7 +128,7 @@ async fn update_closure_invalid_dates() -> Result<(), Box<dyn std::error::Error>
 
 #[tokio::test]
 async fn update_closure_invalid_date_range() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("update_closure_invalid_date_range", 53201).await;
+    let (ctx, tx, jh) = setup_test_context("update_closure_invalid_date_range", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(UpdateClosureRequest {
@@ -151,7 +151,7 @@ async fn update_closure_invalid_date_range() -> Result<(), Box<dyn std::error::E
 
 #[tokio::test]
 async fn update_closure_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("update_closure_invalid_id", 53202).await;
+    let (ctx, tx, jh) = setup_test_context("update_closure_invalid_id", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(UpdateClosureRequest {
@@ -177,7 +177,7 @@ async fn update_closure_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 //
 #[tokio::test]
 async fn delete_closure_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("delete_closure_invalid_id", 53300).await;
+    let (ctx, tx, jh) = setup_test_context("delete_closure_invalid_id", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(DeleteClosureRequest {
@@ -201,7 +201,7 @@ async fn delete_closure_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 //
 #[tokio::test]
 async fn list_closures_invalid_organizer_key() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("list_closures_invalid_organizer_key", 53400).await;
+    let (ctx, tx, jh) = setup_test_context("list_closures_invalid_organizer_key", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(ListClosuresRequest {
