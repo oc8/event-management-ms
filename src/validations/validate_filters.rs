@@ -1,8 +1,8 @@
 use protos::booking::v1::{Filters};
 use crate::errors;
-use crate::errors::{ApiError};
+use crate::errors::{validation_error, ValidationError};
 
-pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ApiError>> {
+pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ValidationError>> {
     if filters.is_none() {
         return Ok(());
     }
@@ -15,7 +15,7 @@ pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ApiErr
     if !filters.from.is_empty() {
         match from {
             Ok(_) => (),
-            Err(_) => errors.push(errors::INVALID_DATE),
+            Err(_) => errors.push(validation_error(vec!["from"], "invalid from date, must be in the format YYYY-MM-DD", errors::ValidationErrorCode::InvalidDate)),
         }
     }
 
@@ -23,13 +23,13 @@ pub fn validate_date_filters(filters: &Option<Filters>) -> Result<(), Vec<ApiErr
     if !filters.to.is_empty() {
         match to {
             Ok(_) => (),
-            Err(_) => errors.push(errors::INVALID_DATE),
+            Err(_) => errors.push(validation_error(vec!["to"], "invalid to date, must be in the format YYYY-MM-DD", errors::ValidationErrorCode::InvalidDate)),
         }
     }
 
     if !from.is_err() && !to.is_err() {
         if from.unwrap() > to.unwrap() {
-            errors.push(errors::INVALID_DATE_RANGE);
+            errors.push(validation_error(vec!["from", "to"], "from date must be before to date", errors::ValidationErrorCode::InvalidRange));
         }
     }
 

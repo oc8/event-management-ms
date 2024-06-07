@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use diesel::data_types::PgInterval;
 use tonic::Status;
 use uuid::Uuid;
@@ -14,9 +15,9 @@ pub fn create_event(
 ) -> Result<CreateEventResponse, Status> {
     validate_create_event_request(&request)?;
 
-    let start_time = chrono::NaiveDateTime::parse_from_str(&request.start, "%Y-%m-%dT%H:%M:%S")
+    let start_time = DateTime::parse_from_rfc3339(&request.start)
         .map_err(|_| format_error(errors::INVALID_DATETIME))?;
-    let end_time = chrono::NaiveDateTime::parse_from_str(&request.end, "%Y-%m-%dT%H:%M:%S")
+    let end_time = DateTime::parse_from_rfc3339(&request.end)
         .map_err(|_| format_error(errors::INVALID_DATETIME))?;
 
     let tz = match request.timezone.is_empty() {
@@ -36,8 +37,8 @@ pub fn create_event(
         status: EventStatus::Active.as_str_name(),
         event_type,
         timezone: &tz,
-        start_time: &start_time,
-        end_time: &end_time,
+        start_time: &start_time.naive_utc(),
+        end_time: &end_time.naive_utc(),
         organizer_key: &request.organizer_key.to_string(),
         canceled_at: None,
         canceled_by: None,
@@ -99,14 +100,16 @@ pub fn update_event(
 
     let start_time = match request.start.is_empty() {
         true => event.event.start_time,
-        false => chrono::NaiveDateTime::parse_from_str(&request.start, "%Y-%m-%dT%H:%M:%S")
+        false => DateTime::parse_from_rfc3339(&request.start)
             .map_err(|_| format_error(errors::INVALID_DATETIME))?
+            .naive_utc()
     };
 
     let end_time = match request.end.is_empty() {
         true => event.event.end_time,
-        false => chrono::NaiveDateTime::parse_from_str(&request.end, "%Y-%m-%dT%H:%M:%S")
+        false => DateTime::parse_from_rfc3339(&request.end)
             .map_err(|_| format_error(errors::INVALID_DATETIME))?
+            .naive_utc()
     };
 
     let tz = match request.timezone.is_empty() {

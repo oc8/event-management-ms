@@ -24,42 +24,6 @@ pub const DATABASE_CONNECTION_FAILURE: ApiError = ApiError {
     message: "Failed to connect to Database"
 };
 
-pub const INVALID_EVENT_NAME: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_event_name",
-    message: "Invalid event name"
-};
-
-pub const INVALID_TIMEZONE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_timezone",
-    message: "Invalid timezone"
-};
-
-pub const INVALID_RECURRENCE_RULE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_recurrence_rule",
-    message: "Invalid recurrence rule"
-};
-
-pub const INVALID_CAPACITY: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_capacity",
-    message: "Invalid capacity"
-};
-
-pub const INVALID_EVENT_TYPE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_event_type",
-    message: "Invalid event type"
-};
-
-pub const INVALID_EVENT_ID: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_event_id",
-    message: "Invalid event id"
-};
-
 pub const EVENT_NOT_FOUND: ApiError = ApiError {
     grpc_code: Code::NotFound,
     code: "event_not_found",
@@ -78,12 +42,6 @@ pub const BOOKING_NOT_FOUND: ApiError = ApiError {
     message: "Booking not found"
 };
 
-pub const INVALID_BOOKING_HOLDER_KEY: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_booking_holder_key",
-    message: "Invalid booking holder key"
-};
-
 pub const INVALID_SLOT_ID: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_slot_id",
@@ -96,28 +54,10 @@ pub const INVALID_BOOKING_ID: ApiError = ApiError {
     message: "Invalid booking id"
 };
 
-pub const INVALID_ORGANIZER_KEY: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_organizer_key",
-    message: "Invalid organizer key"
-};
-
-pub const INVALID_FILTERS: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_filters",
-    message: "Invalid filters"
-};
-
 pub const INVALID_BOOKING_DATE: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_booking_date",
     message: "Invalid booking date"
-};
-
-pub const INVALID_SLOT_DURATION: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_slot_duration",
-    message: "Invalid slot duration"
 };
 
 pub const BOOKING_ALREADY_EXISTS: ApiError = ApiError {
@@ -144,12 +84,6 @@ pub const BOOKING_CAPACITY_FULL: ApiError = ApiError {
     message: "Booking capacity is full"
 };
 
-pub const INVALID_PERSONS_NUMBER: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_persons_number",
-    message: "Invalid persons number"
-};
-
 pub const EVENT_CREATION_FAILED: ApiError = ApiError {
     grpc_code: Code::Internal,
     code: "event_creation_failed",
@@ -159,19 +93,7 @@ pub const EVENT_CREATION_FAILED: ApiError = ApiError {
 pub const INVALID_DATETIME: ApiError = ApiError {
     grpc_code: Code::InvalidArgument,
     code: "invalid_date",
-    message: "Invalid datetime format: Y-m-dTH:M:S"
-};
-
-pub const INVALID_DATE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_date",
-    message: "Invalid date format: Y-m-d"
-};
-
-pub const INVALID_DATE_RANGE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_date_range",
-    message: "Invalid date range"
+    message: "Invalid rfc3339 datetime format"
 };
 
 pub const EVENT_UPDATE_FAILED: ApiError = ApiError {
@@ -210,12 +132,6 @@ pub const CLOSURE_NOT_FOUND: ApiError = ApiError {
     message: "Closure not found"
 };
 
-pub const INVALID_CLOSURE_ID: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_closure_id",
-    message: "Invalid closure id"
-};
-
 pub const CLOSURE_UPDATE_FAILED: ApiError = ApiError {
     grpc_code: Code::Internal,
     code: "closure_update_failed",
@@ -232,17 +148,4 @@ pub const CLOSURE_DELETION_FAILED: ApiError = ApiError {
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);
     tonic::Status::new(error.grpc_code, error_json)
-}
-
-// format errors to json like { "errors": [{ "code": "invalid_slot_duration", "message": "Invalid slot duration" }] }
-pub fn format_errors(code: Code, errors: Vec<ApiError>) -> tonic::Status {
-    let mut errors_json = String::from("{ \"errors\": [");
-    for error in errors {
-        errors_json.push_str(&format!("{{ \"code\": \"{}\", \"message\": \"{}\" }},", error.code, error.message));
-    }
-
-    errors_json.pop(); // remove last comma
-    errors_json.push_str("]}");
-
-    tonic::Status::new(code, errors_json)
 }
