@@ -24,6 +24,12 @@ pub const DATABASE_CONNECTION_FAILURE: ApiError = ApiError {
     message: "Failed to connect to Database"
 };
 
+pub const INVALID_ID: ApiError = ApiError {
+    grpc_code: Code::InvalidArgument,
+    code: "invalid_id",
+    message: "Invalid id"
+};
+
 pub const EVENT_NOT_FOUND: ApiError = ApiError {
     grpc_code: Code::NotFound,
     code: "event_not_found",
@@ -40,24 +46,6 @@ pub const BOOKING_NOT_FOUND: ApiError = ApiError {
     grpc_code: Code::NotFound,
     code: "booking_not_found",
     message: "Booking not found"
-};
-
-pub const INVALID_SLOT_ID: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_slot_id",
-    message: "Invalid slot id"
-};
-
-pub const INVALID_BOOKING_ID: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_booking_id",
-    message: "Invalid booking id"
-};
-
-pub const INVALID_BOOKING_DATE: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_booking_date",
-    message: "Invalid booking date"
 };
 
 pub const BOOKING_ALREADY_EXISTS: ApiError = ApiError {

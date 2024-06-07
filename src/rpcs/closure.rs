@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use tonic::Status;
 use uuid::Uuid;
 use protos::booking::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
@@ -13,10 +14,12 @@ pub fn create_closure(
 ) -> Result<CreateClosureResponse, Status> {
     validate_create_closure_request(&request)?;
 
-    let closing_from = chrono::NaiveDateTime::parse_from_str(&request.closing_from, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
-    let closing_to = chrono::NaiveDateTime::parse_from_str(&request.closing_to, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
+    let closing_from = DateTime::parse_from_rfc3339(&request.closing_from)
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        .naive_utc();
+    let closing_to = DateTime::parse_from_rfc3339(&request.closing_to)
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        .naive_utc();
 
     let new_exception = NewClosure {
         closing_from: &closing_from,
@@ -38,13 +41,18 @@ pub fn update_closure(
 ) -> Result<UpdateClosureResponse, Status> {
     validate_update_closure_request(&request)?;
 
-    let closure_id = Uuid::parse_str(&request.id).unwrap();
+    let closure_id = Uuid::parse_str(&request.id)
+        .map_err(|_| format_error(errors::INVALID_ID))?;
 
     let closure = Closure::find_by_id(conn, closure_id)
         .ok_or_else(|| format_error(errors::CLOSURE_NOT_FOUND))?;
 
-    let closing_from = chrono::NaiveDateTime::parse_from_str(&request.closing_from, "%Y-%m-%dT%H:%M:%S").unwrap();
-    let closing_to = chrono::NaiveDateTime::parse_from_str(&request.closing_to, "%Y-%m-%dT%H:%M:%S").unwrap();
+    let closing_from = DateTime::parse_from_rfc3339(&request.closing_from)
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        .naive_utc();
+    let closing_to = DateTime::parse_from_rfc3339(&request.closing_to)
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        .naive_utc();
 
     let updated_closure = Closure::update(conn, closure_id, NewClosure{
         closing_from: &closing_from,
@@ -64,7 +72,8 @@ pub fn delete_closure(
 ) -> Result<DeleteClosureResponse, Status> {
     validate_delete_closure_request(&request)?;
 
-    let closure_id = Uuid::parse_str(&request.id).unwrap();
+    let closure_id = Uuid::parse_str(&request.id)
+        .map_err(|_| format_error(errors::INVALID_ID))?;
 
     Closure::delete(conn, closure_id)
         .map_err(|_| format_error(errors::CLOSURE_DELETION_FAILED))?;

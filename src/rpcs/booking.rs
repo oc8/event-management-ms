@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use log::debug;
 use tonic::Status;
 use uuid::Uuid;
@@ -16,12 +17,15 @@ pub fn create_booking(
 ) -> Result<CreateBookingResponse, Status> {
     validate_create_booking_request(&request)?;
 
-    let slot_id = Uuid::parse_str(&request.slot_id).map_err(|_| format_error(errors::INVALID_SLOT_ID))?;
+    let slot_id = Uuid::parse_str(&request.slot_id)
+        .map_err(|_| format_error(errors::INVALID_ID))?;
+
     let (slot, event) = DbSlot::find_by_id_with_event(conn, slot_id)
         .ok_or_else(|| format_error(errors::SLOT_NOT_FOUND))?;
 
-    let date_time = chrono::NaiveDateTime::parse_from_str(&request.date_time, "%Y-%m-%dT%H:%M:%S")
-        .map_err(|_| format_error(errors::INVALID_BOOKING_DATE))?;
+    let date_time = DateTime::parse_from_rfc3339(&request.date_time)
+        .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        .naive_utc();
 
     if date_time < chrono::Utc::now().naive_utc() {
         return Err(format_error(errors::BOOKING_DATE_IN_PAST))
@@ -91,7 +95,7 @@ pub fn get_booking_by_id(
     validate_get_booking_request(&request)?;
 
     let booking_id = Uuid::parse_str(&request.id)
-        .map_err(|_| format_error(errors::INVALID_BOOKING_ID))?;
+        .map_err(|_| format_error(errors::INVALID_ID))?;
 
     let booking = Booking::find_by_id(conn, booking_id)
         .ok_or_else(|| format_error(errors::BOOKING_NOT_FOUND))?;
@@ -108,7 +112,7 @@ pub fn delete_booking(
     validate_delete_booking_request(&request)?;
 
     let booking_id = Uuid::parse_str(&request.id)
-        .map_err(|_| format_error(errors::INVALID_BOOKING_ID))?;
+        .map_err(|_| format_error(errors::INVALID_ID))?;
 
     let _ = Booking::find_by_id(conn, booking_id)
         .ok_or_else(|| format_error(errors::BOOKING_NOT_FOUND))?;
