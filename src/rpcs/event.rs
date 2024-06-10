@@ -2,7 +2,7 @@ use chrono::DateTime;
 use diesel::data_types::PgInterval;
 use tonic::Status;
 use uuid::Uuid;
-use booking_ms::report_error;
+use booking_ms::{report_error, truncate_to_minute};
 use protos::booking::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, EventStatus, EventType, GetEventRequest, GetEventResponse, UpdateEventRequest, UpdateEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
@@ -37,8 +37,8 @@ pub fn create_event(
         status: EventStatus::Active.as_str_name(),
         event_type,
         timezone: &tz,
-        start_time: &start_time.naive_utc(),
-        end_time: &end_time.naive_utc(),
+        start_time: &truncate_to_minute(&start_time.naive_utc()),
+        end_time: &truncate_to_minute(&end_time.naive_utc()),
         organizer_key: &request.organizer_key.to_string(),
         canceled_at: None,
         canceled_by: None,
@@ -137,8 +137,8 @@ pub fn update_event(
         status: &event.event.status,
         event_type: &event.event.event_type,
         timezone: &tz,
-        start_time: &start_time,
-        end_time: &end_time,
+        start_time: &truncate_to_minute(&start_time),
+        end_time: &truncate_to_minute(&end_time),
         organizer_key: &event.event.organizer_key,
         canceled_at: match event.event.canceled_at.is_some() {
             true => Some(event.event.canceled_at.as_ref().unwrap()),

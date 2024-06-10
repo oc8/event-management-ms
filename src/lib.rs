@@ -61,3 +61,12 @@ pub fn add_time_to_datetime(datetime: NaiveDateTime, time: NaiveTime) -> NaiveDa
 pub fn naive_datetime_to_rrule_datetime(datetime: NaiveDateTime) -> MappedLocalTime<DateTime<Tz>> {
     Tz::UTC.with_ymd_and_hms(datetime.year(), datetime.month(), datetime.day(), datetime.hour(), datetime.minute(), datetime.second())
 }
+
+// Remove seconds and milliseconds from start and end time to keep a consistent format
+pub fn truncate_to_minute(datetime: &NaiveDateTime) -> NaiveDateTime {
+    datetime
+        .with_second(0)
+        .unwrap()
+        .with_nanosecond(0)
+        .unwrap()
+}
