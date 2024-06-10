@@ -1,6 +1,18 @@
 use crate::tests::{setup_test_context};
 use protos::booking::v1::booking_service_client::BookingServiceClient;
-use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, EventStatus, EventType, GetEventRequest, UpdateEventRequest};
+use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, Event, EventStatus, EventType, GetEventRequest, UpdateEventRequest};
+
+fn assert_event_fields(expected: &CreateEventRequest, actual: &Event) {
+    assert_eq!(expected.name, actual.name);
+    assert_eq!(expected.start, actual.start.clone().unwrap().date_time);
+    assert_eq!(expected.end, actual.end.clone().unwrap().date_time);
+    assert_eq!(expected.timezone, actual.start.clone().unwrap().timezone);
+    assert_eq!(expected.organizer_key, actual.organizer_key);
+    assert_eq!(expected.slot_duration, actual.slot_duration);
+    assert_eq!(expected.capacity, actual.capacity);
+    assert_eq!(expected.recurrence_rule, actual.recurrence_rule);
+    assert_eq!(expected.event_type, actual.event_type);
+}
 
 //
 // Create event tests
@@ -10,10 +22,10 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
-    let request = tonic::Request::new(CreateEventRequest {
+    let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00Z".to_string(),
-        end: "2024-05-26T12:00:00Z".to_string(),
+        start: "2024-05-26T09:00:00+00:00".to_string(),
+        end: "2024-05-26T12:00:00+00:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -21,8 +33,14 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
         slot_capacity: 0,
         recurrence_rule: "".to_string(),
         event_type: EventType::Event as i32,
-    });
-    client.create_event(request).await?;
+    };
+
+    let request = tonic::Request::new(create_request.clone());
+    let response = client.create_event(request).await?;
+
+    let event = response.into_inner().event.unwrap();
+
+    assert_event_fields(&create_request, &event);
 
     tx.send(()).unwrap();
     jh.await.unwrap();
@@ -56,10 +74,10 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
-    let create_event_request = tonic::Request::new(CreateEventRequest {
+    let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00Z".to_string(),
-        end: "2024-05-26T12:00:00Z".to_string(),
+        start: "2024-05-26T09:00:00+00:00".to_string(),
+        end: "2024-05-26T12:00:00+00:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -67,7 +85,8 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
         slot_capacity: 0,
         recurrence_rule: "".to_string(),
         event_type: EventType::Event as i32,
-    });
+    };
+    let create_event_request = tonic::Request::new(create_request.clone());
     let resp = client.create_event(create_event_request).await?;
     let event = resp.into_inner().event.unwrap();
 
@@ -76,8 +95,10 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let resp = client.get_event(request).await?;
+    let client = resp.into_inner().event.unwrap();
 
-    assert_eq!(event.id, resp.into_inner().event.unwrap().id);
+    assert_eq!(event.id, client.id);
+    assert_event_fields(&create_request, &client);
 
     tx.send(()).unwrap();
     jh.await.unwrap();
@@ -89,10 +110,10 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_recurrent_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
-    let request = tonic::Request::new(CreateEventRequest {
+    let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00Z".to_string(),
-        end: "2024-05-26T12:00:00Z".to_string(),
+        start: "2024-05-26T09:00:00+00:00".to_string(),
+        end: "2024-05-26T12:00:00+00:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -100,8 +121,12 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
         slot_capacity: 0,
         recurrence_rule: "FREQ=WEEKLY;BYDAY=SU".to_string(),
         event_type: EventType::Event as i32,
-    });
-    client.create_event(request).await?;
+    };
+    let request = tonic::Request::new(create_request.clone());
+    let response = client.create_event(request).await?;
+
+    let event = response.into_inner().event.unwrap();
+    assert_event_fields(&create_request, &event);
 
     tx.send(()).unwrap();
     jh.await.unwrap();
@@ -113,10 +138,10 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_meeting_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
-    let request = tonic::Request::new(CreateEventRequest {
+    let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00Z".to_string(),
-        end: "2024-05-26T12:00:00Z".to_string(),
+        start: "2024-05-26T09:00:00+00:00".to_string(),
+        end: "2024-05-26T12:00:00+00:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 15,
@@ -124,8 +149,13 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
         slot_capacity: 0,
         recurrence_rule: "FREQ=WEEKLY;BYDAY=SU".to_string(),
         event_type: EventType::Event as i32,
-    });
-    client.create_event(request).await?;
+    };
+
+    let request = tonic::Request::new(create_request.clone());
+    let response = client.create_event(request).await?;
+
+    let event = response.into_inner().event.unwrap();
+    assert_event_fields(&create_request, &event);
 
     tx.send(()).unwrap();
     jh.await.unwrap();
@@ -141,10 +171,10 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_event", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
-    let create_event_request = tonic::Request::new(CreateEventRequest {
+    let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00Z".to_string(),
-        end: "2024-05-26T12:00:00Z".to_string(),
+        start: "2024-05-26T09:00:00+00:00".to_string(),
+        end: "2024-05-26T12:00:00+00:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -152,15 +182,17 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
         slot_capacity: 0,
         recurrence_rule: "".to_string(),
         event_type: EventType::Event as i32,
-    });
+    };
+
+    let create_event_request = tonic::Request::new(create_request.clone());
     let create_resp = client.create_event(create_event_request).await?;
     let event = create_resp.into_inner().event.unwrap();
 
     let update_event_request = tonic::Request::new(UpdateEventRequest {
         id: event.id.clone(),
         name: "updated-event".to_string(),
-        start: "2024-05-26T10:00:00Z".to_string(),
-        end: "2024-05-26T11:00:00Z".to_string(),
+        start: "2024-05-26T10:00:00+00:00".to_string(),
+        end: "2024-05-26T11:00:00+00:00".to_string(),
         timezone: "Europe/Berlin".to_string(),
         capacity: 100,
         slot_capacity: 10,
@@ -170,8 +202,10 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let updated_event = update_resp.into_inner().event.unwrap();
 
     assert_eq!(updated_event.name, "updated-event");
-    assert_eq!(updated_event.start.unwrap().date_time, "2024-05-26T10:00:00+00:00");
+    assert_eq!(updated_event.start.clone().unwrap().date_time, "2024-05-26T10:00:00+00:00");
     assert_eq!(updated_event.end.unwrap().date_time, "2024-05-26T11:00:00+00:00");
+    assert_eq!(updated_event.start.unwrap().timezone, "Europe/Berlin");
+    assert_eq!(updated_event.capacity, 100);
 
     tx.send(()).unwrap();
     jh.await.unwrap();
