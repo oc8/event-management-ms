@@ -7,7 +7,6 @@ use rrule::Tz;
 pub mod server;
 pub mod database;
 pub mod errors;
-pub mod schema;
 pub mod utils;
 
 pub fn init_service_logging() {
