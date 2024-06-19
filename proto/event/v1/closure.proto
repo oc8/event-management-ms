@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package event.v1;
+
+import "event/v1/common.proto";
+import "event/v1/event.proto";
+
+service ClosureService {
+  rpc CreateClosure(CreateClosureRequest) returns (CreateClosureResponse);
+  rpc ListClosures(ListClosuresRequest) returns (ListClosuresResponse);
+  rpc UpdateClosure(UpdateClosureRequest) returns (UpdateClosureResponse);
+  rpc DeleteClosure(DeleteClosureRequest) returns (DeleteClosureResponse);
+}
+
+message Closure {
+  string id = 1;
+  TimeData closing_from = 2;
+  TimeData closing_to = 3;
+  string organizer_key = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message CreateClosureRequest {
+  string closing_from = 1;
+  string closing_to = 2;
+  string organizer_key = 3;
+}
+
+message CreateClosureResponse {
+  Closure closure = 1;
+}
+
+message UpdateClosureRequest {
+  string id = 1;
+  string closing_from = 2;
+  string closing_to = 3;
+}
+
+message UpdateClosureResponse {
+  Closure closure = 1;
+}
+
+message DeleteClosureRequest {
+  string id = 1;
+}
+
+message DeleteClosureResponse {
+  string message = 1;
+}
+
+message ListClosuresRequest {
+  Filters filters = 1;
+}
+
+message ListClosuresResponse {
+  repeated Closure closures = 1;
+}

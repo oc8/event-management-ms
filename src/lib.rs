@@ -4,16 +4,18 @@ use ::log::{error, info};
 use chrono::{Datelike, DateTime, MappedLocalTime, NaiveDateTime, NaiveTime, Timelike, TimeZone};
 use rrule::Tz;
 
+pub mod server;
+pub mod database;
+pub mod errors;
+pub mod schema;
+pub mod utils;
+
 pub fn init_service_logging() {
     env_logger::builder()
         .target(env_logger::Target::Stdout)
         .filter_level(log::LevelFilter::Info)
         .parse_env("RUST_LOG")
         .init();
-}
-
-pub fn env_var(name: &str) -> Option<String> {
-    env::var(name).ok().filter(|s| !s.is_empty())
 }
 
 pub fn report_error<E: 'static>(err: &E)

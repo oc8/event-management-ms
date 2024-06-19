@@ -1,4 +1,5 @@
 use tonic::{Code};
+use crate::report_error;
 
 pub struct ApiError {
     pub grpc_code: Code,
@@ -99,13 +100,13 @@ pub const EVENT_DELETION_FAILED: ApiError = ApiError {
 pub const BOOKING_CREATION_FAILED: ApiError = ApiError {
     grpc_code: Code::Internal,
     code: "booking_creation_failed",
-    message: "Failed to create booking"
+    message: "Failed to create event"
 };
 
 pub const BOOKING_DELETION_FAILED: ApiError = ApiError {
     grpc_code: Code::Internal,
     code: "booking_deletion_failed",
-    message: "Failed to delete booking"
+    message: "Failed to delete event"
 };
 
 pub const CLOSURE_CREATION_FAILED: ApiError = ApiError {
@@ -136,4 +137,47 @@ pub const CLOSURE_DELETION_FAILED: ApiError = ApiError {
 pub fn format_error(error: ApiError) -> tonic::Status {
     let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);
     tonic::Status::new(error.grpc_code, error_json)
+}
+
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum Error {
+    #[error("bad request: {0}")]
+    BadRequest(String),
+}
+
+impl From<Error> for tonic::Status {
+    fn from(e: Error) -> Self {
+        use tonic::{Code, Status};
+        match e {
+            Error::BadRequest(str) => Status::new(Code::InvalidArgument, str),
+        }
+    }
+}
+
+impl From<sqlx::Error> for ApiError {
+    fn from(error: sqlx::Error) -> Self {
+        report_error(&error);
+        INTERNAL
+    }
+}
+
+impl From<chrono::ParseError> for ApiError {
+    fn from(error: chrono::ParseError) -> Self {
+        report_error(&error);
+        INTERNAL
+    }
+}
+
+impl From<uuid::Error> for ApiError {
+    fn from(error: uuid::Error) -> Self {
+        report_error(&error);
+        INTERNAL
+    }
+}
+
+impl From<ApiError> for tonic::Status {
+    fn from(error:ApiError) -> Self {
+        format_error(error)
+    }
 }

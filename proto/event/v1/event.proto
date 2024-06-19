@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package event.v1;
+
+import "event/v1/common.proto";
+
+service EventService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc ListEvents(GetListEventsRequest) returns (GetListEventsResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
+  rpc GetTimeline(GetTimelineRequest) returns (GetTimelineResponse);
+}
+
+message Filters {
+  string from = 1;
+  string to = 2;
+  string organizer_key = 3;
+  EventStatus status = 5;
+  EventType event_type = 6;
+  string booking_holder_key = 8;
+  string slot_id = 9;
+}
+
+enum EventStatus {
+  EVENT_STATUS_UNSPECIFIED = 0;
+  EVENT_STATUS_ACTIVE = 1;
+  EVENT_STATUS_CANCELED = 2;
+  EVENT_STATUS_CLOSED = 3;
+  EVENT_STATUS_FULL = 4;
+  EVENT_STATUS_DISABLED = 5;
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_EVENT = 1;
+  EVENT_TYPE_TASK = 2;
+  EVENT_TYPE_MEETING = 3;
+}
+
+message Event {
+  string id = 1;
+  string name = 2;
+  EventType event_type = 3;
+  EventStatus status = 4;
+  TimeData start = 5;
+  TimeData end = 6;
+  string recurrence_rule = 7;
+  string organizer_key = 8;
+  Cancellation cancellation = 9;
+  bool overlap = 10;
+  repeated Slot slots = 11;
+  int64 slot_duration = 12;
+  int32 capacity = 13;
+  int64 created_at = 14;
+  int64 updated_at = 15;
+}
+
+message Cancellation {
+  string canceled_by = 1;
+  string reason = 2;
+  TimeData created_at = 3;
+}
+
+message CreateEventRequest {
+  string name = 1;
+  string start = 2;
+  string end = 3;
+  string timezone = 4;
+  string organizer_key = 5;
+  int64 slot_duration = 6;
+  int32 capacity = 7;
+  int32 slot_capacity = 8;
+  string recurrence_rule = 9;
+  EventType event_type = 10;
+}
+
+message CreateEventResponse {
+  Event event = 1;
+}
+
+message GetEventRequest {
+  string id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
+}
+
+message GetListEventsRequest {
+  Filters filters = 1;
+}
+
+message GetListEventsResponse {
+  repeated Event events = 1;
+}
+
+message UpdateEventRequest {
+  string id = 1;
+  string name = 2;
+  string start = 3;
+  string end = 4;
+  string timezone = 5;
+  int32 capacity = 7;
+  int32 slot_capacity = 8;
+  string recurrence_rule = 9;
+}
+
+message UpdateEventResponse {
+  Event event = 1;
+}
+
+message DeleteEventRequest {
+  string id = 1;
+}
+
+message DeleteEventResponse {
+  string message = 1;
+}
+
+message CancelEventRequest {
+  string id = 1;
+  string canceled_by = 2;
+  string reason = 3;
+}
+
+message CancelEventResponse {
+  Event event = 1;
+}
+
+message GetTimelineRequest {
+  Filters filters = 1;
+}
+
+message GetTimelineResponse {
+  repeated Event events = 1;
+}

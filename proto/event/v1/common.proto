@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package event.v1;
+
+message TimeData {
+  string timezone = 1;
+  string date_time = 2;
+}
+
+enum SlotStatus {
+  SLOT_STATUS_UNSPECIFIED = 0;
+  SLOT_STATUS_AVAILABLE = 1;
+  SLOT_STATUS_FULL = 2;
+  SLOT_STATUS_CLOSED = 3;
+}
+
+message Slot {
+  string id = 1;
+  string event_id = 2;
+  TimeData start = 3;
+  TimeData end = 4;
+  int32 capacity = 5;
+  SlotStatus status = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
+}

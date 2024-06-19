@@ -29,10 +29,7 @@ protos:
 	buf generate
 
 migration:
-	diesel migration run
-
-migration-revert:
-	diesel migration revert
+	sqlx migrate run
 
 all: protos test build
 
