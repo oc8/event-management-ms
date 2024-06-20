@@ -1,10 +1,9 @@
 use chrono::DateTime;
 use sqlx::postgres::types::PgInterval;
-use tonic::Status;
 use uuid::Uuid;
 use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetListEventsRequest, GetListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
 use crate::database::PgPooledConnection;
-use crate::errors::{errors, format_error};
+use crate::errors::{ApiError};
 use crate::server::services::v1::event::event_model::{EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
 use crate::{truncate_to_minute};
 use crate::server::services::v1::booking::booking_model::{BookingRepository};
@@ -15,13 +14,11 @@ use crate::utils::filters::{BookingFilters, ClosureFilters, EventFilters, Filter
 pub async fn create_event(
     request: CreateEventRequest,
     conn: &mut PgPooledConnection
-) -> Result<CreateEventResponse, Status> {
+) -> Result<CreateEventResponse, ApiError> {
     // validate_create_event_request(&request)?;
 
-    let start_time = DateTime::parse_from_rfc3339(&request.start)
-        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
-    let end_time = DateTime::parse_from_rfc3339(&request.end)
-        .map_err(|_| format_error(errors::INVALID_DATETIME))?;
+    let start_time = DateTime::parse_from_rfc3339(&request.start)?;
+    let end_time = DateTime::parse_from_rfc3339(&request.end)?;
 
     let tz = match request.timezone.is_empty() {
         true => chrono::Utc.to_string(),
@@ -68,7 +65,7 @@ pub async fn create_event(
 pub async fn get_event_by_id(
     request: GetEventRequest,
     conn: &mut PgPooledConnection
-) -> Result<GetEventResponse, Status> {
+) -> Result<GetEventResponse, ApiError> {
     // validate_get_event_request(&request)?;
 
     let event = conn.get_event_by_id(Uuid::parse_str(&request.id).unwrap())
@@ -82,7 +79,7 @@ pub async fn get_event_by_id(
 pub async fn list_events(
     request: GetListEventsRequest,
     conn: &mut PgPooledConnection
-) -> Result<GetListEventsResponse, Status> {
+) -> Result<GetListEventsResponse, ApiError> {
     // validate_get_event_request(&request)?;
 
     let filters: Filters<EventFilters> = request.filters.into();
@@ -100,23 +97,20 @@ pub async fn list_events(
 pub async fn update_event(
     request: UpdateEventRequest,
     conn: &mut PgPooledConnection
-) -> Result<UpdateEventResponse, Status> {
+) -> Result<UpdateEventResponse, ApiError> {
     // validate_update_event_request(&request)?;
 
-    let event_id = Uuid::parse_str(&request.id)
-        .map_err(|_| format_error(errors::INVALID_ID))?;
+    let event_id = Uuid::parse_str(&request.id)?;
 
     let start_time = match request.start.is_empty() {
         true => None,
-        false => Some(DateTime::parse_from_rfc3339(&request.start)
-            .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        false => Some(DateTime::parse_from_rfc3339(&request.start)?
             .naive_utc())
     };
 
     let end_time = match request.end.is_empty() {
         true => None,
-        false => Some(DateTime::parse_from_rfc3339(&request.end)
-            .map_err(|_| format_error(errors::INVALID_DATETIME))?
+        false => Some(DateTime::parse_from_rfc3339(&request.end)?
             .naive_utc())
     };
 
@@ -142,7 +136,7 @@ pub async fn update_event(
 pub async fn delete_event(
     request: DeleteEventRequest,
     conn: &mut PgPooledConnection
-) -> Result<DeleteEventResponse, Status> {
+) -> Result<DeleteEventResponse, ApiError> {
     // validate_delete_event_request(&request)?;
 
     let event_id = Uuid::parse_str(&request.id).unwrap();
@@ -158,7 +152,7 @@ pub async fn delete_event(
 pub async fn cancel_event(
     request: CancelEventRequest,
     conn: &mut PgPooledConnection
-) -> Result<CancelEventResponse, Status> {
+) -> Result<CancelEventResponse, ApiError> {
     // validate_cancel_event_request(&request)?;
 
     let event_id = Uuid::parse_str(&request.id).unwrap();
@@ -179,7 +173,7 @@ pub async fn cancel_event(
 pub async fn get_timeline(
     request: GetTimelineRequest,
     conn: &mut PgPooledConnection
-) -> Result<GetTimelineResponse, Status> {
+) -> Result<GetTimelineResponse, ApiError> {
     // validate_get_timeline_request(&request)?;
 
     let event_filters: Filters<EventFilters> = request.filters.clone().into();

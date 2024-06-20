@@ -1,183 +1,152 @@
-use tonic::{Code};
+use std::fmt;
+use redis::RedisError;
+use rrule::RRuleError;
+use serde::{Deserialize, Serialize};
+use serde_variant::to_variant_name;
+use thiserror::Error;
+use tonic_error::TonicError;
 use crate::report_error;
 
-pub struct ApiError {
-    pub grpc_code: Code,
-    pub code: &'static str,
-    pub message: &'static str
+#[derive(Error, Debug, Serialize, Deserialize)]
+pub enum ValidationErrorKind {
+
 }
 
-pub const INTERNAL: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "internal",
-    message: "Internal Server Error"
-};
+#[derive(Debug, Serialize, Deserialize)]
+pub struct List<T>(pub Vec<T>);
 
-pub const REDIS_CONNECTION_FAILURE: ApiError = ApiError {
-    grpc_code: Code::DataLoss,
-    code: "redis_connection_failure",
-    message: "Failed to connect to Redis"
-};
-
-pub const DATABASE_CONNECTION_FAILURE: ApiError = ApiError {
-    grpc_code: Code::DataLoss,
-    code: "database_connection_failure",
-    message: "Failed to connect to Database"
-};
-
-pub const INVALID_ID: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_id",
-    message: "Invalid id"
-};
-
-pub const EVENT_NOT_FOUND: ApiError = ApiError {
-    grpc_code: Code::NotFound,
-    code: "event_not_found",
-    message: "Event not found"
-};
-
-pub const SLOT_NOT_FOUND: ApiError = ApiError {
-    grpc_code: Code::NotFound,
-    code: "slot_not_found",
-    message: "Slot not found"
-};
-
-pub const BOOKING_NOT_FOUND: ApiError = ApiError {
-    grpc_code: Code::NotFound,
-    code: "booking_not_found",
-    message: "Booking not found"
-};
-
-pub const BOOKING_ALREADY_EXISTS: ApiError = ApiError {
-    grpc_code: Code::AlreadyExists,
-    code: "booking_already_exists",
-    message: "Booking already exists"
-};
-
-pub const BOOKING_DATE_IN_PAST: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "booking_date_in_past",
-    message: "Booking date is in the past"
-};
-
-pub const BOOKING_DATE_TIME_MISMATCH: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "booking_date_time_mismatch",
-    message: "Booking date and time mismatch"
-};
-
-pub const BOOKING_CAPACITY_FULL: ApiError = ApiError {
-    grpc_code: Code::ResourceExhausted,
-    code: "booking_capacity_full",
-    message: "Booking capacity is full"
-};
-
-pub const EVENT_CREATION_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "event_creation_failed",
-    message: "Failed to create event"
-};
-
-pub const INVALID_DATETIME: ApiError = ApiError {
-    grpc_code: Code::InvalidArgument,
-    code: "invalid_date",
-    message: "Invalid rfc3339 datetime format"
-};
-
-pub const EVENT_UPDATE_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "event_update_failed",
-    message: "Failed to update event"
-};
-
-pub const EVENT_DELETION_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "event_deletion_failed",
-    message: "Failed to delete event"
-};
-
-pub const BOOKING_CREATION_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "booking_creation_failed",
-    message: "Failed to create event"
-};
-
-pub const BOOKING_DELETION_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "booking_deletion_failed",
-    message: "Failed to delete event"
-};
-
-pub const CLOSURE_CREATION_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "closure_creation_failed",
-    message: "Failed to create closure"
-};
-
-pub const CLOSURE_NOT_FOUND: ApiError = ApiError {
-    grpc_code: Code::NotFound,
-    code: "closure_not_found",
-    message: "Closure not found"
-};
-
-pub const CLOSURE_UPDATE_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "closure_update_failed",
-    message: "Failed to update closure"
-};
-
-pub const CLOSURE_DELETION_FAILED: ApiError = ApiError {
-    grpc_code: Code::Internal,
-    code: "closure_deletion_failed",
-    message: "Failed to delete closure"
-};
-
-// format error to json like { "code": "invalid_slot_duration", "message": "Invalid slot duration" }
-pub fn format_error(error: ApiError) -> tonic::Status {
-    let error_json = format!("{{ \"code\": \"{}\", \"message\": \"{}\" }}", error.code, error.message);
-    tonic::Status::new(error.grpc_code, error_json)
+impl<T> fmt::Display for List<T>
+    where
+        T: fmt::Display + serde::Serialize,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut s = String::new();
+        for (i, item) in self.0.iter().enumerate() {
+            if i > 0 {
+                s.push_str(", ");
+            }
+            s.push_str(&item.to_string());
+        }
+        write!(f, "{}", s)
+    }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Error, Debug, Serialize, Deserialize, TonicError)]
 #[non_exhaustive]
-pub enum Error {
-    #[error("bad request: {0}")]
-    BadRequest(String),
+pub enum ApiError {
+    #[error("internal server error")]
+    InternalServerError,
+    #[error("the request was invalid: {0}")]
+    InvalidRequest(String),
+    #[error("redis connection failure")]
+    RedisConnectionFailure,
+    #[error("cache error")]
+    CacheError,
+    #[error("database connection failure")]
+    DatabaseConnectionFailure,
+    #[error("database error: {0}")]
+    DatabaseError(String),
+    #[error("already exists: {0}")]
+    AlreadyExists(String),
+    #[error("not found {0}")]
+    NotFound(String),
+    #[error("parsing error: {0}")]
+    ParsingError(String),
+    #[error("validation error: {0}")]
+    ValidationError(List<ValidationErrorKind>),
 }
 
-impl From<Error> for tonic::Status {
-    fn from(e: Error) -> Self {
-        use tonic::{Code, Status};
-        match e {
-            Error::BadRequest(str) => Status::new(Code::InvalidArgument, str),
+impl ApiError {
+    pub fn code(&self) -> tonic::Code {
+        match self {
+            ApiError::InvalidRequest(_) => tonic::Code::InvalidArgument,
+            ApiError::RedisConnectionFailure => tonic::Code::Unavailable,
+            ApiError::CacheError => tonic::Code::Unavailable,
+            ApiError::DatabaseConnectionFailure => tonic::Code::Unavailable,
+            ApiError::DatabaseError(_) => tonic::Code::Internal,
+            ApiError::AlreadyExists(_) => tonic::Code::AlreadyExists,
+            ApiError::NotFound(_) => tonic::Code::NotFound,
+            ApiError::ValidationError(_) => tonic::Code::InvalidArgument,
+            _ => tonic::Code::Internal,
+        }
+    }
+
+    pub fn is_list(&self) -> bool {
+        match self {
+            ApiError::ValidationError(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn errors(&self) -> serde_json::Value {
+        match self {
+            ApiError::ValidationError(errors) => {
+                let mut v = Vec::new();
+                for e in &errors.0 {
+                    let type_name = to_variant_name(e).unwrap();
+                    let data = e.to_string();
+                    let (message, field) = data.split_once(", field: ").unwrap_or(("", ""));
+                    v.push(serde_json::json!({
+                        "message": message,
+                        "field": field,
+                        "type": type_name,
+                    }));
+                }
+
+                serde_json::json!(v)
+            }
+            _ => serde_json::json!([])
         }
     }
 }
 
 impl From<sqlx::Error> for ApiError {
     fn from(error: sqlx::Error) -> Self {
+        match error {
+            sqlx::Error::RowNotFound => {
+                // TODO: find a way to return the table name
+                ApiError::NotFound("Not found".to_string())
+            },
+            sqlx::Error::Database(e) => {
+                if e.is_unique_violation() {
+                    ApiError::AlreadyExists(e.message().to_string())
+                } else {
+                    report_error(&e);
+                    ApiError::DatabaseError(e.message().to_string())
+                }
+            }
+            _ => {
+                report_error(&error);
+                ApiError::InternalServerError
+            }
+        }
+    }
+}
+
+impl From<RedisError> for ApiError {
+    fn from(error: RedisError) -> Self {
         report_error(&error);
-        INTERNAL
+        ApiError::CacheError
     }
 }
 
 impl From<chrono::ParseError> for ApiError {
     fn from(error: chrono::ParseError) -> Self {
         report_error(&error);
-        INTERNAL
+        ApiError::ParsingError("Cannot parse date".to_string())
     }
 }
 
 impl From<uuid::Error> for ApiError {
     fn from(error: uuid::Error) -> Self {
         report_error(&error);
-        INTERNAL
+        ApiError::ParsingError("Cannot parse uuid".to_string())
     }
 }
 
-impl From<ApiError> for tonic::Status {
-    fn from(error:ApiError) -> Self {
-        format_error(error)
+impl From<RRuleError> for ApiError {
+    fn from(error: RRuleError) -> Self {
+        report_error(&error);
+        ApiError::ParsingError("Cannot parse rrule".to_string())
     }
 }

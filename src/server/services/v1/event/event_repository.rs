@@ -3,7 +3,7 @@ use chrono::{NaiveDate, NaiveDateTime};
 use rrule::RRuleSet;
 use sqlx::{Acquire, PgConnection, Postgres, QueryBuilder};
 use uuid::Uuid;
-use crate::errors::{ApiError, EVENT_NOT_FOUND, INTERNAL};
+use crate::errors::{ApiError};
 use crate::server::services::v1::event::event_model::{DbEvent, Event, EventActions, EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
 use crate::server::services::v1::slot::slot_model::{Slot, SlotRepository};
 use crate::{format_datetime, naive_datetime_to_rrule_datetime, report_error, truncate_to_minute};
@@ -67,16 +67,7 @@ impl EventRepository for PgConnection {
             id
         )
             .fetch_one(&mut *conn)
-            .await
-            .map_err(|e| {
-                match e {
-                    sqlx::Error::RowNotFound => EVENT_NOT_FOUND,
-                    _ => {
-                        report_error(&e);
-                        INTERNAL
-                    }
-                }
-            })?;
+            .await?;
 
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.find_by_event_id(id).await?),
@@ -357,16 +348,7 @@ impl EventRepository for PgConnection {
 
         let event = query_builder.build_query_as::<DbEvent>()
             .fetch_one(&mut *conn)
-            .await
-            .map_err(|e| {
-                match e {
-                    sqlx::Error::RowNotFound => EVENT_NOT_FOUND,
-                    _ => {
-                        report_error(&e);
-                        INTERNAL
-                    }
-                }
-            })?;
+            .await?;
 
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.find_by_event_id(id).await?),
@@ -388,7 +370,7 @@ impl EventRepository for PgConnection {
             .await?;
 
         if result.rows_affected() == 0 {
-            return Err(EVENT_NOT_FOUND);
+            return Err(ApiError::NotFound("Event not found".to_string()));
         }
 
         Ok(result.rows_affected())
@@ -417,7 +399,7 @@ impl EventActions for Event {
             },
             Err(e) => {
                 report_error(&e);
-                Err(INTERNAL)
+                Err(ApiError::InvalidRequest("Invalid recurrence rule".to_string()))
             }
         }
     }

@@ -2,8 +2,7 @@ use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use sqlx::{Acquire, PgConnection, Postgres, QueryBuilder};
 use uuid::Uuid;
-use crate::errors::{ApiError, errors};
-use crate::report_error;
+use crate::errors::{ApiError};
 use crate::server::services::v1::booking::booking_model::{Booking, BookingInsert, BookingRepository, DbBooking};
 use crate::server::services::v1::slot::slot_model::SlotRepository;
 use crate::utils::filters::{BookingFilters, Filters};
@@ -90,11 +89,7 @@ impl BookingRepository for PgConnection {
 
         let bookings = query_builder.build_query_as::<DbBooking>();
 
-        let bookings = bookings.fetch_all(self).await
-            .map_err(|e| {
-                log::error!("Failed to fetch bookings: {:?}", e);
-                errors::INTERNAL
-            })?;
+        let bookings = bookings.fetch_all(self).await?;
 
         Ok(bookings.into_iter().map(|b| b.into_booking(None)).collect())
     }
@@ -115,16 +110,7 @@ impl BookingRepository for PgConnection {
             date_time
         )
             .fetch_one(self)
-            .await
-            .map_err(|e| {
-                match e {
-                    sqlx::Error::RowNotFound => errors::BOOKING_NOT_FOUND,
-                    _ => {
-                        report_error(&e);
-                        errors::INTERNAL
-                    }
-                }
-            })?;
+            .await?;
 
         Ok(booking.into_booking(None))
     }
