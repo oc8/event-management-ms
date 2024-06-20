@@ -2,13 +2,15 @@ use async_trait::async_trait;
 use uuid::Uuid;
 use protos::event::v1::SlotStatus;
 use crate::errors::ApiError;
-use crate::server::services::v1::event::event_model::{DbEvent};
+use crate::server::services::v1::event::event_model::{DbEvent, EventRepository};
 use crate::server::services::v1::slot::slot_model::{DbSlot, Slot, SlotRepository};
-use sqlx::{PgConnection};
+use sqlx::{Acquire, PgConnection};
 
 #[async_trait]
 impl SlotRepository for PgConnection {
     async fn get_slot_by_id(&mut self, id: Uuid) -> Result<Slot, ApiError> {
+        let conn = self.acquire().await?;
+
         let slot = sqlx::query_as!(
             DbSlot,
             r#"
@@ -16,10 +18,12 @@ impl SlotRepository for PgConnection {
             "#,
             id
         )
-        .fetch_one(self)
+        .fetch_one(&mut *conn)
         .await?;
 
-        Ok(slot.into_slot(SlotStatus::Available, None))
+        let event = self.get_event_by_id(slot.event_id).await?;
+
+        Ok(slot.into_slot(SlotStatus::Available, Some(event)))
     }
 
     async fn find_by_event_id(&mut self, event_id: Uuid) -> Result<Vec<Slot>, ApiError> {

@@ -342,9 +342,9 @@ pub(crate) trait EventActions: Send + Sync + 'static {
     ///
     /// ## Success
     /// A list of available dates for the event.
-    async fn get_available_dates(
+    fn get_available_dates(
         &self,
         start: NaiveDateTime,
         limit: u16
-    ) -> Vec<NaiveDate>;
+    ) -> Result<Vec<NaiveDate>, ApiError>;
 }

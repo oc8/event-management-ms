@@ -1,8 +1,11 @@
 use async_trait::async_trait;
-use sqlx::{PgConnection, Postgres, QueryBuilder};
+use chrono::NaiveDateTime;
+use sqlx::{Acquire, PgConnection, Postgres, QueryBuilder};
 use uuid::Uuid;
-use crate::errors::{ApiError, INTERNAL};
+use crate::errors::{ApiError, errors};
+use crate::report_error;
 use crate::server::services::v1::booking::booking_model::{Booking, BookingInsert, BookingRepository, DbBooking};
+use crate::server::services::v1::slot::slot_model::SlotRepository;
 use crate::utils::filters::{BookingFilters, Filters};
 
 #[async_trait]
@@ -11,6 +14,8 @@ impl BookingRepository for PgConnection {
         &mut self,
         booking: &BookingInsert,
     ) -> Result<Booking, ApiError> {
+        let conn = self.acquire().await?;
+
         let new_booking = sqlx::query_as!(
             DbBooking,
             r#"
@@ -24,13 +29,17 @@ impl BookingRepository for PgConnection {
             booking.persons,
             booking.booking_holder_key
         )
-            .fetch_one(self)
+            .fetch_one(&mut *conn)
             .await?;
 
-        Ok(new_booking.into_booking(None))
+        let slot = self.get_slot_by_id(booking.slot_id).await?;
+
+        Ok(new_booking.into_booking(Some(slot)))
     }
 
     async fn get_booking_by_id(&mut self, id: Uuid) -> Result<Booking, ApiError> {
+        let conn = self.acquire().await?;
+
         let booking = sqlx::query_as!(
             DbBooking,
             r#"
@@ -38,10 +47,12 @@ impl BookingRepository for PgConnection {
             "#,
             id
         )
-            .fetch_one(self)
+            .fetch_one(&mut *conn)
             .await?;
 
-        Ok(booking.into_booking(None))
+        let slot = conn.get_slot_by_id(booking.slot_id).await?;
+
+        Ok(booking.into_booking(Some(slot)))
     }
 
     async fn get_bookings_with_filters(&mut self, filters: &Filters<BookingFilters>) -> Result<Vec<Booking>, ApiError> {
@@ -54,10 +65,10 @@ impl BookingRepository for PgConnection {
             "#,
         );
 
-        // if let Some(ref organizer_key) = filters.organizer_key {
-        //     query_builder.push(" AND organizer_key = ");
-        //     query_builder.push_bind(organizer_key);
-        // }
+        if let Some(ref organizer_key) = filters.organizer_key {
+            query_builder.push(" AND organizer_key = ");
+            query_builder.push_bind(organizer_key);
+        }
         if let Some(ref from) = filters.from {
             query_builder.push(" AND date_time >= ");
             query_builder.push_bind(from);
@@ -82,7 +93,7 @@ impl BookingRepository for PgConnection {
         let bookings = bookings.fetch_all(self).await
             .map_err(|e| {
                 log::error!("Failed to fetch bookings: {:?}", e);
-                INTERNAL
+                errors::INTERNAL
             })?;
 
         Ok(bookings.into_iter().map(|b| b.into_booking(None)).collect())
@@ -90,5 +101,69 @@ impl BookingRepository for PgConnection {
 
     async fn delete_booking(&mut self, _id: Uuid) -> Result<usize, ApiError> {
         todo!()
+    }
+
+    async fn get_booking_holder_booking(&mut self, slot_id: Uuid, booking_holder: String, date_time: NaiveDateTime) -> Result<Booking, ApiError> {
+        let booking = sqlx::query_as!(
+            DbBooking,
+            r#"
+            SELECT * FROM bookings
+            WHERE slot_id = $1 AND booking_holder_key = $2 AND date_time = $3
+            "#,
+            slot_id,
+            booking_holder,
+            date_time
+        )
+            .fetch_one(self)
+            .await
+            .map_err(|e| {
+                match e {
+                    sqlx::Error::RowNotFound => errors::BOOKING_NOT_FOUND,
+                    _ => {
+                        report_error(&e);
+                        errors::INTERNAL
+                    }
+                }
+            })?;
+
+        Ok(booking.into_booking(None))
+    }
+
+    async fn sum_persons_by_datetime(&mut self, slot_id: Uuid, datetime: NaiveDateTime) -> Result<i32, ApiError> {
+        let result: Option<i64> = sqlx::query_scalar!(
+            "SELECT SUM(persons) FROM bookings WHERE slot_id = $1 AND date_time = $2",
+            slot_id,
+            datetime
+        )
+            .fetch_one(self)
+            .await?;
+
+        if let Some(result) = result {
+            Ok(result as i32)
+        } else {
+            Ok(0)
+        }
+    }
+
+    async fn sum_persons_by_event(&mut self, event_id: Uuid, min_date_time: NaiveDateTime, max_date_time: NaiveDateTime) -> Result<i32, ApiError> {
+        let result: Option<i64> = sqlx::query_scalar!(
+            "SELECT SUM(bookings.persons)
+             FROM bookings
+             INNER JOIN event_slots ON bookings.slot_id = event_slots.id
+             WHERE event_slots.event_id = $1
+               AND bookings.date_time >= $2
+               AND bookings.date_time <= $3",
+            event_id,
+            min_date_time,
+            max_date_time
+        )
+            .fetch_one(self)
+            .await?;
+
+        if let Some(result) = result {
+            Ok(result as i32)
+        } else {
+            Ok(0)
+        }
     }
 }

@@ -32,7 +32,7 @@ impl From<Booking> for protos::event::v1::Booking {
             timezone: "UTC".to_string(),
             date_time: DateTime::<Utc>::from_naive_utc_and_offset(booking.date_time, Utc).to_rfc3339()
         });
-        proto_booking.slot = None; // TODO: add slot
+        proto_booking.slot = booking.slot.map(|s| s.into());
         proto_booking.persons = booking.persons;
         proto_booking.created_at = booking.created_at.and_utc().timestamp();
         proto_booking.updated_at = booking.updated_at.and_utc().timestamp();
@@ -110,7 +110,7 @@ pub(crate) trait BookingRepository: Send + Sync + 'static {
     /// If the booking does not exist, or a failure occurred with the database.
     async fn get_booking_by_id(
         &mut self,
-        id: Uuid,
+        slot_id: Uuid,
     ) -> Result<Booking, ApiError>;
 
     /// Attempts to retrieve a list of bookings with filters.
@@ -140,6 +140,61 @@ pub(crate) trait BookingRepository: Send + Sync + 'static {
     /// If the booking does not exist, or a failure occurred with the database.
     async fn delete_booking(
         &mut self,
-        id: Uuid,
+        slot_id: Uuid,
     ) -> Result<usize, ApiError>;
+
+    /// Attempts to retrieve an existing booking by the booking holder and datetime.
+    ///
+    /// # Parameters
+    /// The id of the slot to retrieve the booking.
+    /// The booking holder of the booking.
+    /// The datetime of the booking.
+    ///
+    /// ## Success
+    /// The booking that was found.
+    ///
+    /// ## Errors
+    /// If the booking does not exist, or a failure occurred with the database.
+    async fn get_booking_holder_booking(
+        &mut self,
+        slot_id: Uuid,
+        booking_holder: String,
+        date_time: NaiveDateTime,
+    ) -> Result<Booking, ApiError>;
+
+    /// Attempts to sum the number of persons by datetime.
+    ///
+    /// # Parameters
+    /// The id of the slot to retrieve the bookings.
+    /// The datetime of the booking.
+    ///
+    /// ## Success
+    /// The number of persons, 0 if no bookings.
+    ///
+    /// ## Errors
+    /// If the booking does not exist, or a failure occurred with the database.
+    async fn sum_persons_by_datetime(
+        &mut self,
+        slot_id: Uuid,
+        datetime: NaiveDateTime,
+    ) -> Result<i32, ApiError>;
+
+    /// Attempts to sum the number of persons by event.
+    ///
+    /// # Parameters
+    /// The id of the event to retrieve the bookings.
+    /// The minimum datetime of the bookings.
+    /// The maximum datetime of the bookings.
+    ///
+    /// ## Success
+    /// The number of persons, 0 if no bookings.
+    ///
+    /// ## Errors
+    /// If the booking does not exist, or a failure occurred with the database.
+    async fn sum_persons_by_event(
+        &mut self,
+        event_id: Uuid,
+        min_date_time: NaiveDateTime,
+        max_date_time: NaiveDateTime,
+    ) -> Result<i32, ApiError>;
 }

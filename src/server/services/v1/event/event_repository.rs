@@ -1,10 +1,12 @@
 use async_trait::async_trait;
+use chrono::{NaiveDate, NaiveDateTime};
+use rrule::RRuleSet;
 use sqlx::{Acquire, PgConnection, Postgres, QueryBuilder};
 use uuid::Uuid;
 use crate::errors::{ApiError, EVENT_NOT_FOUND, INTERNAL};
-use crate::server::services::v1::event::event_model::{DbEvent, Event, EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
+use crate::server::services::v1::event::event_model::{DbEvent, Event, EventActions, EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
 use crate::server::services::v1::slot::slot_model::{Slot, SlotRepository};
-use crate::{report_error, truncate_to_minute};
+use crate::{format_datetime, naive_datetime_to_rrule_datetime, report_error, truncate_to_minute};
 use crate::utils::filters::{EventFilters, Filters};
 use protos::event::v1::{EventStatus as EventStatusProto, EventType as EventTypeProto};
 
@@ -390,5 +392,33 @@ impl EventRepository for PgConnection {
         }
 
         Ok(result.rows_affected())
+    }
+}
+
+impl EventActions for Event {
+    fn get_available_dates(&self, start: NaiveDateTime, limit: u16) -> Result<Vec<NaiveDate>, ApiError> {
+        if self.recurrence_rule.is_none() {
+            return Ok(vec![self.start_time.date()]);
+        }
+
+        let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(self.start_time), self.recurrence_rule.clone().unwrap());
+        let recurrence = recurrence_rule.parse::<RRuleSet>();
+
+        log::debug!("Recurrence rule: {}", recurrence_rule);
+
+        match recurrence {
+            Ok(recurrence) => {
+                let after = naive_datetime_to_rrule_datetime(start).unwrap();
+                let rrule = recurrence.after(after);
+                Ok(rrule.all(limit).dates
+                    .into_iter()
+                    .map(|date| date.naive_utc().date())
+                    .collect())
+            },
+            Err(e) => {
+                report_error(&e);
+                Err(INTERNAL)
+            }
+        }
     }
 }

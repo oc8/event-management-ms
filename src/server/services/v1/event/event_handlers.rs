@@ -7,8 +7,8 @@ use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::server::services::v1::event::event_model::{EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
 use crate::{truncate_to_minute};
-use crate::server::services::v1::booking::booking_model::{Booking, BookingRepository};
-use crate::server::services::v1::closure::closure_model::{Closure, ClosureRepository};
+use crate::server::services::v1::booking::booking_model::{BookingRepository};
+use crate::server::services::v1::closure::closure_model::{ClosureRepository};
 use crate::server::services::v1::event::timeline::Timeline;
 use crate::utils::filters::{BookingFilters, ClosureFilters, EventFilters, Filters};
 
