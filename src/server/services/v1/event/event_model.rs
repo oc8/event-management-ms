@@ -92,13 +92,14 @@ impl EventType {
 }
 
 /// Defines the full structure of an event.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Event {
     pub id: Uuid,
     pub name: String,
     pub status: EventStatus,
     pub event_type: EventType,
     pub slots: Option<Vec<Slot>>,
+    pub overlap: bool,
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
     pub recurrence_rule: Option<String>,
@@ -194,6 +195,7 @@ impl DbEvent {
             status: self.status,
             event_type: self.event_type,
             slots,
+            overlap: false,
             start_time: self.start_time,
             end_time: self.end_time,
             recurrence_rule: self.recurrence_rule,

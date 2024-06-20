@@ -55,11 +55,11 @@ impl ClosureRepository for PgConnection {
             query_builder.push_bind(organizer_key);
         }
         if let Some(ref closing_from) = filters.from {
-            query_builder.push(" AND closing_from = ");
+            query_builder.push(" AND closing_from >= ");
             query_builder.push_bind(closing_from);
         }
         if let Some(ref closing_to) = filters.to {
-            query_builder.push(" AND closing_to = ");
+            query_builder.push(" AND closing_to <= ");
             query_builder.push_bind(closing_to);
         }
 

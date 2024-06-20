@@ -2,12 +2,15 @@ use chrono::DateTime;
 use sqlx::postgres::types::PgInterval;
 use tonic::Status;
 use uuid::Uuid;
-use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetListEventsRequest, GetListEventsResponse, UpdateEventRequest, UpdateEventResponse};
+use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetListEventsRequest, GetListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{errors, format_error};
 use crate::server::services::v1::event::event_model::{EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
 use crate::{truncate_to_minute};
-use crate::utils::filters::{EventFilters, Filters};
+use crate::server::services::v1::booking::booking_model::{Booking, BookingRepository};
+use crate::server::services::v1::closure::closure_model::{Closure, ClosureRepository};
+use crate::server::services::v1::event::timeline::Timeline;
+use crate::utils::filters::{BookingFilters, ClosureFilters, EventFilters, Filters};
 
 pub async fn create_event(
     request: CreateEventRequest,
@@ -170,5 +173,29 @@ pub async fn cancel_event(
 
     Ok(CancelEventResponse{
         event: Some(event.into())
+    })
+}
+
+pub async fn get_timeline(
+    request: GetTimelineRequest,
+    conn: &mut PgPooledConnection
+) -> Result<GetTimelineResponse, Status> {
+    // validate_get_timeline_request(&request)?;
+
+    let event_filters: Filters<EventFilters> = request.filters.clone().into();
+    let closure_filters: Filters<ClosureFilters> = request.filters.clone().into();
+    let booking_filters: Filters<BookingFilters> = request.filters.clone().into();
+
+    let mut events = conn.get_events_with_filter(&event_filters).await?;
+    let closures = conn.get_closures_with_filters(&closure_filters).await?;
+    let bookings = conn.get_bookings_with_filters(&booking_filters).await?;
+
+
+    let mut timeline = Timeline::new(events.clone(), closures.clone(), bookings);
+
+    events = timeline.included(event_filters.from.unwrap(), event_filters.to.unwrap())?;
+
+    Ok(GetTimelineResponse{
+        events: events.into_iter().map(|e| e.into()).collect()
     })
 }

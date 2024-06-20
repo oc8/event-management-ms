@@ -9,7 +9,7 @@ use autometrics::objectives::{
 };
 use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetListEventsRequest, GetListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
 use protos::event::v1::event_service_server::EventService;
-use crate::server::services::v1::event::event_handlers::{cancel_event, create_event, delete_event, get_event_by_id, list_events, update_event};
+use crate::server::services::v1::event::event_handlers::{cancel_event, create_event, delete_event, get_event_by_id, get_timeline, list_events, update_event};
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -90,7 +90,11 @@ impl EventService for EventServiceServerImpl {
             .map_err(|e| e.into())
     }
 
-    async fn get_timeline(&self, _request: Request<GetTimelineRequest>) -> Result<Response<GetTimelineResponse>, Status> {
-        todo!()
+    async fn get_timeline(&self, request: Request<GetTimelineRequest>) -> Result<Response<GetTimelineResponse>, Status> {
+        let mut conn = get_connection(&self.pool).await?;
+        get_timeline(request.into_inner(), &mut conn)
+            .await
+            .map(Response::new)
+            .map_err(|e| e.into())
     }
 }

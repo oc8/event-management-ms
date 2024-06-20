@@ -7,7 +7,7 @@ use protos::event::v1::{TimeData};
 use crate::utils::filters::{ClosureFilters, Filters};
 
 /// Defines the database structure of a closure.
-#[derive(Debug, PartialEq, sqlx::FromRow)]
+#[derive(Debug, PartialEq, sqlx::FromRow, Clone)]
 pub struct Closure {
     pub id: Uuid,
     pub closing_from: NaiveDateTime,

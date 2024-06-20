@@ -35,7 +35,7 @@ impl DbSlot {
 }
 
 /// Defines the full structure of a slot.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Slot {
     pub id: Uuid,
     pub event_id: Uuid,
