@@ -2,13 +2,14 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use crate::database::{get_connection, PgPool};
+use crate::database::{CacheClient, get_connection, PgPool};
 
 use autometrics::objectives::{
     Objective, ObjectiveLatency, ObjectivePercentile
 };
 use protos::event::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
 use protos::event::v1::closure_service_server::ClosureService;
+use crate::errors::ApiError;
 use crate::server::services::v1::closure::closure_handlers::{create_closure, delete_closure, list_closures, update_closure};
 
 const API_SLO: Objective = Objective::new("api")
@@ -17,20 +18,20 @@ const API_SLO: Objective = Objective::new("api")
 
 pub struct ClosureServiceServerImpl {
     pub pool: Arc<PgPool>,
-    pub cache: Arc<redis::Client>,
+    pub cache: CacheClient,
 }
 
 impl Clone for ClosureServiceServerImpl {
     fn clone(&self) -> Self {
         ClosureServiceServerImpl {
             pool: Arc::clone(&self.pool),
-            cache: Arc::clone(&self.cache),
+            cache: self.cache.clone(),
         }
     }
 }
 
 impl ClosureServiceServerImpl {
-    pub(crate) fn new(pool: Arc<PgPool>, cache: Arc<redis::Client>) -> Self {
+    pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
         ClosureServiceServerImpl {
             pool,
             cache,
@@ -43,33 +44,58 @@ impl ClosureServiceServerImpl {
 impl ClosureService for ClosureServiceServerImpl {
     async fn create_closure(&self, request: Request<CreateClosureRequest>) -> Result<Response<CreateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        create_closure(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response = create_closure(inner_request.clone(), &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        let inner_response = response.get_ref();
+        self.cache.invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 
     async fn list_closures(&self, request: Request<ListClosuresRequest>) -> Result<Response<ListClosuresResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        list_closures(request.into_inner(), &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        let inner_request = request.into_inner();
+
+        self.cache.handle_cache("list_closures", &inner_request.clone(), || {
+            async move {
+                list_closures(inner_request, &mut conn)
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        }).await
     }
 
     async fn update_closure(&self, request: Request<UpdateClosureRequest>) -> Result<Response<UpdateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        update_closure(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response = update_closure(inner_request, &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        let inner_response = response.get_ref();
+        self.cache.invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 
     async fn delete_closure(&self, request: Request<DeleteClosureRequest>) -> Result<Response<DeleteClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        delete_closure(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response =  delete_closure(inner_request.clone(), &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        // TODO: Find a way to invalidate cache keys
+        // let inner_response = response.get_ref();
+        // self.cache.invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 }

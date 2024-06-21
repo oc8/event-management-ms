@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use crate::database::{get_connection, PgPool};
+use crate::database::{CacheClient, get_connection, PgPool};
 
 use autometrics::objectives::{
     Objective, ObjectiveLatency, ObjectivePercentile
@@ -17,20 +17,20 @@ const API_SLO: Objective = Objective::new("api")
 
 pub struct BookingServiceServerImpl {
     pub pool: Arc<PgPool>,
-    pub cache: Arc<redis::Client>,
+    pub cache: CacheClient,
 }
 
 impl Clone for BookingServiceServerImpl {
     fn clone(&self) -> Self {
         BookingServiceServerImpl {
             pool: Arc::clone(&self.pool),
-            cache: Arc::clone(&self.cache),
+            cache: self.cache.clone(),
         }
     }
 }
 
 impl BookingServiceServerImpl {
-    pub(crate) fn new(pool: Arc<PgPool>, cache: Arc<redis::Client>) -> Self {
+    pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
         BookingServiceServerImpl {
             pool,
             cache,

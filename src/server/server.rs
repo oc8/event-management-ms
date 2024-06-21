@@ -7,7 +7,7 @@ use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 use protos::event::v1::booking_service_server::BookingServiceServer;
 use protos::event::v1::closure_service_server::ClosureServiceServer;
 use protos::event::v1::event_service_server::EventServiceServer;
-use crate::database::PgPool;
+use crate::database::{CacheClient, PgPool};
 use crate::{create_socket_addr, report_error};
 use crate::server::services::v1::booking::booking_service::BookingServiceServerImpl;
 use crate::server::services::v1::closure::closure_service::ClosureServiceServerImpl;
@@ -20,12 +20,12 @@ pub struct TonicServer {
 
 pub fn start_server(
     pool: Arc<PgPool>,
-    r_client: Arc<redis::Client>,
+    cache_client: CacheClient,
     port: u16,
 ) -> Result<TonicServer, Box<dyn std::error::Error>> {
-    let booking_service = BookingServiceServerImpl::new(pool.clone(), r_client.clone());
-    let event_service = EventServiceServerImpl::new(pool.clone(), r_client.clone());
-    let closure_service = ClosureServiceServerImpl::new(pool.clone(), r_client.clone());
+    let booking_service = BookingServiceServerImpl::new(pool.clone(), cache_client.clone());
+    let event_service = EventServiceServerImpl::new(pool.clone(), cache_client.clone());
+    let closure_service = ClosureServiceServerImpl::new(pool.clone(), cache_client.clone());
 
     let (mut tonic_server, secure_mode) = match get_tls_config() {
         Some(tls) => {

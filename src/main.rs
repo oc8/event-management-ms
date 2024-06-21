@@ -6,6 +6,7 @@ use autometrics::prometheus_exporter;
 use dotenvy::dotenv;
 use redis::Client;
 use event_ms::{create_socket_addr, database, init_service_logging};
+use event_ms::database::CacheClient;
 use event_ms::server::start_server;
 
 #[tokio::main]
@@ -34,14 +35,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let redis_host = env::var("REDIS_HOSTNAME").expect("REDIS_HOSTNAME must be set");
     let redis_pass = env::var("REDIS_PASSWORD").unwrap_or_default();
     let redis_conn_url = format!("{}://:{}@{}", uri_scheme, redis_pass, redis_host);
-    let r_client = Client::open(redis_conn_url)?;
+    let r_client = database::connect_redis(redis_conn_url)
+        .expect("Couldn't connect to Redis");
 
     // Start the gRPC server
     let port = env::var("PORT").unwrap_or_else(|_| "50051".to_string()).parse().expect("PORT must be a number");
+    let cache_ttl = env::var("CACHE_TTL").unwrap_or_else(|_| "60".to_string()).parse::<u64>().expect("CACHE_TTL must be a number");
+
+    let cache_client = CacheClient::new(r_client, cache_ttl);
 
     let _server = start_server(
         Arc::new(pool),
-        Arc::new(r_client),
+        cache_client,
         port
     );
 

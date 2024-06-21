@@ -2,7 +2,7 @@ use std::sync::{Arc};
 use autometrics::autometrics;
 use tonic::{Request, Response, Status};
 
-use crate::database::{get_connection, PgPool};
+use crate::database::{CacheClient, get_connection, PgPool};
 
 use autometrics::objectives::{
     Objective, ObjectiveLatency, ObjectivePercentile
@@ -17,20 +17,20 @@ const API_SLO: Objective = Objective::new("api")
 
 pub struct EventServiceServerImpl {
     pub pool: Arc<PgPool>,
-    pub cache: Arc<redis::Client>,
+    pub cache: CacheClient,
 }
 
 impl Clone for EventServiceServerImpl {
     fn clone(&self) -> Self {
         EventServiceServerImpl {
             pool: Arc::clone(&self.pool),
-            cache: Arc::clone(&self.cache),
+            cache: self.cache.clone(),
         }
     }
 }
 
 impl EventServiceServerImpl {
-    pub(crate) fn new(pool: Arc<PgPool>, cache: Arc<redis::Client>) -> Self {
+    pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
         EventServiceServerImpl {
             pool,
             cache,
@@ -43,58 +43,108 @@ impl EventServiceServerImpl {
 impl EventService for EventServiceServerImpl {
     async fn create_event(&self, request: Request<CreateEventRequest>) -> Result<Response<CreateEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        create_event(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response = create_event(inner_request, &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        let inner_response = response.get_ref();
+        self.cache.invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 
     async fn get_event(&self, request: Request<GetEventRequest>) -> Result<Response<GetEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        get_event_by_id(request.into_inner(), &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        let inner_request = request.into_inner();
+
+        self.cache.handle_cache("get_event", &inner_request.clone(), || {
+            async move {
+                get_event_by_id(inner_request, &mut conn)
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        }).await
     }
 
     async fn list_events(&self, request: Request<ListEventsRequest>) -> Result<Response<ListEventsResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
+        let inner_request = request.into_inner();
 
-        list_events(request.into_inner(), &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        self.cache.handle_cache("list_events", &inner_request.clone(), || {
+            async move {
+                list_events(inner_request, &mut conn)
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        }).await
     }
 
     async fn update_event(&self, request: Request<UpdateEventRequest>) -> Result<Response<UpdateEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        update_event(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response = update_event(inner_request.clone(), &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        self.cache.invalid_cache("get_event", &GetEventRequest {
+            id: inner_request.id.clone(),
+        }).await?;
+
+        let inner_response = response.get_ref();
+        self.cache.invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 
     async fn delete_event(&self, request: Request<DeleteEventRequest>) -> Result<Response<DeleteEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        delete_event(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response = delete_event(inner_request, &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        // TODO: Find a way to invalidate cache keys
+        // let inner_response = response.get_ref();
+        // self.cache.invalidate_related_cache_keys(response_inner.clone().event.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 
     async fn cancel_event(&self, request: Request<CancelEventRequest>) -> Result<Response<CancelEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        cancel_event(request.into_inner(), &mut conn)
+        let inner_request = request.into_inner();
+
+        let response = cancel_event(inner_request.clone(), &mut conn)
             .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+            .map(Response::new)?;
+
+        self.cache.invalid_cache("get_event", &GetEventRequest {
+            id: inner_request.id.clone(),
+        }).await?;
+
+        let inner_response = response.get_ref();
+        self.cache.invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key).await?;
+
+        Ok(response)
     }
 
     async fn get_timeline(&self, request: Request<GetTimelineRequest>) -> Result<Response<GetTimelineResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        get_timeline(request.into_inner(), &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        let inner_request = request.into_inner();
+
+        self.cache.handle_cache("list_events", &inner_request.clone(), || {
+            async move {
+                get_timeline(inner_request, &mut conn)
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        }).await
     }
 }

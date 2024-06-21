@@ -88,8 +88,6 @@ pub async fn list_events(
     let events = conn.get_events_with_filter(&filters)
         .await?;
 
-    println!("{:?}", events);
-
     Ok(ListEventsResponse{
         events: events.into_iter().map(|e| e.into()).collect()
     })
