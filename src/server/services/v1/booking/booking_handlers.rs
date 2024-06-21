@@ -8,12 +8,13 @@ use crate::server::services::v1::booking::booking_model::{BookingInsert, Booking
 use crate::server::services::v1::event::event_model::EventActions;
 use crate::server::services::v1::slot::slot_model::SlotRepository;
 use crate::utils::filters::{BookingFilters, Filters};
+use crate::utils::validation::ValidateRequest;
 
 pub async fn create_booking(
     request: CreateBookingRequest,
     conn: &mut PgPooledConnection
 ) -> Result<CreateBookingResponse, ApiError> {
-    // validate_create_booking_request(&request)?;
+    request.validate()?;
 
     let slot_id = Uuid::parse_str(&request.slot_id)?;
 
@@ -90,7 +91,7 @@ pub async fn get_booking_by_id(
     request: GetBookingRequest,
     conn: &mut PgPooledConnection
 ) -> Result<GetBookingResponse, ApiError> {
-    // validate_get_booking_request(&request)?;
+    request.validate()?;
 
     let booking_id = Uuid::parse_str(&request.id)?;
 
@@ -106,7 +107,7 @@ pub async fn list_bookings(
     request: ListBookingsRequest,
     conn: &mut PgPooledConnection
 ) -> Result<ListBookingsResponse, ApiError> {
-    // validate_list_bookings_request(&request)?;
+    request.validate()?;
 
     let filters: Filters<BookingFilters> = request.filters.into();
 
@@ -122,7 +123,7 @@ pub async fn delete_booking(
     request: DeleteBookingRequest,
     conn: &mut PgPooledConnection
 ) -> Result<DeleteBookingResponse, ApiError> {
-    // validate_delete_booking_request(&request)?;
+    request.validate()?;
 
     let booking_id = Uuid::parse_str(&request.id)?;
 

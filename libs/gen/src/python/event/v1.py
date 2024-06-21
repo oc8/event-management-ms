@@ -116,12 +116,12 @@ class GetEventResponse(betterproto.Message):
 
 
 @dataclass
-class GetListEventsRequest(betterproto.Message):
+class ListEventsRequest(betterproto.Message):
     filters: "Filters" = betterproto.message_field(1)
 
 
 @dataclass
-class GetListEventsResponse(betterproto.Message):
+class ListEventsResponse(betterproto.Message):
     events: List["Event"] = betterproto.message_field(1)
 
 
@@ -328,15 +328,15 @@ class EventServiceStub(betterproto.ServiceStub):
 
     async def list_events(
         self, *, filters: Optional["Filters"] = None
-    ) -> GetListEventsResponse:
-        request = GetListEventsRequest()
+    ) -> ListEventsResponse:
+        request = ListEventsRequest()
         if filters is not None:
             request.filters = filters
 
         return await self._unary_unary(
             "/event.v1.EventService/ListEvents",
             request,
-            GetListEventsResponse,
+            ListEventsResponse,
         )
 
     async def update_event(

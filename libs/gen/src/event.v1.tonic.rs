@@ -136,9 +136,9 @@ pub mod event_service_client {
         }
         pub async fn list_events(
             &mut self,
-            request: impl tonic::IntoRequest<super::GetListEventsRequest>,
+            request: impl tonic::IntoRequest<super::ListEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetListEventsResponse>,
+            tonic::Response<super::ListEventsResponse>,
             tonic::Status,
         > {
             self.inner
@@ -284,9 +284,9 @@ pub mod event_service_server {
         >;
         async fn list_events(
             &self,
-            request: tonic::Request<super::GetListEventsRequest>,
+            request: tonic::Request<super::ListEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GetListEventsResponse>,
+            tonic::Response<super::ListEventsResponse>,
             tonic::Status,
         >;
         async fn update_event(
@@ -494,16 +494,16 @@ pub mod event_service_server {
                     struct ListEventsSvc<T: EventService>(pub Arc<T>);
                     impl<
                         T: EventService,
-                    > tonic::server::UnaryService<super::GetListEventsRequest>
+                    > tonic::server::UnaryService<super::ListEventsRequest>
                     for ListEventsSvc<T> {
-                        type Response = super::GetListEventsResponse;
+                        type Response = super::ListEventsResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::GetListEventsRequest>,
+                            request: tonic::Request<super::ListEventsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {

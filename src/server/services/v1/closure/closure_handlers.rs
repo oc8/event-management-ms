@@ -5,12 +5,13 @@ use crate::database::PgPooledConnection;
 use crate::errors::{ApiError};
 use crate::server::services::v1::closure::closure_model::{ClosureInsert, ClosureRepository, ClosureUpdate};
 use crate::utils::filters::{ClosureFilters, Filters};
+use crate::utils::validation::ValidateRequest;
 
 pub async fn create_closure(
     request: CreateClosureRequest,
     conn: &mut PgPooledConnection
 ) -> Result<CreateClosureResponse, ApiError> {
-    // validate_create_closure_request(&request)?;
+    request.validate()?;
 
     let closing_from = DateTime::parse_from_rfc3339(&request.closing_from)?
         .naive_utc();
@@ -33,7 +34,7 @@ pub async fn list_closures(
     request: ListClosuresRequest,
     conn: &mut PgPooledConnection
 ) -> Result<ListClosuresResponse, ApiError> {
-    // validate_list_closures_request(&request)?;
+    request.validate()?;
 
     let filters: Filters<ClosureFilters> = request.filters.into();
 
@@ -49,7 +50,7 @@ pub async fn update_closure(
     request: UpdateClosureRequest,
     conn: &mut PgPooledConnection
 ) -> Result<UpdateClosureResponse, ApiError> {
-    // validate_update_closure_request(&request)?;
+    request.validate()?;
 
     let closure_id = Uuid::parse_str(&request.id)?;
 
@@ -78,7 +79,7 @@ pub async fn delete_closure(
     request: DeleteClosureRequest,
     conn: &mut PgPooledConnection
 ) -> Result<DeleteClosureResponse, ApiError> {
-    // validate_delete_closure_request(&request)?;
+    request.validate()?;
 
     let closure_id = Uuid::parse_str(&request.id)?;
 

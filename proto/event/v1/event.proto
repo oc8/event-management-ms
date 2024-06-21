@@ -7,7 +7,7 @@ import "event/v1/common.proto";
 service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
-  rpc ListEvents(GetListEventsRequest) returns (GetListEventsResponse);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
   rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
   rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
   rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
@@ -89,11 +89,11 @@ message GetEventResponse {
   Event event = 1;
 }
 
-message GetListEventsRequest {
+message ListEventsRequest {
   Filters filters = 1;
 }
 
-message GetListEventsResponse {
+message ListEventsResponse {
   repeated Event events = 1;
 }
 

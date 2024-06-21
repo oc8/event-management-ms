@@ -7,7 +7,7 @@ use crate::database::{get_connection, PgPool};
 use autometrics::objectives::{
     Objective, ObjectiveLatency, ObjectivePercentile
 };
-use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetListEventsRequest, GetListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
+use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
 use protos::event::v1::event_service_server::EventService;
 use crate::server::services::v1::event::event_handlers::{cancel_event, create_event, delete_event, get_event_by_id, get_timeline, list_events, update_event};
 
@@ -57,7 +57,7 @@ impl EventService for EventServiceServerImpl {
             .map_err(|e| e.into())
     }
 
-    async fn list_events(&self, request: Request<GetListEventsRequest>) -> Result<Response<GetListEventsResponse>, Status> {
+    async fn list_events(&self, request: Request<ListEventsRequest>) -> Result<Response<ListEventsResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         list_events(request.into_inner(), &mut conn)

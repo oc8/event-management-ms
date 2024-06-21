@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use protos::event::v1::{EventStatus, EventType, Filters as FiltersProto};
+use crate::errors::{ValidationErrorKind, ValidationErrorMessage};
 
 #[derive(Debug, Clone)]
 pub struct Filters<T> {
@@ -133,4 +134,42 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
             type_filters,
         }
     }
+}
+
+pub fn validate_date_filters(filters: &Option<FiltersProto>) -> Result<(), Vec<ValidationErrorKind>> {
+    if filters.is_none() {
+        return Ok(());
+    }
+
+    let filters = filters.as_ref().unwrap();
+
+    let mut errors = Vec::new();
+
+    let from = chrono::NaiveDate::parse_from_str(&filters.from, "%Y-%m-%d");
+    if !filters.from.is_empty() {
+        match from {
+            Ok(_) => (),
+            Err(_) => errors.push(ValidationErrorKind::InvalidFormat("filters.from".to_string(), ValidationErrorMessage::InvalidDateTime()))
+        }
+    }
+
+    let to = chrono::NaiveDate::parse_from_str(&filters.to, "%Y-%m-%d");
+    if !filters.to.is_empty() {
+        match to {
+            Ok(_) => (),
+            Err(_) => errors.push(ValidationErrorKind::InvalidFormat("filters.to".to_string(), ValidationErrorMessage::InvalidDateTime()))
+        }
+    }
+
+    if !from.is_err() && !to.is_err() {
+        if from.unwrap() > to.unwrap() {
+            errors.push(ValidationErrorKind::InvalidDateRange("from, to".to_string(), "from must be before to".to_string()))
+        }
+    }
+
+    if !errors.is_empty() {
+        return Err(errors)
+    }
+
+    Ok(())
 }

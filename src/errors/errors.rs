@@ -8,8 +8,31 @@ use tonic_error::TonicError;
 use crate::report_error;
 
 #[derive(Error, Debug, Serialize, Deserialize)]
-pub enum ValidationErrorKind {
+pub enum ValidationErrorMessage {
+    #[error("must be a valid UUID")]
+    InvalidUuid(),
+    #[error("must be a valid rfc3339 datetime")]
+    InvalidDateTime(),
+    #[error("must be a timezone (e.g. Europe/Paris)")]
+    InvalidTimezone(),
+    #[error("must be a valid recurrence rule (e.g. FREQ=WEEKLY;BYDAY=TH)")]
+    InvalidRecurrenceRule(),
+}
 
+#[derive(Error, Debug, Serialize, Deserialize)]
+pub enum ValidationErrorKind {
+    #[error("{0} must be between {1} and {2}, field: {0}")]
+    InvalidLength(String, usize, usize),
+    #[error("{0} {1}, field: {0}")]
+    InvalidFormat(String, ValidationErrorMessage),
+    #[error("{0} must be between {1} and {2}, field: {0}")]
+    InvalidRange(String, usize, usize),
+    #[error("{1}, field: {0}")]
+    InvalidDateRange(String, String),
+    #[error("{0} is missing, field: {0}")]
+    MissingField(String),
+    #[error("{1} is an invalid type, field: {0}")]
+    InvalidType(String, String),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
