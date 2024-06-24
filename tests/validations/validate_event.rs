@@ -1,6 +1,6 @@
-use protos::booking::v1::booking_service_client::BookingServiceClient;
-use protos::booking::v1::{CreateEventRequest, EventType, GetEventRequest};
-use crate::tests::setup_test_context;
+use protos::event::v1::{CreateEventRequest, EventType, GetEventRequest};
+use protos::event::v1::event_service_client::EventServiceClient;
+use crate::setup_test_context;
 
 //
 // validations create event tests
@@ -8,7 +8,7 @@ use crate::tests::setup_test_context;
 #[tokio::test]
 async fn create_basic_event_invalid_date_range() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event_invalid_date_range", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -32,13 +32,14 @@ async fn create_basic_event_invalid_date_range() -> Result<(), Box<dyn std::erro
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_basic_event_invalid_start_date() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event_invalid_start_date", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -62,13 +63,14 @@ async fn create_basic_event_invalid_start_date() -> Result<(), Box<dyn std::erro
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_basic_event_invalid_end_date() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event_invalid_end_date", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -92,13 +94,14 @@ async fn create_basic_event_invalid_end_date() -> Result<(), Box<dyn std::error:
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_basic_event_invalid_timezone() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event_invalid_timezone", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -122,13 +125,14 @@ async fn create_basic_event_invalid_timezone() -> Result<(), Box<dyn std::error:
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_basic_event_invalid_organizer_key() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event_invalid_organizer_key", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -152,13 +156,14 @@ async fn create_basic_event_invalid_organizer_key() -> Result<(), Box<dyn std::e
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_basic_event_invalid_event_type() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event_invalid_event_type", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -182,13 +187,14 @@ async fn create_basic_event_invalid_event_type() -> Result<(), Box<dyn std::erro
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_meeting_event_invalid_slot_duration() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_meeting_event_invalid_slot_duration", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -212,13 +218,14 @@ async fn create_meeting_event_invalid_slot_duration() -> Result<(), Box<dyn std:
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_meeting_event_invalid_capacity() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_meeting_event_invalid_capacity", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -242,6 +249,7 @@ async fn create_meeting_event_invalid_capacity() -> Result<(), Box<dyn std::erro
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -251,7 +259,7 @@ async fn create_meeting_event_invalid_capacity() -> Result<(), Box<dyn std::erro
 #[tokio::test]
 async fn get_event_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_event_invalid_id", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let empty_request = tonic::Request::new(GetEventRequest {
         id: "".to_string(),
@@ -277,5 +285,6 @@ async fn get_event_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }

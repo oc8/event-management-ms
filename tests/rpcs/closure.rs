@@ -1,6 +1,6 @@
-use protos::booking::v1::booking_service_client::BookingServiceClient;
-use protos::booking::v1::{CreateClosureRequest, DeleteClosureRequest, Filters, ListClosuresRequest, UpdateClosureRequest};
-use crate::tests::setup_test_context;
+use protos::event::v1::{CreateClosureRequest, DeleteClosureRequest, Filters, ListClosuresRequest, UpdateClosureRequest};
+use protos::event::v1::closure_service_client::ClosureServiceClient;
+use crate::setup_test_context;
 
 //
 // Create closure tests
@@ -8,7 +8,7 @@ use crate::tests::setup_test_context;
 #[tokio::test]
 async fn create_closure() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_closure", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -19,6 +19,7 @@ async fn create_closure() -> Result<(), Box<dyn std::error::Error>> {
     client.create_closure(request).await?;
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -28,7 +29,7 @@ async fn create_closure() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn update_closure() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_closure", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -48,13 +49,14 @@ async fn update_closure() -> Result<(), Box<dyn std::error::Error>> {
     client.update_closure(update_request).await?;
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn update_closure_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_closure_not_found", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(UpdateClosureRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
@@ -71,6 +73,7 @@ async fn update_closure_not_found() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -80,7 +83,7 @@ async fn update_closure_not_found() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn delete_closure() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_closure", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -100,6 +103,7 @@ async fn delete_closure() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -109,7 +113,7 @@ async fn delete_closure() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn list_closures() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("list_closures", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -122,6 +126,8 @@ async fn list_closures() -> Result<(), Box<dyn std::error::Error>> {
     let list_request = tonic::Request::new(ListClosuresRequest {
         filters: Some(Filters {
             organizer_key: "test-organizer".to_string(),
+            from: "2024-05-26".to_string(),
+            to: "2024-06-26".to_string(),
             ..Default::default()
         })
     });
@@ -131,5 +137,6 @@ async fn list_closures() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }

@@ -1,12 +1,14 @@
-use booking_ms::add_time_to_datetime;
-use protos::booking::v1::booking_service_client::BookingServiceClient;
-use protos::booking::v1::{CreateBookingRequest, CreateEventRequest, DeleteBookingRequest, EventType, GetBookingRequest, ListBookingsRequest};
-use crate::tests::setup_test_context;
+use event_ms::add_time_to_datetime;
+use protos::event::v1::booking_service_client::BookingServiceClient;
+use protos::event::v1::{CreateBookingRequest, CreateEventRequest, DeleteBookingRequest, EventType, GetBookingRequest, ListBookingsRequest};
+use protos::event::v1::event_service_client::EventServiceClient;
+use crate::setup_test_context;
 
 #[tokio::test]
 async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_booking", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let start = chrono::Utc::now() + chrono::Duration::days(1);
     let end = start + chrono::Duration::hours(4);
@@ -24,7 +26,7 @@ async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
         event_type: EventType::Meeting as i32,
     });
 
-    let response = client.create_event(request).await?;
+    let response = event_client.create_event(request).await?;
     let event = response.into_inner().event.unwrap();
 
     let slot = event.slots.first().unwrap();
@@ -43,6 +45,7 @@ async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -50,6 +53,7 @@ async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
 async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_booking", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let start = chrono::Utc::now() + chrono::Duration::days(1);
     let end = start + chrono::Duration::hours(4);
@@ -67,7 +71,7 @@ async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
         event_type: EventType::Meeting as i32,
     });
 
-    let response = client.create_event(request).await?;
+    let response = event_client.create_event(request).await?;
     let event = response.into_inner().event.unwrap();
 
     let slot = event.slots.first().unwrap();
@@ -93,6 +97,7 @@ async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -100,11 +105,35 @@ async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
 async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_booking", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
+
+    let start = chrono::Utc::now() + chrono::Duration::days(1);
+    let end = start + chrono::Duration::hours(4);
+
+    let request = tonic::Request::new(CreateEventRequest {
+        name: "test-event".to_string(),
+        start: start.to_rfc3339(),
+        end: end.to_rfc3339(),
+        timezone: "Europe/Paris".to_string(),
+        organizer_key: "test-organizer".to_string(),
+        slot_duration: 15,
+        capacity: 15,
+        slot_capacity: 0,
+        recurrence_rule: "".to_string(),
+        event_type: EventType::Meeting as i32,
+    });
+
+    let response = event_client.create_event(request).await?;
+    let event = response.into_inner().event.unwrap();
+
+    let slot = event.slots.first().unwrap();
+
+    let datetime = add_time_to_datetime(start.naive_utc(), slot.clone().start.unwrap().date_time.parse().unwrap());
 
     let create_request = tonic::Request::new(CreateBookingRequest {
-        slot_id: "valid-slot-id".to_string(),
+        slot_id: slot.id.clone(),
         booking_holder_key: "valid-holder-key".to_string(),
-        date_time: "2024-05-26T09:00:00".to_string(),
+        date_time: datetime.to_string() + "+00:00",
         persons: 1,
     });
 
@@ -120,6 +149,7 @@ async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -127,19 +157,43 @@ async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
 async fn list_bookings() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("list_bookings", 50200).await;
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
+
+    let start = chrono::Utc::now() + chrono::Duration::days(1);
+    let end = start + chrono::Duration::hours(4);
+
+    let request = tonic::Request::new(CreateEventRequest {
+        name: "test-event".to_string(),
+        start: start.to_rfc3339(),
+        end: end.to_rfc3339(),
+        timezone: "Europe/Paris".to_string(),
+        organizer_key: "test-organizer".to_string(),
+        slot_duration: 15,
+        capacity: 15,
+        slot_capacity: 0,
+        recurrence_rule: "".to_string(),
+        event_type: EventType::Meeting as i32,
+    });
+
+    let response = event_client.create_event(request).await?;
+    let event = response.into_inner().event.unwrap();
+
+    let slot = event.slots.first().unwrap();
+
+    let datetime = add_time_to_datetime(start.naive_utc(), slot.clone().start.unwrap().date_time.parse().unwrap());
 
     let create_request = tonic::Request::new(CreateBookingRequest {
-        slot_id: "valid-slot-id".to_string(),
+        slot_id: slot.id.clone(),
         booking_holder_key: "valid-holder-key".to_string(),
-        date_time: "2024-05-26T09:00:00".to_string(),
+        date_time: datetime.to_string() + "+00:00",
         persons: 1,
     });
 
     client.create_booking(create_request).await.unwrap();
 
     let list_request = tonic::Request::new(ListBookingsRequest {
-        filters: Some(protos::booking::v1::Filters {
-            organizer_key: "valid-organizer-key".to_string(),
+        filters: Some(protos::event::v1::Filters {
+            organizer_key: "test-organizer".to_string(),
             ..Default::default()
         }),
     });
@@ -149,5 +203,6 @@ async fn list_bookings() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }

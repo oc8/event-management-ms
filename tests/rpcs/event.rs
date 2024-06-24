@@ -1,6 +1,6 @@
-use crate::tests::{setup_test_context};
-use protos::booking::v1::booking_service_client::BookingServiceClient;
-use protos::booking::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, Event, EventStatus, EventType, GetEventRequest, UpdateEventRequest};
+use crate::{setup_test_context};
+use protos::event::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, Event, EventStatus, EventType, GetEventRequest, UpdateEventRequest};
+use protos::event::v1::event_service_client::EventServiceClient;
 
 fn assert_event_fields(expected: &CreateEventRequest, actual: &Event) {
     assert_eq!(expected.name, actual.name);
@@ -20,12 +20,12 @@ fn assert_event_fields(expected: &CreateEventRequest, actual: &Event) {
 #[tokio::test]
 async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_basic_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00+00:00".to_string(),
-        end: "2024-05-26T12:00:00+00:00".to_string(),
+        start: "2024-05-26T11:00:00+02:00".to_string(),
+        end: "2024-05-26T14:00:00+02:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -44,13 +44,14 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn get_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_event_not_found", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(GetEventRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
@@ -66,18 +67,19 @@ async fn get_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00+00:00".to_string(),
-        end: "2024-05-26T12:00:00+00:00".to_string(),
+        start: "2024-05-26T11:00:00+02:00".to_string(),
+        end: "2024-05-26T14:00:00+02:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -102,18 +104,19 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_recurrent_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00+00:00".to_string(),
-        end: "2024-05-26T12:00:00+00:00".to_string(),
+        start: "2024-05-26T11:00:00+02:00".to_string(),
+        end: "2024-05-26T14:00:00+02:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -130,18 +133,19 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_meeting_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00+00:00".to_string(),
-        end: "2024-05-26T12:00:00+00:00".to_string(),
+        start: "2024-05-26T11:00:00+02:00".to_string(),
+        end: "2024-05-26T14:00:00+02:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 15,
@@ -159,6 +163,7 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -169,12 +174,12 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_request = CreateEventRequest {
         name: "test-event".to_string(),
-        start: "2024-05-26T09:00:00+00:00".to_string(),
-        end: "2024-05-26T12:00:00+00:00".to_string(),
+        start: "2024-05-26T11:00:00+02:00".to_string(),
+        end: "2024-05-26T14:00:00+02:00".to_string(),
         timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
@@ -191,8 +196,8 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let update_event_request = tonic::Request::new(UpdateEventRequest {
         id: event.id.clone(),
         name: "updated-event".to_string(),
-        start: "2024-05-26T10:00:00+00:00".to_string(),
-        end: "2024-05-26T11:00:00+00:00".to_string(),
+        start: "2024-05-26T12:00:00+02:00".to_string(),
+        end: "2024-05-26T13:00:00+02:00".to_string(),
         timezone: "Europe/Berlin".to_string(),
         capacity: 100,
         slot_capacity: 10,
@@ -202,20 +207,21 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let updated_event = update_resp.into_inner().event.unwrap();
 
     assert_eq!(updated_event.name, "updated-event");
-    assert_eq!(updated_event.start.clone().unwrap().date_time, "2024-05-26T10:00:00+00:00");
-    assert_eq!(updated_event.end.unwrap().date_time, "2024-05-26T11:00:00+00:00");
+    assert_eq!(updated_event.start.clone().unwrap().date_time, "2024-05-26T12:00:00+02:00");
+    assert_eq!(updated_event.end.unwrap().date_time, "2024-05-26T13:00:00+02:00");
     assert_eq!(updated_event.start.unwrap().timezone, "Europe/Berlin");
     assert_eq!(updated_event.capacity, 100);
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn update_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_event_not_found", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(UpdateEventRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
@@ -237,6 +243,7 @@ async fn update_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -246,7 +253,7 @@ async fn update_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn delete_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_event_request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -271,13 +278,14 @@ async fn delete_event() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn delete_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_event_not_found", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(DeleteEventRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
@@ -292,6 +300,7 @@ async fn delete_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -301,7 +310,7 @@ async fn delete_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn cancel_event() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("cancel_event", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let create_event_request = tonic::Request::new(CreateEventRequest {
         name: "test-event".to_string(),
@@ -330,13 +339,14 @@ async fn cancel_event() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
 #[tokio::test]
 async fn cancel_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("cancel_event_not_found", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CancelEventRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
@@ -353,5 +363,6 @@ async fn cancel_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }

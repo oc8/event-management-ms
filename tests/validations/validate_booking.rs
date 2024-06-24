@@ -1,6 +1,6 @@
-use protos::booking::v1::booking_service_client::BookingServiceClient;
-use protos::booking::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest};
-use crate::tests::setup_test_context;
+use protos::event::v1::booking_service_client::BookingServiceClient;
+use protos::event::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest};
+use crate::setup_test_context;
 
 #[tokio::test]
 async fn create_booking_invalid_slot_id() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,6 +23,7 @@ async fn create_booking_invalid_slot_id() -> Result<(), Box<dyn std::error::Erro
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -47,6 +48,7 @@ async fn create_booking_invalid_datetime() -> Result<(), Box<dyn std::error::Err
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -71,6 +73,7 @@ async fn create_booking_invalid_persons_number() -> Result<(), Box<dyn std::erro
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -92,6 +95,7 @@ async fn get_booking_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -113,6 +117,7 @@ async fn delete_booking_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }
 
@@ -122,7 +127,7 @@ async fn list_bookings_invalid_filters() -> Result<(), Box<dyn std::error::Error
     let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(ListBookingsRequest {
-        filters: Some(protos::booking::v1::Filters {
+        filters: Some(protos::event::v1::Filters {
             organizer_key: "".to_string(),
             ..Default::default()
         }),
@@ -137,5 +142,6 @@ async fn list_bookings_invalid_filters() -> Result<(), Box<dyn std::error::Error
 
     tx.send(()).unwrap();
     jh.await.unwrap();
+    ctx.cleanup().await;
     Ok(())
 }

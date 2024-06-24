@@ -3,7 +3,7 @@ use std::fs;
 
 pub fn load_fixtures_from_yaml<T>(file_path: &str) -> Result<Vec<T>, Box<dyn std::error::Error>>
     where
-        T: std::convert::From<yaml_rust::Yaml>,
+        T: From<yaml_rust::Yaml>,
 {
     let file_content = fs::read_to_string(file_path)?;
 
