@@ -4,6 +4,7 @@ use validator::{ValidateLength, ValidateRange};
 use protos::event::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest};
 use crate::errors::{ApiError, List, ValidationErrorKind, ValidationErrorMessage};
 use crate::errors::ApiError::ValidationError;
+use crate::utils::filters::validate_date_filters;
 use crate::utils::validation::{ValidateRequest};
 
 impl ValidateRequest for CreateBookingRequest {
@@ -50,6 +51,11 @@ impl ValidateRequest for ListBookingsRequest {
 
         if self.filters.is_none() {
             return Err(ValidationError(List(vec![ValidationErrorKind::MissingField("filters".to_string())])))
+        }
+
+        match validate_date_filters(&self.filters) {
+            Ok(_) => (),
+            Err(mut e) => errors.append(&mut e)
         }
 
         if !self.filters.as_ref().unwrap().organizer_key.validate_length(Some(1), Some(100), None) {

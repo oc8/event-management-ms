@@ -33,6 +33,8 @@ impl BookingRepository for PgConnection {
 
         let slot = self.get_slot_by_id(booking.slot_id).await?;
 
+        log::debug!("Created booking: {:?}", new_booking);
+
         Ok(new_booking.into_booking(Some(slot)))
     }
 
@@ -50,6 +52,8 @@ impl BookingRepository for PgConnection {
             .await?;
 
         let slot = conn.get_slot_by_id(booking.slot_id).await?;
+
+        log::debug!("Found booking: {:?}", booking);
 
         Ok(booking.into_booking(Some(slot)))
     }
@@ -76,10 +80,10 @@ impl BookingRepository for PgConnection {
             query_builder.push(" AND date_time <= ");
             query_builder.push_bind(to);
         }
-        // if let Some(ref slot_id) = filters.type_filters.slot_id {
-        //     query_builder.push(" AND slot_id = ");
-        //     query_builder.push_bind(slot_id);
-        // }
+        if let Some(ref slot_id) = filters.type_filters.slot_id {
+            query_builder.push(" AND slot_id = ");
+            query_builder.push_bind(slot_id);
+        }
         if let Some(ref booking_holder_key) = filters.type_filters.booking_holder_key {
             query_builder.push(" AND booking_holder_key = ");
             query_builder.push_bind(booking_holder_key);
@@ -112,6 +116,8 @@ impl BookingRepository for PgConnection {
             .fetch_one(self)
             .await?;
 
+        log::debug!("Found booking: {:?}", booking);
+
         Ok(booking.into_booking(None))
     }
 
@@ -123,6 +129,8 @@ impl BookingRepository for PgConnection {
         )
             .fetch_one(self)
             .await?;
+
+        log::debug!("Summed persons: {:?}", result);
 
         if let Some(result) = result {
             Ok(result as i32)
@@ -145,6 +153,8 @@ impl BookingRepository for PgConnection {
         )
             .fetch_one(self)
             .await?;
+
+        log::debug!("Summed persons: {:?}", result);
 
         if let Some(result) = result {
             Ok(result as i32)
