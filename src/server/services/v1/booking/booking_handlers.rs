@@ -1,3 +1,4 @@
+use std::cmp::PartialEq;
 use chrono::DateTime;
 use uuid::Uuid;
 use protos::event::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse};
@@ -70,9 +71,11 @@ pub async fn create_booking(
     match booking {
         Ok(_) => return Err(ApiError::InvalidRequest("booking holder already has a booking for this slot".to_string())),
         Err(e) => {
-            Err(e)
+            if e != ApiError::NotFound("".to_string()) {
+                return Err(e)
+            }
         }
-    }?;
+    };
 
     let booking = conn.create_booking(&BookingInsert{
         slot_id,

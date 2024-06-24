@@ -85,8 +85,10 @@ impl BookingRepository for PgConnection {
             query_builder.push_bind(slot_id);
         }
         if let Some(ref booking_holder_key) = filters.type_filters.booking_holder_key {
-            query_builder.push(" AND booking_holder_key = ");
-            query_builder.push_bind(booking_holder_key);
+            if !booking_holder_key.is_empty() {
+                query_builder.push(" AND booking_holder_key = ");
+                query_builder.push_bind(booking_holder_key);
+            }
         }
 
         log::debug!("Generated SQL Query: {}", query_builder.sql());
