@@ -31,7 +31,7 @@ impl ValidateRequest for CreateEventRequest {
     fn validate(&self) -> Result<(), ApiError> {
         let mut errors = Vec::new();
 
-        if self.name.validate_length(Some(1), Some(100), None) {
+        if !self.name.validate_length(Some(1), Some(100), None) {
             errors.push(ValidationErrorKind::InvalidLength("name".to_string(), 1, 100))
         }
 
