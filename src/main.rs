@@ -4,7 +4,6 @@ use std::sync::Arc;
 use axum::{routing::get, Router};
 use autometrics::prometheus_exporter;
 use dotenvy::dotenv;
-use redis::Client;
 use event_ms::{create_socket_addr, database, init_service_logging};
 use event_ms::database::CacheClient;
 use event_ms::server::start_server;

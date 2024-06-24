@@ -9,7 +9,6 @@ use autometrics::objectives::{
 };
 use protos::event::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
 use protos::event::v1::closure_service_server::ClosureService;
-use crate::errors::ApiError;
 use crate::server::services::v1::closure::closure_handlers::{create_closure, delete_closure, list_closures, update_closure};
 
 const API_SLO: Objective = Objective::new("api")

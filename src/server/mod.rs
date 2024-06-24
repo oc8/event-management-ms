@@ -1,4 +1,4 @@
 mod server;
-mod services;
+pub mod services;
 
 pub use self::server::*;

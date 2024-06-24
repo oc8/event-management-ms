@@ -1,4 +1,3 @@
-use std::cmp::PartialEq;
 use chrono::DateTime;
 use uuid::Uuid;
 use protos::event::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse};
