@@ -100,8 +100,19 @@ impl BookingRepository for PgConnection {
         Ok(bookings.into_iter().map(|b| b.into_booking(None)).collect())
     }
 
-    async fn delete_booking(&mut self, _id: Uuid) -> Result<usize, ApiError> {
-        todo!()
+    async fn delete_booking(&mut self, id: Uuid) -> Result<usize, ApiError> {
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM bookings WHERE id = $1
+            "#,
+            id
+        )
+            .execute(self)
+            .await?;
+
+        log::debug!("Deleted booking: {:?}", result);
+
+        Ok(result.rows_affected() as usize)
     }
 
     async fn get_booking_holder_booking(&mut self, slot_id: Uuid, booking_holder: String, date_time: NaiveDateTime) -> Result<Booking, ApiError> {
