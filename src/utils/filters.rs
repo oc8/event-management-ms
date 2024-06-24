@@ -1,4 +1,5 @@
 use chrono::NaiveDateTime;
+use uuid::Uuid;
 use protos::event::v1::{EventStatus, EventType, Filters as FiltersProto};
 use crate::errors::{ValidationErrorKind, ValidationErrorMessage};
 
@@ -33,7 +34,7 @@ trait AdditionalFilterFields {
         status: Option<EventStatus>,
         event_type: Option<EventType>,
         booking_holder_key: Option<String>,
-        slot_id: Option<String>,
+        slot_id: Option<Uuid>,
     ) -> Self::TypeFilters;
 }
 
@@ -50,7 +51,7 @@ impl AdditionalFilterFields for EventFilters {
         status: Option<EventStatus>,
         event_type: Option<EventType>,
         _: Option<String>,
-        _: Option<String>,
+        _: Option<Uuid>,
     ) -> Self {
         EventFilters {
             status,
@@ -62,7 +63,7 @@ impl AdditionalFilterFields for EventFilters {
 #[derive(Default, Debug, Clone)]
 pub struct BookingFilters {
     pub booking_holder_key: Option<String>,
-    pub slot_id: Option<String>,
+    pub slot_id: Option<Uuid>,
 }
 
 impl AdditionalFilterFields for BookingFilters {
@@ -72,7 +73,7 @@ impl AdditionalFilterFields for BookingFilters {
         _: Option<EventStatus>, // Placeholder for EventFilters fields
         _: Option<EventType>,
         booking_holder_key: Option<String>,
-        slot_id: Option<String>,
+        slot_id: Option<Uuid>,
     ) -> Self {
         BookingFilters {
             booking_holder_key,
@@ -91,7 +92,7 @@ impl AdditionalFilterFields for ClosureFilters {
         _: Option<EventStatus>, // Placeholder for EventFilters fields
         _: Option<EventType>,
         _: Option<String>, // Placeholder for BookingFilters fields
-        _: Option<String>,
+        _: Option<Uuid>,
     ) -> Self {
         ClosureFilters { }
     }
@@ -120,11 +121,16 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
             false => Some(proto.organizer_key)
         };
 
+        let slot_id = match proto.slot_id.is_empty() {
+            true => None,
+            false => Some(Uuid::parse_str(proto.slot_id.as_str()).unwrap())
+        };
+
         let type_filters = T::create_type_filters(
             Some(EventStatus::try_from(proto.status).unwrap()),
             Some(EventType::try_from(proto.event_type).unwrap()),
             Some(proto.booking_holder_key),
-            Some(proto.slot_id),
+            slot_id,
         );
 
         Filters {
@@ -164,6 +170,13 @@ pub fn validate_date_filters(filters: &Option<FiltersProto>) -> Result<(), Vec<V
     if !from.is_err() && !to.is_err() {
         if from.unwrap() > to.unwrap() {
             errors.push(ValidationErrorKind::InvalidDateRange("from, to".to_string(), "from must be before to".to_string()))
+        }
+    }
+
+    if !filters.slot_id.is_empty() {
+        match Uuid::parse_str(filters.slot_id.as_str()) {
+            Ok(_) => (),
+            Err(_) => errors.push(ValidationErrorKind::InvalidFormat("filters.slot_id".to_string(), ValidationErrorMessage::InvalidUuid()))
         }
     }
 
