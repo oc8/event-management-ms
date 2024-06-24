@@ -22,6 +22,8 @@ impl ClosureRepository for PgConnection {
         .fetch_one(self)
         .await?;
 
+        log::debug!("Created closure: {:?}", closure);
+
         Ok(closure)
     }
 
@@ -36,6 +38,8 @@ impl ClosureRepository for PgConnection {
         )
         .fetch_one(self)
         .await?;
+
+        log::debug!("Found closure: {:?}", closure);
 
         Ok(closure)
     }
@@ -123,6 +127,8 @@ impl ClosureRepository for PgConnection {
         )
         .execute(self)
         .await?;
+
+        log::debug!("Deleted closure with id: {}", id);
 
         Ok(result.rows_affected())
     }

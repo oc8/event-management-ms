@@ -45,6 +45,8 @@ impl EventRepository for PgConnection {
             .fetch_one(&mut *conn)
             .await?;
 
+        log::debug!("Created event: {:?}", event);
+
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.generate_event_slots(&event).await?),
             _ => None
@@ -68,6 +70,8 @@ impl EventRepository for PgConnection {
         )
             .fetch_one(&mut *conn)
             .await?;
+
+        log::debug!("Found event: {:?}", event);
 
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.find_by_event_id(id).await?),
@@ -372,6 +376,8 @@ impl EventRepository for PgConnection {
         if result.rows_affected() == 0 {
             return Err(ApiError::NotFound("Event not found".to_string()));
         }
+
+        log::debug!("Deleted event with id: {}", id);
 
         Ok(result.rows_affected())
     }
