@@ -128,7 +128,7 @@ impl From<sqlx::Error> for ApiError {
         match error {
             sqlx::Error::RowNotFound => {
                 // TODO: find a way to return the table name
-                ApiError::NotFound("Not found".to_string())
+                ApiError::NotFound("".to_string())
             },
             sqlx::Error::Database(e) => {
                 if e.is_unique_violation() {
@@ -171,5 +171,22 @@ impl From<RRuleError> for ApiError {
     fn from(error: RRuleError) -> Self {
         report_error(&error);
         ApiError::ParsingError("Cannot parse rrule".to_string())
+    }
+}
+
+impl PartialEq for ApiError {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ApiError::InternalServerError, ApiError::InternalServerError) => true,
+            (ApiError::InvalidRequest(a), ApiError::InvalidRequest(b)) => a == b,
+            (ApiError::RedisConnectionFailure, ApiError::RedisConnectionFailure) => true,
+            (ApiError::CacheError, ApiError::CacheError) => true,
+            (ApiError::DatabaseConnectionFailure, ApiError::DatabaseConnectionFailure) => true,
+            (ApiError::DatabaseError(a), ApiError::DatabaseError(b)) => a == b,
+            (ApiError::AlreadyExists(a), ApiError::AlreadyExists(b)) => a == b,
+            (ApiError::NotFound(a), ApiError::NotFound(b)) => a == b,
+            (ApiError::ParsingError(a), ApiError::ParsingError(b)) => a == b,
+            _ => false,
+        }
     }
 }
