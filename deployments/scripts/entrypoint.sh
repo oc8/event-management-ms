@@ -1,3 +1,4 @@
+#!/bin/bash
 sleep 5
-diesel migration run
-./booking-ms
+sqlx migrate run
+./event-ms

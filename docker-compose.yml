@@ -3,22 +3,22 @@ services:
   db:
     image: postgres:13
     restart: always
-    container_name: "rust-server-postgres"
+    container_name: "event-ms-postgres"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=booking_service.rs
+      - POSTGRES_DB=events_service
     ports:
       - "5433:5432"
   redis:
     image: redis:latest
     restart: always
-    container_name: "rust-server-redis"
+    container_name: "event-ms-redis"
     ports:
       - "6381:6379"
   redis-test:
     image: redis:latest
     restart: always
-    container_name: "rust-server-redis-test"
+    container_name: "event-ms-redis-test"
     ports:
       - "6382:6379"
