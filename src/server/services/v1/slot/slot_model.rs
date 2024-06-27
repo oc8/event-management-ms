@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use chrono::{NaiveDateTime, NaiveTime};
 use chrono_tz::Tz;
 use protos::event::v1::{SlotStatus, TimeData};
+use crate::add_time_offset;
 use crate::server::services::v1::event::event_model::{DbEvent, Event};
 
 /// Defines the full structure of a slot.
@@ -20,7 +21,7 @@ pub struct DbSlot {
 }
 
 impl DbSlot {
-    pub fn into_slot(self, status: SlotStatus, timezone: Option<Tz>, event: Option<Event>) -> Slot {
+    pub fn into_slot(self, status: SlotStatus, event: Option<Event>) -> Slot {
         Slot {
             id: self.id,
             event_id: self.event_id,
@@ -28,10 +29,6 @@ impl DbSlot {
             event,
             start_time: self.start_time,
             end_time: self.end_time,
-            timezone: match timezone {
-                Some(tz) => Some(tz),
-                None => None,
-            },
             capacity: self.capacity,
             created_at: self.created_at,
             updated_at: self.updated_at,
@@ -48,35 +45,29 @@ pub struct Slot {
     pub event: Option<Event>,
     pub start_time: NaiveTime,
     pub end_time: NaiveTime,
-    pub timezone: Option<Tz>,
     pub capacity: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
 
-impl From<Slot> for protos::event::v1::Slot {
-    fn from(slot: Slot) -> Self {
+impl Slot {
+    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Slot {
         let mut proto_slot = protos::event::v1::Slot::default();
 
-        let tz = match &slot.timezone {
-            Some(tz) => tz,
-            None => &chrono_tz::UTC,
-        };
-
-        proto_slot.id = slot.id.to_string();
-        proto_slot.event_id = slot.event_id.to_string();
-        proto_slot.set_status(slot.status);
+        proto_slot.id = self.id.to_string();
+        proto_slot.event_id = self.event_id.to_string();
+        proto_slot.set_status(self.status);
         proto_slot.start = Some(TimeData {
-            timezone: tz.name().to_string(),
-            date_time: slot.start_time.to_string(),
+            timezone: tz.to_string(),
+            date_time: add_time_offset(self.start_time, tz).to_string()
         });
         proto_slot.end = Some(TimeData {
-            timezone: tz.name().to_string(),
-            date_time: slot.end_time.to_string(),
+            timezone: tz.to_string(),
+            date_time: add_time_offset(self.end_time, tz).to_string()
         });
-        proto_slot.capacity = slot.capacity;
-        proto_slot.created_at = slot.created_at.and_utc().timestamp();
-        proto_slot.updated_at = slot.updated_at.and_utc().timestamp();
+        proto_slot.capacity = self.capacity;
+        proto_slot.created_at = self.created_at.and_utc().timestamp();
+        proto_slot.updated_at = self.updated_at.and_utc().timestamp();
 
         proto_slot
     }

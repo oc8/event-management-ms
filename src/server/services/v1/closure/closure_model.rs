@@ -2,7 +2,8 @@ use uuid::Uuid;
 use crate::errors::{ApiError};
 
 use async_trait::async_trait;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
+use chrono_tz::Tz;
 use protos::event::v1::{TimeData};
 use crate::utils::filters::{ClosureFilters, Filters};
 
@@ -17,23 +18,25 @@ pub struct Closure {
     pub updated_at: NaiveDateTime,
 }
 
-impl From<Closure> for protos::event::v1::Closure {
-    fn from(closure: Closure) -> Self {
+impl Closure {
+    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Closure {
         let mut proto_closure = protos::event::v1::Closure::default();
 
-        proto_closure.id = closure.id.to_string();
+        let offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
+
+        proto_closure.id = self.id.to_string();
         proto_closure.closing_from = Some(TimeData {
-            timezone: "UTC".to_string(), // TODO: Get timezone from event
-            date_time: DateTime::<Utc>::from_naive_utc_and_offset(closure.closing_from, Utc).to_rfc3339()
+            timezone: tz.to_string(),
+            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.closing_from, offset).to_rfc3339()
         });
 
         proto_closure.closing_to = Some(TimeData {
-            timezone: "UTC".to_string(), // TODO: Get timezone from event
-            date_time: DateTime::<Utc>::from_naive_utc_and_offset(closure.closing_to, Utc).to_rfc3339()
+            timezone: tz.to_string(),
+            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.closing_to, offset).to_rfc3339()
         });
-        proto_closure.organizer_key = closure.organizer_key;
-        proto_closure.created_at = closure.created_at.and_utc().timestamp();
-        proto_closure.updated_at = closure.updated_at.and_utc().timestamp();
+        proto_closure.organizer_key = self.organizer_key;
+        proto_closure.created_at = self.created_at.and_utc().timestamp();
+        proto_closure.updated_at = self.updated_at.and_utc().timestamp();
 
         proto_closure
     }

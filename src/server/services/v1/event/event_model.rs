@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use uuid::Uuid;
 use crate::errors::{ApiError};
 use num_derive::{FromPrimitive, ToPrimitive};
@@ -103,7 +102,6 @@ pub struct Event {
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
     pub recurrence_rule: Option<String>,
-    pub timezone: String,
     pub organizer_key: String,
     pub canceled_by: Option<String>,
     pub canceled_at: Option<NaiveDateTime>,
@@ -115,51 +113,50 @@ pub struct Event {
     pub updated_at: NaiveDateTime,
 }
 
-impl From<Event> for protos::event::v1::Event {
-    fn from(event: Event) -> Self {
+impl Event {
+    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Event {
         let mut proto_event = protos::event::v1::Event::default();
 
-        let timezone= Tz::from_str(&event.timezone).expect("Invalid timezone");
-        let tz_offset = timezone.offset_from_utc_datetime(&Utc::now().naive_utc());
-        let start_datetime = DateTime::<Tz>::from_naive_utc_and_offset(event.start_time, tz_offset);
-        let end_datetime = DateTime::<Tz>::from_naive_utc_and_offset(event.end_time, tz_offset);
+        let tz_offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
+        let start_datetime = DateTime::<Tz>::from_naive_utc_and_offset(self.start_time, tz_offset);
+        let end_datetime = DateTime::<Tz>::from_naive_utc_and_offset(self.end_time, tz_offset);
 
-        proto_event.id = event.id.to_string();
-        proto_event.name = event.name;
-        proto_event.set_status(event.status.as_proto());
-        proto_event.set_event_type(event.event_type.as_proto());
-        proto_event.slots = match event.slots {
-            Some(slots) => slots.into_iter().map(|slot| slot.into()).collect(),
+        proto_event.id = self.id.to_string();
+        proto_event.name = self.name;
+        proto_event.set_status(self.status.as_proto());
+        proto_event.set_event_type(self.event_type.as_proto());
+        proto_event.slots = match self.slots {
+            Some(slots) => slots.into_iter().map(|slot| slot.to_response(tz)).collect(),
             None => vec![]
         };
         proto_event.start = Some(TimeData {
-            timezone: event.timezone.clone(),
+            timezone: tz.to_string(),
             date_time: start_datetime.to_rfc3339()
         });
         proto_event.end = Some(TimeData {
-            timezone: event.timezone.clone(),
+            timezone: tz.to_string(),
             date_time: end_datetime.to_rfc3339()
         });
-        proto_event.recurrence_rule = event.recurrence_rule.unwrap_or_default();
-        proto_event.organizer_key = event.organizer_key;
-        proto_event.cancellation = match event.canceled_at {
+        proto_event.recurrence_rule = self.recurrence_rule.unwrap_or_default();
+        proto_event.organizer_key = self.organizer_key;
+        proto_event.cancellation = match self.canceled_at {
             Some(_) => Some(Cancellation {
-                canceled_by: event.canceled_by.unwrap_or_default(),
-                reason: event.canceled_reason.unwrap_or_default(),
+                canceled_by: self.canceled_by.unwrap_or_default(),
+                reason: self.canceled_reason.unwrap_or_default(),
                 created_at: Some(TimeData {
-                    timezone: event.timezone.clone(),
-                    date_time: DateTime::<Tz>::from_naive_utc_and_offset(event.canceled_at.unwrap(), tz_offset).to_rfc3339()
+                    timezone: tz.to_string(),
+                    date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.canceled_at.unwrap(), tz_offset).to_rfc3339()
                 })
             }),
             None => None
         };
-        proto_event.slot_duration = match event.slot_duration {
+        proto_event.slot_duration = match self.slot_duration {
             Some(interval) => interval.microseconds / 60_000_000,
             None => 0
         };
-        proto_event.capacity = event.capacity.unwrap_or_default();
-        proto_event.created_at = event.created_at.and_utc().timestamp();
-        proto_event.updated_at = event.updated_at.and_utc().timestamp();
+        proto_event.capacity = self.capacity.unwrap_or_default();
+        proto_event.created_at = self.created_at.and_utc().timestamp();
+        proto_event.updated_at = self.updated_at.and_utc().timestamp();
 
         proto_event
     }
@@ -187,7 +184,7 @@ pub struct DbEvent {
 }
 
 impl DbEvent {
-    pub fn into_event(self, timezone: Option<Tz>, slots: Option<Vec<Slot>>) -> Event {
+    pub fn into_event(self, slots: Option<Vec<Slot>>) -> Event {
         Event {
             id: self.id,
             name: self.name,
@@ -198,10 +195,6 @@ impl DbEvent {
             start_time: self.start_time,
             end_time: self.end_time,
             recurrence_rule: self.recurrence_rule,
-            timezone: match timezone {
-                Some(tz) => tz.name().to_string(),
-                None => "UTC".to_string()
-            },
             organizer_key: self.organizer_key,
             canceled_by: self.canceled_by,
             canceled_at: self.canceled_at,

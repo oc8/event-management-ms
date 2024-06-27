@@ -10,6 +10,7 @@ use autometrics::objectives::{
 use protos::event::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
 use protos::event::v1::closure_service_server::ClosureService;
 use crate::server::services::v1::closure::closure_handlers::{create_closure, delete_closure, list_closures, update_closure};
+use crate::utils::request_wrapper::RequestMetadata;
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -43,9 +44,13 @@ impl ClosureServiceServerImpl {
 impl ClosureService for ClosureServiceServerImpl {
     async fn create_closure(&self, request: Request<CreateClosureRequest>) -> Result<Response<CreateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        let inner_request = request.into_inner();
 
-        let response = create_closure(inner_request.clone(), &mut conn)
+        let request_metadata: RequestMetadata<CreateClosureRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        let response = create_closure(request_metadata.request, request_metadata.metadata, &mut conn)
             .await
             .map(Response::new)?;
 
@@ -57,11 +62,15 @@ impl ClosureService for ClosureServiceServerImpl {
 
     async fn list_closures(&self, request: Request<ListClosuresRequest>) -> Result<Response<ListClosuresResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        let inner_request = request.into_inner();
 
-        self.cache.handle_cache("list_closures", &inner_request.clone(), || {
+        let request_metadata: RequestMetadata<ListClosuresRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        self.cache.handle_cache("list_closures", &request_metadata.clone(), || {
             async move {
-                list_closures(inner_request, &mut conn)
+                list_closures(request_metadata.request, request_metadata.metadata, &mut conn)
                     .await
                     .map(Response::new)
                     .map_err(|e| e.into())
@@ -71,9 +80,13 @@ impl ClosureService for ClosureServiceServerImpl {
 
     async fn update_closure(&self, request: Request<UpdateClosureRequest>) -> Result<Response<UpdateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        let inner_request = request.into_inner();
 
-        let response = update_closure(inner_request, &mut conn)
+        let request_metadata: RequestMetadata<UpdateClosureRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        let response = update_closure(request_metadata.request, request_metadata.metadata, &mut conn)
             .await
             .map(Response::new)?;
 

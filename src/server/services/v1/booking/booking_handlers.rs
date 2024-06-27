@@ -1,7 +1,8 @@
 use chrono::DateTime;
+use tonic::metadata::MetadataMap;
 use uuid::Uuid;
 use protos::event::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse};
-use crate::add_time_to_datetime;
+use crate::{add_time_to_datetime, get_meta_timezone};
 use crate::database::PgPooledConnection;
 use crate::errors::{ApiError};
 use crate::server::services::v1::booking::booking_model::{BookingInsert, BookingRepository};
@@ -12,6 +13,7 @@ use crate::utils::validation::ValidateRequest;
 
 pub async fn create_booking(
     request: CreateBookingRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<CreateBookingResponse, ApiError> {
     request.validate()?;
@@ -85,12 +87,13 @@ pub async fn create_booking(
     }).await?;
 
     Ok(CreateBookingResponse{
-        booking: Some(booking.into())
+        booking: Some(booking.to_response(get_meta_timezone(meta)))
     })
 }
 
 pub async fn get_booking_by_id(
     request: GetBookingRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<GetBookingResponse, ApiError> {
     request.validate()?;
@@ -101,12 +104,13 @@ pub async fn get_booking_by_id(
         .await?;
 
     Ok(GetBookingResponse{
-        booking: Some(booking.into())
+        booking: Some(booking.to_response(get_meta_timezone(meta)))
     })
 }
 
 pub async fn list_bookings(
     request: ListBookingsRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<ListBookingsResponse, ApiError> {
     request.validate()?;
@@ -117,7 +121,7 @@ pub async fn list_bookings(
         .await?;
 
     Ok(ListBookingsResponse{
-        bookings: bookings.into_iter().map(|booking| booking.into()).collect()
+        bookings: bookings.into_iter().map(|booking| booking.to_response(get_meta_timezone(meta))).collect()
     })
 }
 

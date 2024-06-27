@@ -10,6 +10,7 @@ use autometrics::objectives::{
 use protos::event::v1::booking_service_server::BookingService;
 use protos::event::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse};
 use crate::server::services::v1::booking::booking_handlers::{create_booking, delete_booking, get_booking_by_id, list_bookings};
+use crate::utils::request_wrapper::RequestMetadata;
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -43,7 +44,13 @@ impl BookingServiceServerImpl {
 impl BookingService for BookingServiceServerImpl {
     async fn create_booking(&self, request: Request<CreateBookingRequest>) -> Result<Response<CreateBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        create_booking(request.into_inner(), &mut conn)
+
+        let request_metadata: RequestMetadata<CreateBookingRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        create_booking(request_metadata.request, request_metadata.metadata, &mut conn)
             .await
             .map(Response::new)
             .map_err(|e| e.into())
@@ -51,7 +58,13 @@ impl BookingService for BookingServiceServerImpl {
 
     async fn get_booking(&self, request: Request<GetBookingRequest>) -> Result<Response<GetBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        get_booking_by_id(request.into_inner(), &mut conn)
+
+        let request_metadata: RequestMetadata<GetBookingRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        get_booking_by_id(request_metadata.request, request_metadata.metadata, &mut conn)
             .await
             .map(Response::new)
             .map_err(|e| e.into())
@@ -59,7 +72,13 @@ impl BookingService for BookingServiceServerImpl {
 
     async fn list_bookings(&self, request: Request<ListBookingsRequest>) -> Result<Response<ListBookingsResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
-        list_bookings(request.into_inner(), &mut conn)
+
+        let request_metadata: RequestMetadata<ListBookingsRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        list_bookings(request_metadata.request, request_metadata.metadata, &mut conn)
             .await
             .map(Response::new)
             .map_err(|e| e.into())

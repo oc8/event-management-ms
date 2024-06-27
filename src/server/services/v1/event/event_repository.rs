@@ -51,7 +51,7 @@ impl EventRepository for PgConnection {
             _ => None
         };
 
-        Ok(event.into_event(None, slots))
+        Ok(event.into_event(slots))
     }
 
     async fn get_event_by_id(&mut self, id: Uuid) -> Result<Event, ApiError> {
@@ -77,7 +77,7 @@ impl EventRepository for PgConnection {
             _ => None
         };
 
-        Ok(event.into_event(None, slots))
+        Ok(event.into_event(slots))
     }
 
     async fn get_events_with_filter(
@@ -135,7 +135,7 @@ impl EventRepository for PgConnection {
                 _ => None
             };
 
-            result.push(event.into_event(None, slots));
+            result.push(event.into_event(slots));
         }
 
         Ok(result)
@@ -258,7 +258,7 @@ impl EventRepository for PgConnection {
             _ => None
         };
 
-        Ok(event.into_event(None, slots))
+        Ok(event.into_event(slots))
     }
 
     async fn delete_event(&mut self, id: Uuid) -> Result<u64, ApiError> {

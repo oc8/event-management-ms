@@ -1,11 +1,12 @@
 use chrono::DateTime;
 use sqlx::postgres::types::PgInterval;
+use tonic::metadata::MetadataMap;
 use uuid::Uuid;
 use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{ApiError};
 use crate::server::services::v1::event::event_model::{EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
-use crate::{truncate_to_minute};
+use crate::{get_meta_timezone, truncate_to_minute};
 use crate::server::services::v1::booking::booking_model::{BookingRepository};
 use crate::server::services::v1::closure::closure_model::{ClosureRepository};
 use crate::server::services::v1::event::timeline::Timeline;
@@ -14,6 +15,7 @@ use crate::utils::validation::ValidateRequest;
 
 pub async fn create_event(
     request: CreateEventRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<CreateEventResponse, ApiError> {
     request.validate()?;
@@ -53,12 +55,13 @@ pub async fn create_event(
     log::debug!("event created: {:?}", event);
 
     Ok(CreateEventResponse{
-        event: Some(event.into())
+        event: Some(event.to_response(get_meta_timezone(meta)))
     })
 }
 
 pub async fn get_event_by_id(
     request: GetEventRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<GetEventResponse, ApiError> {
     request.validate()?;
@@ -67,12 +70,13 @@ pub async fn get_event_by_id(
         .await?;
 
     Ok(GetEventResponse{
-        event: Some(event.into())
+        event: Some(event.to_response(get_meta_timezone(meta)))
     })
 }
 
 pub async fn list_events(
     request: ListEventsRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<ListEventsResponse, ApiError> {
     request.validate()?;
@@ -83,12 +87,13 @@ pub async fn list_events(
         .await?;
 
     Ok(ListEventsResponse{
-        events: events.into_iter().map(|e| e.into()).collect()
+        events: events.into_iter().map(|e| e.to_response(get_meta_timezone(meta))).collect()
     })
 }
 
 pub async fn update_event(
     request: UpdateEventRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<UpdateEventResponse, ApiError> {
     request.validate()?;
@@ -121,7 +126,7 @@ pub async fn update_event(
     }).await?;
 
     Ok(UpdateEventResponse{
-        event: Some(event.into())
+        event: Some(event.to_response(get_meta_timezone(meta)))
     })
 }
 
@@ -143,6 +148,7 @@ pub async fn delete_event(
 
 pub async fn cancel_event(
     request: CancelEventRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<CancelEventResponse, ApiError> {
     request.validate()?;
@@ -158,12 +164,13 @@ pub async fn cancel_event(
     }).await?;
 
     Ok(CancelEventResponse{
-        event: Some(event.into())
+        event: Some(event.to_response(get_meta_timezone(meta)))
     })
 }
 
 pub async fn get_timeline(
     request: GetTimelineRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<GetTimelineResponse, ApiError> {
     request.validate()?;
@@ -182,6 +189,6 @@ pub async fn get_timeline(
     events = timeline.included(event_filters.from.unwrap(), event_filters.to.unwrap())?;
 
     Ok(GetTimelineResponse{
-        events: events.into_iter().map(|e| e.into()).collect()
+        events: events.into_iter().map(|e| e.to_response(get_meta_timezone(meta))).collect()
     })
 }

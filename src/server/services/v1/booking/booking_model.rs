@@ -2,7 +2,8 @@ use uuid::Uuid;
 use crate::errors::{ApiError};
 
 use async_trait::async_trait;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
+use chrono_tz::Tz;
 use protos::event::v1::TimeData;
 use crate::server::services::v1::slot::slot_model::Slot;
 use crate::utils::filters::{BookingFilters, Filters};
@@ -21,21 +22,23 @@ pub struct Booking {
     pub updated_at: NaiveDateTime,
 }
 
-impl From<Booking> for protos::event::v1::Booking {
-    fn from(booking: Booking) -> Self {
+impl Booking {
+    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Booking {
         let mut proto_booking = protos::event::v1::Booking::default();
 
-        proto_booking.id = booking.id.to_string();
-        proto_booking.slot_id = booking.slot_id.to_string();
-        proto_booking.booking_holder_key = booking.booking_holder_key;
+        let offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
+
+        proto_booking.id = self.id.to_string();
+        proto_booking.slot_id = self.slot_id.to_string();
+        proto_booking.booking_holder_key = self.booking_holder_key;
         proto_booking.date_time = Some(TimeData {
-            timezone: "UTC".to_string(),
-            date_time: DateTime::<Utc>::from_naive_utc_and_offset(booking.date_time, Utc).to_rfc3339()
+            timezone: tz.to_string(),
+            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.date_time, offset).to_rfc3339()
         });
-        proto_booking.slot = booking.slot.map(|s| s.into());
-        proto_booking.persons = booking.persons;
-        proto_booking.created_at = booking.created_at.and_utc().timestamp();
-        proto_booking.updated_at = booking.updated_at.and_utc().timestamp();
+        proto_booking.slot = self.slot.map(|s| s.to_response(Tz::UTC));
+        proto_booking.persons = self.persons;
+        proto_booking.created_at = self.created_at.and_utc().timestamp();
+        proto_booking.updated_at = self.updated_at.and_utc().timestamp();
 
         proto_booking
     }

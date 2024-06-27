@@ -1,14 +1,17 @@
 use chrono::DateTime;
+use tonic::metadata::MetadataMap;
 use uuid::Uuid;
 use protos::event::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
 use crate::database::PgPooledConnection;
 use crate::errors::{ApiError};
+use crate::get_meta_timezone;
 use crate::server::services::v1::closure::closure_model::{ClosureInsert, ClosureRepository, ClosureUpdate};
 use crate::utils::filters::{ClosureFilters, Filters};
 use crate::utils::validation::ValidateRequest;
 
 pub async fn create_closure(
     request: CreateClosureRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<CreateClosureResponse, ApiError> {
     request.validate()?;
@@ -26,12 +29,13 @@ pub async fn create_closure(
         .await?;
 
     Ok(CreateClosureResponse{
-        closure: Some(closure.into())
+        closure: Some(closure.to_response(get_meta_timezone(meta)))
     })
 }
 
 pub async fn list_closures(
     request: ListClosuresRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<ListClosuresResponse, ApiError> {
     request.validate()?;
@@ -42,12 +46,13 @@ pub async fn list_closures(
         .await?;
 
     Ok(ListClosuresResponse{
-        closures: closures.into_iter().map(|closure| closure.into()).collect()
+        closures: closures.into_iter().map(|closure| closure.to_response(get_meta_timezone(meta))).collect()
     })
 }
 
 pub async fn update_closure(
     request: UpdateClosureRequest,
+    meta: &MetadataMap,
     conn: &mut PgPooledConnection
 ) -> Result<UpdateClosureResponse, ApiError> {
     request.validate()?;
@@ -71,7 +76,7 @@ pub async fn update_closure(
     }).await?;
 
     Ok(UpdateClosureResponse{
-        closure: Some(updated_closure.into())
+        closure: Some(updated_closure.to_response(get_meta_timezone(meta)))
     })
 }
 

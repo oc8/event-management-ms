@@ -23,7 +23,7 @@ impl SlotRepository for PgConnection {
 
         let event = self.get_event_by_id(slot.event_id).await?;
 
-        Ok(slot.into_slot(SlotStatus::Available, None, Some(event)))
+        Ok(slot.into_slot(SlotStatus::Available, Some(event)))
     }
 
     async fn find_by_event_id(&mut self, event_id: Uuid) -> Result<Vec<Slot>, ApiError> {
@@ -37,7 +37,7 @@ impl SlotRepository for PgConnection {
         .fetch_all(self)
         .await?;
 
-        Ok(rows.into_iter().map(|row| row.into_slot(SlotStatus::Available, None, None)).collect())
+        Ok(rows.into_iter().map(|row| row.into_slot(SlotStatus::Available, None)).collect())
     }
 
     async fn generate_event_slots(&mut self, event: &DbEvent) -> Result<Vec<Slot>, ApiError> {
@@ -76,6 +76,6 @@ impl SlotRepository for PgConnection {
             .fetch_all(self)
             .await?;
 
-        Ok(slots.into_iter().map(|slot| slot.into_slot(SlotStatus::Available, None, None)).collect())
+        Ok(slots.into_iter().map(|slot| slot.into_slot(SlotStatus::Available, None)).collect())
     }
 }
