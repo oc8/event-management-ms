@@ -68,7 +68,6 @@ message CreateEventRequest {
   string name = 1;
   string start = 2;
   string end = 3;
-  string timezone = 4;
   string organizer_key = 5;
   int64 slot_duration = 6;
   int32 capacity = 7;
@@ -102,7 +101,6 @@ message UpdateEventRequest {
   string name = 2;
   string start = 3;
   string end = 4;
-  string timezone = 5;
   int32 capacity = 7;
   int32 slot_capacity = 8;
   string recurrence_rule = 9;

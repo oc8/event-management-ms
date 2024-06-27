@@ -56,5 +56,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Metrics server listening on port {}", metrics_port);
     axum::serve(listener, app).await.unwrap();
 
+    // TODO: fix ghost process on mac ctrl+c
     Ok(())
 }

@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=events_service
+      - POSTGRES_DB=event_service
     ports:
       - "5433:5432"
   redis:

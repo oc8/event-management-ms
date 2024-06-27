@@ -3,6 +3,7 @@ use crate::errors::{ApiError};
 
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, NaiveTime};
+use chrono_tz::Tz;
 use protos::event::v1::{SlotStatus, TimeData};
 use crate::server::services::v1::event::event_model::{DbEvent, Event};
 
@@ -19,7 +20,7 @@ pub struct DbSlot {
 }
 
 impl DbSlot {
-    pub fn into_slot(self, status: SlotStatus, event: Option<Event>) -> Slot {
+    pub fn into_slot(self, status: SlotStatus, timezone: Option<Tz>, event: Option<Event>) -> Slot {
         Slot {
             id: self.id,
             event_id: self.event_id,
@@ -27,6 +28,10 @@ impl DbSlot {
             event,
             start_time: self.start_time,
             end_time: self.end_time,
+            timezone: match timezone {
+                Some(tz) => Some(tz),
+                None => None,
+            },
             capacity: self.capacity,
             created_at: self.created_at,
             updated_at: self.updated_at,
@@ -43,6 +48,7 @@ pub struct Slot {
     pub event: Option<Event>,
     pub start_time: NaiveTime,
     pub end_time: NaiveTime,
+    pub timezone: Option<Tz>,
     pub capacity: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -52,20 +58,20 @@ impl From<Slot> for protos::event::v1::Slot {
     fn from(slot: Slot) -> Self {
         let mut proto_slot = protos::event::v1::Slot::default();
 
-        let tz = match &slot.event {
-            Some(event) => event.timezone.clone(),
-            None => "UTC".to_string(),
+        let tz = match &slot.timezone {
+            Some(tz) => tz,
+            None => &chrono_tz::UTC,
         };
 
         proto_slot.id = slot.id.to_string();
         proto_slot.event_id = slot.event_id.to_string();
         proto_slot.set_status(slot.status);
         proto_slot.start = Some(TimeData {
-            timezone: tz.clone(),
+            timezone: tz.name().to_string(),
             date_time: slot.start_time.to_string(),
         });
         proto_slot.end = Some(TimeData {
-            timezone: tz,
+            timezone: tz.name().to_string(),
             date_time: slot.end_time.to_string(),
         });
         proto_slot.capacity = slot.capacity;

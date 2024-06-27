@@ -91,7 +91,6 @@ class CreateEventRequest(betterproto.Message):
     name: str = betterproto.string_field(1)
     start: str = betterproto.string_field(2)
     end: str = betterproto.string_field(3)
-    timezone: str = betterproto.string_field(4)
     organizer_key: str = betterproto.string_field(5)
     slot_duration: int = betterproto.int64_field(6)
     capacity: int = betterproto.int32_field(7)
@@ -131,7 +130,6 @@ class UpdateEventRequest(betterproto.Message):
     name: str = betterproto.string_field(2)
     start: str = betterproto.string_field(3)
     end: str = betterproto.string_field(4)
-    timezone: str = betterproto.string_field(5)
     capacity: int = betterproto.int32_field(7)
     slot_capacity: int = betterproto.int32_field(8)
     recurrence_rule: str = betterproto.string_field(9)
@@ -290,7 +288,6 @@ class EventServiceStub(betterproto.ServiceStub):
         name: str = "",
         start: str = "",
         end: str = "",
-        timezone: str = "",
         organizer_key: str = "",
         slot_duration: int = 0,
         capacity: int = 0,
@@ -302,7 +299,6 @@ class EventServiceStub(betterproto.ServiceStub):
         request.name = name
         request.start = start
         request.end = end
-        request.timezone = timezone
         request.organizer_key = organizer_key
         request.slot_duration = slot_duration
         request.capacity = capacity
@@ -346,7 +342,6 @@ class EventServiceStub(betterproto.ServiceStub):
         name: str = "",
         start: str = "",
         end: str = "",
-        timezone: str = "",
         capacity: int = 0,
         slot_capacity: int = 0,
         recurrence_rule: str = "",
@@ -356,7 +351,6 @@ class EventServiceStub(betterproto.ServiceStub):
         request.name = name
         request.start = start
         request.end = end
-        request.timezone = timezone
         request.capacity = capacity
         request.slot_capacity = slot_capacity
         request.recurrence_rule = recurrence_rule

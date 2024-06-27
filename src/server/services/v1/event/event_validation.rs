@@ -1,6 +1,4 @@
-use std::str::FromStr;
 use chrono::DateTime;
-use chrono_tz::Tz;
 use rrule::ParseError::MissingStartDate;
 use rrule::RRuleSet;
 use uuid::Uuid;
@@ -47,10 +45,6 @@ impl ValidateRequest for CreateEventRequest {
 
         if start.is_ok() && end.is_ok() && (start.unwrap() >= end.unwrap()) {
             errors.push(ValidationErrorKind::InvalidDateRange("start, end".to_string(), "start must be before end".to_string()))
-        }
-
-        if !self.timezone.is_empty() && Tz::from_str(self.timezone.as_str()).is_err() {
-            errors.push(ValidationErrorKind::InvalidFormat("timezone".to_string(), ValidationErrorMessage::InvalidTimezone()))
         }
 
         if !validate_recurrence_rule(self.recurrence_rule.as_str()) {
@@ -147,10 +141,6 @@ impl ValidateRequest for UpdateEventRequest {
                 .map_err(|_| {
                     errors.push(ValidationErrorKind::InvalidFormat("end".to_string(), ValidationErrorMessage::InvalidDateTime()))
                 });
-        }
-
-        if !self.timezone.is_empty() && Tz::from_str(&self.timezone).is_err() {
-            errors.push(ValidationErrorKind::InvalidFormat("timezone".to_string(), ValidationErrorMessage::InvalidTimezone()))
         }
 
         if !self.recurrence_rule.is_empty() && !validate_recurrence_rule(&self.recurrence_rule) {

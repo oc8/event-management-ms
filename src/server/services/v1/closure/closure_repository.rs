@@ -11,7 +11,7 @@ impl ClosureRepository for PgConnection {
         let closure = sqlx::query_as!(
             Closure,
             r#"
-            INSERT INTO closures (closing_from, closing_to, organizer_key)
+            INSERT INTO closure (closing_from, closing_to, organizer_key)
             VALUES ($1, $2, $3)
             RETURNING *
             "#,
@@ -31,7 +31,7 @@ impl ClosureRepository for PgConnection {
         let closure = sqlx::query_as!(
             Closure,
             r#"
-            SELECT * FROM closures
+            SELECT * FROM closure
             WHERE id = $1
             "#,
             closure_id
@@ -49,7 +49,7 @@ impl ClosureRepository for PgConnection {
 
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
-            SELECT * FROM closures
+            SELECT * FROM closure
             WHERE 1 = 1
             "#,
         );
@@ -79,7 +79,7 @@ impl ClosureRepository for PgConnection {
     async fn update_closure(&mut self, closure_id: Uuid, closure: &ClosureUpdate) -> Result<Closure, ApiError> {
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
-            UPDATE closures
+            UPDATE closure
             "#,
         );
 
@@ -120,7 +120,7 @@ impl ClosureRepository for PgConnection {
     async fn delete_closure(&mut self, id: Uuid) -> Result<u64, ApiError> {
         let result = sqlx::query!(
             r#"
-            DELETE FROM closures
+            DELETE FROM closure
             WHERE id = $1
             "#,
             id

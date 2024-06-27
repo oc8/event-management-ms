@@ -1227,9 +1227,6 @@ impl serde::Serialize for CreateEventRequest {
         if !self.end.is_empty() {
             len += 1;
         }
-        if !self.timezone.is_empty() {
-            len += 1;
-        }
         if !self.organizer_key.is_empty() {
             len += 1;
         }
@@ -1257,9 +1254,6 @@ impl serde::Serialize for CreateEventRequest {
         }
         if !self.end.is_empty() {
             struct_ser.serialize_field("end", &self.end)?;
-        }
-        if !self.timezone.is_empty() {
-            struct_ser.serialize_field("timezone", &self.timezone)?;
         }
         if !self.organizer_key.is_empty() {
             struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
@@ -1295,7 +1289,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             "name",
             "start",
             "end",
-            "timezone",
             "organizer_key",
             "organizerKey",
             "slot_duration",
@@ -1314,7 +1307,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
             Name,
             Start,
             End,
-            Timezone,
             OrganizerKey,
             SlotDuration,
             Capacity,
@@ -1345,7 +1337,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                             "name" => Ok(GeneratedField::Name),
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
-                            "timezone" => Ok(GeneratedField::Timezone),
                             "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             "slotDuration" | "slot_duration" => Ok(GeneratedField::SlotDuration),
                             "capacity" => Ok(GeneratedField::Capacity),
@@ -1374,7 +1365,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                 let mut name__ = None;
                 let mut start__ = None;
                 let mut end__ = None;
-                let mut timezone__ = None;
                 let mut organizer_key__ = None;
                 let mut slot_duration__ = None;
                 let mut capacity__ = None;
@@ -1400,12 +1390,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                                 return Err(serde::de::Error::duplicate_field("end"));
                             }
                             end__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::Timezone => {
-                            if timezone__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("timezone"));
-                            }
-                            timezone__ = Some(map_.next_value()?);
                         }
                         GeneratedField::OrganizerKey => {
                             if organizer_key__.is_some() {
@@ -1455,7 +1439,6 @@ impl<'de> serde::Deserialize<'de> for CreateEventRequest {
                     name: name__.unwrap_or_default(),
                     start: start__.unwrap_or_default(),
                     end: end__.unwrap_or_default(),
-                    timezone: timezone__.unwrap_or_default(),
                     organizer_key: organizer_key__.unwrap_or_default(),
                     slot_duration: slot_duration__.unwrap_or_default(),
                     capacity: capacity__.unwrap_or_default(),
@@ -4555,9 +4538,6 @@ impl serde::Serialize for UpdateEventRequest {
         if !self.end.is_empty() {
             len += 1;
         }
-        if !self.timezone.is_empty() {
-            len += 1;
-        }
         if self.capacity != 0 {
             len += 1;
         }
@@ -4579,9 +4559,6 @@ impl serde::Serialize for UpdateEventRequest {
         }
         if !self.end.is_empty() {
             struct_ser.serialize_field("end", &self.end)?;
-        }
-        if !self.timezone.is_empty() {
-            struct_ser.serialize_field("timezone", &self.timezone)?;
         }
         if self.capacity != 0 {
             struct_ser.serialize_field("capacity", &self.capacity)?;
@@ -4606,7 +4583,6 @@ impl<'de> serde::Deserialize<'de> for UpdateEventRequest {
             "name",
             "start",
             "end",
-            "timezone",
             "capacity",
             "slot_capacity",
             "slotCapacity",
@@ -4620,7 +4596,6 @@ impl<'de> serde::Deserialize<'de> for UpdateEventRequest {
             Name,
             Start,
             End,
-            Timezone,
             Capacity,
             SlotCapacity,
             RecurrenceRule,
@@ -4649,7 +4624,6 @@ impl<'de> serde::Deserialize<'de> for UpdateEventRequest {
                             "name" => Ok(GeneratedField::Name),
                             "start" => Ok(GeneratedField::Start),
                             "end" => Ok(GeneratedField::End),
-                            "timezone" => Ok(GeneratedField::Timezone),
                             "capacity" => Ok(GeneratedField::Capacity),
                             "slotCapacity" | "slot_capacity" => Ok(GeneratedField::SlotCapacity),
                             "recurrenceRule" | "recurrence_rule" => Ok(GeneratedField::RecurrenceRule),
@@ -4676,7 +4650,6 @@ impl<'de> serde::Deserialize<'de> for UpdateEventRequest {
                 let mut name__ = None;
                 let mut start__ = None;
                 let mut end__ = None;
-                let mut timezone__ = None;
                 let mut capacity__ = None;
                 let mut slot_capacity__ = None;
                 let mut recurrence_rule__ = None;
@@ -4705,12 +4678,6 @@ impl<'de> serde::Deserialize<'de> for UpdateEventRequest {
                                 return Err(serde::de::Error::duplicate_field("end"));
                             }
                             end__ = Some(map_.next_value()?);
-                        }
-                        GeneratedField::Timezone => {
-                            if timezone__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("timezone"));
-                            }
-                            timezone__ = Some(map_.next_value()?);
                         }
                         GeneratedField::Capacity => {
                             if capacity__.is_some() {
@@ -4741,7 +4708,6 @@ impl<'de> serde::Deserialize<'de> for UpdateEventRequest {
                     name: name__.unwrap_or_default(),
                     start: start__.unwrap_or_default(),
                     end: end__.unwrap_or_default(),
-                    timezone: timezone__.unwrap_or_default(),
                     capacity: capacity__.unwrap_or_default(),
                     slot_capacity: slot_capacity__.unwrap_or_default(),
                     recurrence_rule: recurrence_rule__.unwrap_or_default(),

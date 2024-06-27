@@ -21,11 +21,6 @@ pub async fn create_event(
     let start_time = DateTime::parse_from_rfc3339(&request.start)?;
     let end_time = DateTime::parse_from_rfc3339(&request.end)?;
 
-    let tz = match request.timezone.is_empty() {
-        true => chrono::Utc.to_string(),
-        false => request.timezone.to_string()
-    };
-
     let interval = PgInterval {
         months: 0,
         days: 0,
@@ -43,7 +38,6 @@ pub async fn create_event(
             true => None,
             false => Some(request.recurrence_rule)
         },
-        timezone: tz.to_string(),
         organizer_key: request.organizer_key.to_string(),
         canceled_by: None,
         canceled_at: None,
@@ -119,7 +113,6 @@ pub async fn update_event(
         start_time,
         end_time,
         recurrence_rule: Some(request.recurrence_rule),
-        timezone: Some(request.timezone),
         canceled_by: None,
         canceled_at: None,
         canceled_reason: None,

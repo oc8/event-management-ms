@@ -18,7 +18,7 @@ impl BookingRepository for PgConnection {
         let new_booking = sqlx::query_as!(
             DbBooking,
             r#"
-            INSERT INTO bookings (slot_id, date_time, organizer_key, persons, booking_holder_key)
+            INSERT INTO booking (slot_id, date_time, organizer_key, persons, booking_holder_key)
             VALUES ($1, $2, $3, $4, $5)
             RETURNING *
             "#,
@@ -44,7 +44,7 @@ impl BookingRepository for PgConnection {
         let booking = sqlx::query_as!(
             DbBooking,
             r#"
-            SELECT * FROM bookings WHERE id = $1
+            SELECT * FROM booking WHERE id = $1
             "#,
             id
         )
@@ -63,7 +63,7 @@ impl BookingRepository for PgConnection {
 
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
-            SELECT * FROM bookings
+            SELECT * FROM booking
             WHERE 1 = 1
             "#,
         );
@@ -103,7 +103,7 @@ impl BookingRepository for PgConnection {
     async fn delete_booking(&mut self, id: Uuid) -> Result<usize, ApiError> {
         let result = sqlx::query!(
             r#"
-            DELETE FROM bookings WHERE id = $1
+            DELETE FROM booking WHERE id = $1
             "#,
             id
         )
@@ -119,7 +119,7 @@ impl BookingRepository for PgConnection {
         let booking = sqlx::query_as!(
             DbBooking,
             r#"
-            SELECT * FROM bookings
+            SELECT * FROM booking
             WHERE slot_id = $1 AND booking_holder_key = $2 AND date_time = $3
             "#,
             slot_id,
@@ -136,7 +136,7 @@ impl BookingRepository for PgConnection {
 
     async fn sum_persons_by_datetime(&mut self, slot_id: Uuid, datetime: NaiveDateTime) -> Result<i32, ApiError> {
         let result: Option<i64> = sqlx::query_scalar!(
-            "SELECT SUM(persons) FROM bookings WHERE slot_id = $1 AND date_time = $2",
+            "SELECT SUM(persons) FROM booking WHERE slot_id = $1 AND date_time = $2",
             slot_id,
             datetime
         )
@@ -154,12 +154,12 @@ impl BookingRepository for PgConnection {
 
     async fn sum_persons_by_event(&mut self, event_id: Uuid, min_date_time: NaiveDateTime, max_date_time: NaiveDateTime) -> Result<i32, ApiError> {
         let result: Option<i64> = sqlx::query_scalar!(
-            "SELECT SUM(bookings.persons)
-             FROM bookings
-             INNER JOIN event_slots ON bookings.slot_id = event_slots.id
-             WHERE event_slots.event_id = $1
-               AND bookings.date_time >= $2
-               AND bookings.date_time <= $3",
+            "SELECT SUM(booking.persons)
+             FROM booking
+             INNER JOIN event_slot ON booking.slot_id = event_slot.id
+             WHERE event_slot.event_id = $1
+               AND booking.date_time >= $2
+               AND booking.date_time <= $3",
             event_id,
             min_date_time,
             max_date_time

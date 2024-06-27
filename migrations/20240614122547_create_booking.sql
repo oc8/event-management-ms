@@ -1,4 +1,4 @@
-CREATE TABLE bookings (
+CREATE TABLE booking (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     booking_holder_key VARCHAR(255) NOT NULL,
     organizer_key VARCHAR(255) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE bookings (
     persons INT DEFAULT 1 NOT NULL,
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
-    FOREIGN KEY (slot_id) REFERENCES event_slots(id) ON DELETE CASCADE
+    FOREIGN KEY (slot_id) REFERENCES event_slot(id) ON DELETE CASCADE
 );
 
-SELECT manage_updated_at('bookings');
+SELECT manage_updated_at('booking');

@@ -18,13 +18,13 @@ impl EventRepository for PgConnection {
         let event = sqlx::query_as!(
             DbEvent,
             r#"
-            INSERT INTO events (
-                name, status, event_type, start_time, end_time, recurrence_rule, timezone,
+            INSERT INTO event (
+                name, status, event_type, start_time, end_time, recurrence_rule,
                 organizer_key, canceled_by, canceled_at, canceled_reason, slot_duration,
                 capacity, slot_capacity
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-            RETURNING id, name, status AS "status: _", event_type AS "event_type: _", start_time, end_time, recurrence_rule, timezone,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            RETURNING id, name, status AS "status: _", event_type AS "event_type: _", start_time, end_time, recurrence_rule,
                 organizer_key, canceled_by, canceled_at, canceled_reason, slot_duration, capacity, slot_capacity, created_at, updated_at
             "#,
             event.name,
@@ -33,7 +33,6 @@ impl EventRepository for PgConnection {
             truncate_to_minute(&event.start_time),
             truncate_to_minute(&event.end_time),
             event.recurrence_rule,
-            event.timezone,
             event.organizer_key,
             event.canceled_by,
             event.canceled_at,
@@ -52,7 +51,7 @@ impl EventRepository for PgConnection {
             _ => None
         };
 
-        Ok(event.into_event(slots))
+        Ok(event.into_event(None, slots))
     }
 
     async fn get_event_by_id(&mut self, id: Uuid) -> Result<Event, ApiError> {
@@ -61,9 +60,9 @@ impl EventRepository for PgConnection {
         let event = sqlx::query_as!(
             DbEvent,
             r#"
-            SELECT id, name, status AS "status: _", event_type AS "event_type: _", start_time, end_time, recurrence_rule, timezone,
+            SELECT id, name, status AS "status: _", event_type AS "event_type: _", start_time, end_time, recurrence_rule,
                 organizer_key, canceled_by, canceled_at, canceled_reason, slot_duration, capacity, slot_capacity, created_at, updated_at
-            FROM events
+            FROM event
             WHERE id = $1
             "#,
             id
@@ -78,97 +77,8 @@ impl EventRepository for PgConnection {
             _ => None
         };
 
-        Ok(event.into_event(slots))
+        Ok(event.into_event(None, slots))
     }
-
-    // async fn get_event_by_id(&mut self, id: Uuid) -> Result<Event, ApiError> {
-    //     let mut conn = self.acquire().await?;
-    //
-    //     let rows = sqlx::query!(
-    //         r#"
-    //         SELECT
-    //             e.id AS event_id,
-    //             e.name,
-    //             e.status AS "status: String",
-    //             e.event_type AS "event_type: String",
-    //             e.start_time,
-    //             e.end_time,
-    //             e.recurrence_rule,
-    //             e.timezone,
-    //             e.organizer_key,
-    //             e.canceled_by,
-    //             e.canceled_at,
-    //             e.canceled_reason,
-    //             e.slot_duration,
-    //             e.capacity,
-    //             e.slot_capacity,
-    //             e.created_at,
-    //             e.updated_at,
-    //             s.id AS slot_id,
-    //             s.start_time AS slot_start_time,
-    //             s.end_time AS slot_end_time,
-    //             s.capacity AS s_slot_capacity
-    //         FROM
-    //             events e
-    //         LEFT JOIN
-    //             event_slots s
-    //         ON
-    //             e.id = s.event_id
-    //         WHERE
-    //             e.id = $1
-    //         "#,
-    //         id
-    //     )
-    //         .fetch_all(&mut *conn)
-    //         .await?;
-    //
-    //     let mut event: Option<DbEvent> = None;
-    //     let mut slots: Vec<Slot> = Vec::new();
-    //
-    //     for row in rows {
-    //         if event.is_none() {
-    //             event = Some(DbEvent {
-    //                 id: row.event_id,
-    //                 name: row.name,
-    //                 status: EventStatus::Active,
-    //                 event_type: EventType::Meeting,
-    //                 start_time: row.start_time,
-    //                 end_time: row.end_time,
-    //                 recurrence_rule: row.recurrence_rule,
-    //                 timezone: row.timezone,
-    //                 organizer_key: row.organizer_key,
-    //                 canceled_by: row.canceled_by,
-    //                 canceled_at: row.canceled_at,
-    //                 canceled_reason: row.canceled_reason,
-    //                 slot_duration: row.slot_duration,
-    //                 capacity: row.capacity,
-    //                 slot_capacity: row.slot_capacity,
-    //                 created_at: row.created_at,
-    //                 updated_at: row.updated_at,
-    //             });
-    //         }
-    //
-    //         if let (slot_id, slot_start_time, slot_end_time, slot_capacity) =
-    //             (row.slot_id, row.slot_start_time, row.slot_end_time, row.s_slot_capacity)
-    //         {
-    //             slots.push(Slot {
-    //                 id: slot_id,
-    //                 event_id: row.event_id,
-    //                 status: SlotStatus::Available,
-    //                 event: None,
-    //                 start_time: slot_start_time,
-    //                 end_time: slot_end_time,
-    //                 capacity: slot_capacity,
-    //                 created_at: row.created_at,
-    //                 updated_at: row.updated_at,
-    //             });
-    //         }
-    //     }
-    //
-    //     let event = event.ok_or(EVENT_NOT_FOUND)?;
-    //
-    //     Ok(event.into_event(Some(slots)))
-    // }
 
     async fn get_events_with_filter(
         &mut self,
@@ -180,7 +90,7 @@ impl EventRepository for PgConnection {
 
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
-            SELECT * FROM events
+            SELECT * FROM event
             WHERE 1 = 1
             "#,
         );
@@ -225,7 +135,7 @@ impl EventRepository for PgConnection {
                 _ => None
             };
 
-            result.push(event.into_event(slots));
+            result.push(event.into_event(None, slots));
         }
 
         Ok(result)
@@ -236,7 +146,7 @@ impl EventRepository for PgConnection {
 
         let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
             r#"
-            UPDATE events
+            UPDATE event
             "#,
         );
 
@@ -263,17 +173,6 @@ impl EventRepository for PgConnection {
                     query_builder.push(", status = ");
                 }
                 query_builder.push_bind(status);
-            }
-        }
-        if let Some(timezone) = &event.timezone {
-            if !timezone.is_empty() {
-                if is_first {
-                    query_builder.push(" SET timezone = ");
-                    is_first = false;
-                } else {
-                    query_builder.push(", timezone = ");
-                }
-                query_builder.push_bind(timezone);
             }
         }
         if let Some(start_time) = &event.start_time {
@@ -359,13 +258,13 @@ impl EventRepository for PgConnection {
             _ => None
         };
 
-        Ok(event.into_event(slots))
+        Ok(event.into_event(None, slots))
     }
 
     async fn delete_event(&mut self, id: Uuid) -> Result<u64, ApiError> {
         let result = sqlx::query!(
             r#"
-            DELETE FROM events
+            DELETE FROM event
             WHERE id = $1
             "#,
             id

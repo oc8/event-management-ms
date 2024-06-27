@@ -14,7 +14,7 @@ CREATE TYPE event_status AS ENUM (
     'disabled'
 );
 
-CREATE TABLE events (
+CREATE TABLE event (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     status event_status DEFAULT 'active' NOT NULL,
@@ -22,7 +22,6 @@ CREATE TABLE events (
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
     recurrence_rule VARCHAR(255) DEFAULT NULL,
-    timezone VARCHAR(255) NOT NULL,
     organizer_key VARCHAR(255) NOT NULL,
     canceled_by VARCHAR(255) DEFAULT NULL,
     canceled_at TIMESTAMP DEFAULT NULL,
@@ -34,4 +33,4 @@ CREATE TABLE events (
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
-SELECT manage_updated_at('events');
+SELECT manage_updated_at('event');

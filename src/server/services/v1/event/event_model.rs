@@ -175,7 +175,6 @@ pub struct DbEvent {
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
     pub recurrence_rule: Option<String>,
-    pub timezone: String,
     pub organizer_key: String,
     pub canceled_by: Option<String>,
     pub canceled_at: Option<NaiveDateTime>,
@@ -188,7 +187,7 @@ pub struct DbEvent {
 }
 
 impl DbEvent {
-    pub fn into_event(self, slots: Option<Vec<Slot>>) -> Event {
+    pub fn into_event(self, timezone: Option<Tz>, slots: Option<Vec<Slot>>) -> Event {
         Event {
             id: self.id,
             name: self.name,
@@ -199,7 +198,10 @@ impl DbEvent {
             start_time: self.start_time,
             end_time: self.end_time,
             recurrence_rule: self.recurrence_rule,
-            timezone: self.timezone,
+            timezone: match timezone {
+                Some(tz) => tz.name().to_string(),
+                None => "UTC".to_string()
+            },
             organizer_key: self.organizer_key,
             canceled_by: self.canceled_by,
             canceled_at: self.canceled_at,
@@ -222,7 +224,6 @@ pub(crate) struct EventInsert {
     pub start_time: NaiveDateTime,
     pub end_time: NaiveDateTime,
     pub recurrence_rule: Option<String>,
-    pub timezone: String,
     pub organizer_key: String,
     pub canceled_by: Option<String>,
     pub canceled_at: Option<NaiveDateTime>,
@@ -240,7 +241,6 @@ pub(crate) struct EventUpdate {
     pub start_time: Option<NaiveDateTime>,
     pub end_time: Option<NaiveDateTime>,
     pub recurrence_rule: Option<String>,
-    pub timezone: Option<String>,
     pub canceled_by: Option<String>,
     pub canceled_at: Option<NaiveDateTime>,
     pub canceled_reason: Option<String>,

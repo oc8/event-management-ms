@@ -1,4 +1,4 @@
-CREATE TABLE closures (
+CREATE TABLE closure (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     closing_from TIMESTAMP NOT NULL,
     closing_to TIMESTAMP NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE closures (
     updated_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
-SELECT manage_updated_at('closures');
+SELECT manage_updated_at('closure');
