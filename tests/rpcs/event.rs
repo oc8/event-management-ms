@@ -6,7 +6,6 @@ fn assert_event_fields(expected: &CreateEventRequest, actual: &Event) {
     assert_eq!(expected.name, actual.name);
     assert_eq!(expected.start, actual.start.clone().unwrap().date_time);
     assert_eq!(expected.end, actual.end.clone().unwrap().date_time);
-    assert_eq!(expected.timezone, actual.start.clone().unwrap().timezone);
     assert_eq!(expected.organizer_key, actual.organizer_key);
     assert_eq!(expected.slot_duration, actual.slot_duration);
     assert_eq!(expected.capacity, actual.capacity);
@@ -26,7 +25,6 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T11:00:00+02:00".to_string(),
         end: "2024-05-26T14:00:00+02:00".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
         capacity: 0,
@@ -34,8 +32,8 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
         recurrence_rule: "".to_string(),
         event_type: EventType::Event as i32,
     };
-
-    let request = tonic::Request::new(create_request.clone());
+    let mut request = tonic::Request::new(create_request.clone());
+    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
     let response = client.create_event(request).await?;
 
     let event = response.into_inner().event.unwrap();
@@ -80,7 +78,6 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T11:00:00+02:00".to_string(),
         end: "2024-05-26T14:00:00+02:00".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
         capacity: 0,
@@ -92,9 +89,11 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
     let resp = client.create_event(create_event_request).await?;
     let event = resp.into_inner().event.unwrap();
 
-    let request = tonic::Request::new(GetEventRequest {
+    let mut request = tonic::Request::new(GetEventRequest {
         id: event.id.clone()
     });
+    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
+
 
     let resp = client.get_event(request).await?;
     let client = resp.into_inner().event.unwrap();
@@ -117,7 +116,6 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T11:00:00+02:00".to_string(),
         end: "2024-05-26T14:00:00+02:00".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
         capacity: 0,
@@ -125,7 +123,8 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
         recurrence_rule: "FREQ=WEEKLY;BYDAY=SU".to_string(),
         event_type: EventType::Event as i32,
     };
-    let request = tonic::Request::new(create_request.clone());
+    let mut request = tonic::Request::new(create_request.clone());
+    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
     let response = client.create_event(request).await?;
 
     let event = response.into_inner().event.unwrap();
@@ -146,7 +145,6 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T11:00:00+02:00".to_string(),
         end: "2024-05-26T14:00:00+02:00".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 15,
         capacity: 15,
@@ -155,7 +153,8 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
         event_type: EventType::Event as i32,
     };
 
-    let request = tonic::Request::new(create_request.clone());
+    let mut request = tonic::Request::new(create_request.clone());
+    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
     let response = client.create_event(request).await?;
 
     let event = response.into_inner().event.unwrap();
@@ -180,7 +179,6 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T11:00:00+02:00".to_string(),
         end: "2024-05-26T14:00:00+02:00".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
         capacity: 0,
@@ -193,23 +191,22 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
     let create_resp = client.create_event(create_event_request).await?;
     let event = create_resp.into_inner().event.unwrap();
 
-    let update_event_request = tonic::Request::new(UpdateEventRequest {
+    let mut update_event_request = tonic::Request::new(UpdateEventRequest {
         id: event.id.clone(),
         name: "updated-event".to_string(),
         start: "2024-05-26T12:00:00+02:00".to_string(),
         end: "2024-05-26T13:00:00+02:00".to_string(),
-        timezone: "Europe/Berlin".to_string(),
         capacity: 100,
         slot_capacity: 10,
         recurrence_rule: "".to_string(),
     });
+    update_event_request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
     let update_resp = client.update_event(update_event_request).await?;
     let updated_event = update_resp.into_inner().event.unwrap();
 
     assert_eq!(updated_event.name, "updated-event");
     assert_eq!(updated_event.start.clone().unwrap().date_time, "2024-05-26T12:00:00+02:00");
     assert_eq!(updated_event.end.unwrap().date_time, "2024-05-26T13:00:00+02:00");
-    assert_eq!(updated_event.start.unwrap().timezone, "Europe/Berlin");
     assert_eq!(updated_event.capacity, 100);
 
     tx.send(()).unwrap();
@@ -228,7 +225,6 @@ async fn update_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
         name: "non-existent-event".to_string(),
         start: "2024-05-26T10:00:00Z".to_string(),
         end: "2024-05-26T11:00:00Z".to_string(),
-        timezone: "Europe/Berlin".to_string(),
         capacity: 100,
         slot_capacity: 10,
         recurrence_rule: "".to_string(),
@@ -259,7 +255,6 @@ async fn delete_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T09:00:00Z".to_string(),
         end: "2024-05-26T12:00:00Z".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
         capacity: 0,
@@ -316,7 +311,6 @@ async fn cancel_event() -> Result<(), Box<dyn std::error::Error>> {
         name: "test-event".to_string(),
         start: "2024-05-26T09:00:00Z".to_string(),
         end: "2024-05-26T12:00:00Z".to_string(),
-        timezone: "Europe/Paris".to_string(),
         organizer_key: "test-organizer".to_string(),
         slot_duration: 0,
         capacity: 0,
