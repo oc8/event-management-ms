@@ -1,16 +1,19 @@
-use std::sync::{Arc};
 use autometrics::autometrics;
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
-use crate::database::{CacheClient, get_connection, PgPool};
+use crate::database::{get_connection, CacheClient, PgPool};
 
-use autometrics::objectives::{
-    Objective, ObjectiveLatency, ObjectivePercentile
+use crate::server::services::v1::closure::closure_handlers::{
+    create_closure, delete_closure, list_closures, update_closure,
 };
-use protos::event::v1::{CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse, ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse};
-use protos::event::v1::closure_service_server::ClosureService;
-use crate::server::services::v1::closure::closure_handlers::{create_closure, delete_closure, list_closures, update_closure};
 use crate::utils::request_wrapper::RequestMetadata;
+use autometrics::objectives::{Objective, ObjectiveLatency, ObjectivePercentile};
+use event_protos::event::v1::closure_service_server::ClosureService;
+use event_protos::event::v1::{
+    CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse,
+    ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse,
+};
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -32,17 +35,17 @@ impl Clone for ClosureServiceServerImpl {
 
 impl ClosureServiceServerImpl {
     pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
-        ClosureServiceServerImpl {
-            pool,
-            cache,
-        }
+        ClosureServiceServerImpl { pool, cache }
     }
 }
 
 #[tonic::async_trait]
 #[autometrics(objective = API_SLO)]
 impl ClosureService for ClosureServiceServerImpl {
-    async fn create_closure(&self, request: Request<CreateClosureRequest>) -> Result<Response<CreateClosureResponse>, Status> {
+    async fn create_closure(
+        &self,
+        request: Request<CreateClosureRequest>,
+    ) -> Result<Response<CreateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<CreateClosureRequest> = RequestMetadata {
@@ -50,17 +53,26 @@ impl ClosureService for ClosureServiceServerImpl {
             request: request.into_inner(),
         };
 
-        let response = create_closure(request_metadata.request, request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)?;
+        let response = create_closure(
+            request_metadata.request,
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)?;
 
         let inner_response = response.get_ref();
-        self.cache.invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key).await?;
+        self.cache
+            .invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key)
+            .await?;
 
         Ok(response)
     }
 
-    async fn list_closures(&self, request: Request<ListClosuresRequest>) -> Result<Response<ListClosuresResponse>, Status> {
+    async fn list_closures(
+        &self,
+        request: Request<ListClosuresRequest>,
+    ) -> Result<Response<ListClosuresResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<ListClosuresRequest> = RequestMetadata {
@@ -68,17 +80,24 @@ impl ClosureService for ClosureServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache.handle_cache("list_closures", &request_metadata.clone(), || {
-            async move {
-                list_closures(request_metadata.request, request_metadata.metadata, &mut conn)
-                    .await
-                    .map(Response::new)
-                    .map_err(|e| e.into())
-            }
-        }).await
+        self.cache
+            .handle_cache("list_closures", &request_metadata.clone(), || async move {
+                list_closures(
+                    request_metadata.request,
+                    request_metadata.metadata,
+                    &mut conn,
+                )
+                .await
+                .map(Response::new)
+                .map_err(|e| e.into())
+            })
+            .await
     }
 
-    async fn update_closure(&self, request: Request<UpdateClosureRequest>) -> Result<Response<UpdateClosureResponse>, Status> {
+    async fn update_closure(
+        &self,
+        request: Request<UpdateClosureRequest>,
+    ) -> Result<Response<UpdateClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<UpdateClosureRequest> = RequestMetadata {
@@ -86,21 +105,30 @@ impl ClosureService for ClosureServiceServerImpl {
             request: request.into_inner(),
         };
 
-        let response = update_closure(request_metadata.request, request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)?;
+        let response = update_closure(
+            request_metadata.request,
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)?;
 
         let inner_response = response.get_ref();
-        self.cache.invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key).await?;
+        self.cache
+            .invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key)
+            .await?;
 
         Ok(response)
     }
 
-    async fn delete_closure(&self, request: Request<DeleteClosureRequest>) -> Result<Response<DeleteClosureResponse>, Status> {
+    async fn delete_closure(
+        &self,
+        request: Request<DeleteClosureRequest>,
+    ) -> Result<Response<DeleteClosureResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
         let inner_request = request.into_inner();
 
-        let response =  delete_closure(inner_request.clone(), &mut conn)
+        let response = delete_closure(inner_request.clone(), &mut conn)
             .await
             .map(Response::new)?;
 

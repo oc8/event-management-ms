@@ -1,11 +1,11 @@
+use crate::errors::ApiError;
 use uuid::Uuid;
-use crate::errors::{ApiError};
 
+use crate::utils::filters::{ClosureFilters, Filters};
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Tz;
-use protos::event::v1::{TimeData};
-use crate::utils::filters::{ClosureFilters, Filters};
+use event_protos::event::v1::TimeData;
 
 /// Defines the database structure of a closure.
 #[derive(Debug, PartialEq, sqlx::FromRow, Clone)]
@@ -19,20 +19,22 @@ pub struct Closure {
 }
 
 impl Closure {
-    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Closure {
-        let mut proto_closure = protos::event::v1::Closure::default();
+    pub(crate) fn to_response(self, tz: Tz) -> event_protos::event::v1::Closure {
+        let mut proto_closure = event_protos::event::v1::Closure::default();
 
         let offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
 
         proto_closure.id = self.id.to_string();
         proto_closure.closing_from = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.closing_from, offset).to_rfc3339()
+            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.closing_from, offset)
+                .to_rfc3339(),
         });
 
         proto_closure.closing_to = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.closing_to, offset).to_rfc3339()
+            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.closing_to, offset)
+                .to_rfc3339(),
         });
         proto_closure.organizer_key = self.organizer_key;
         proto_closure.created_at = self.created_at.and_utc().timestamp();
@@ -70,10 +72,7 @@ pub(crate) trait ClosureRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the closure already exists, or a failure occurred with the
     /// database.
-    async fn create_closure(
-        &mut self,
-        closure: &ClosureInsert,
-    ) -> Result<Closure, ApiError>;
+    async fn create_closure(&mut self, closure: &ClosureInsert) -> Result<Closure, ApiError>;
 
     /// Attempts to retrieve a closure by its id.
     ///
@@ -86,10 +85,7 @@ pub(crate) trait ClosureRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the closure does not exist, or a failure occurred with the
     /// database.
-    async fn get_closure_by_id(
-        &mut self,
-        closure_id: Uuid,
-    ) -> Result<Closure, ApiError>;
+    async fn get_closure_by_id(&mut self, closure_id: Uuid) -> Result<Closure, ApiError>;
 
     /// Attempts to retrieve a list of closures with filters.
     ///
@@ -103,7 +99,7 @@ pub(crate) trait ClosureRepository: Send + Sync + 'static {
     /// An error could occur if a failure occurred with the database.
     async fn get_closures_with_filters(
         &mut self,
-        filters: &Filters<ClosureFilters>
+        filters: &Filters<ClosureFilters>,
     ) -> Result<Vec<Closure>, ApiError>;
 
     /// Attempts to update a closure by its id.
@@ -135,8 +131,5 @@ pub(crate) trait ClosureRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the closure does not exist, or a failure occurred with the
     /// database.
-    async fn delete_closure(
-        &mut self,
-        id: Uuid,
-    ) -> Result<u64, ApiError>;
+    async fn delete_closure(&mut self, id: Uuid) -> Result<u64, ApiError>;
 }

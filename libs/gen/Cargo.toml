@@ -1,10 +1,10 @@
 [package]
-name = "protos"
+name = "event_protos"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "protos"
+name = "event_protos"
 path = "src/lib.rs"
 
 [features]

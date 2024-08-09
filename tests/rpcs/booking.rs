@@ -1,13 +1,18 @@
-use event_ms::add_time_to_datetime;
-use protos::event::v1::booking_service_client::BookingServiceClient;
-use protos::event::v1::{CreateBookingRequest, CreateEventRequest, DeleteBookingRequest, EventType, GetBookingRequest, ListBookingsRequest};
-use protos::event::v1::event_service_client::EventServiceClient;
 use crate::setup_test_context;
+use event_ms::add_time_to_datetime;
+use event_protos::event::v1::booking_service_client::BookingServiceClient;
+use event_protos::event::v1::event_service_client::EventServiceClient;
+use event_protos::event::v1::{
+    CreateBookingRequest, CreateEventRequest, DeleteBookingRequest, EventType, GetBookingRequest,
+    ListBookingsRequest,
+};
 
 #[tokio::test]
 async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_booking", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
     let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let start = chrono::Utc::now() + chrono::Duration::days(1);
@@ -30,7 +35,10 @@ async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
 
     let slot = event.slots.first().unwrap();
 
-    let datetime = add_time_to_datetime(start.naive_utc(), slot.clone().start.unwrap().date_time.parse().unwrap());
+    let datetime = add_time_to_datetime(
+        start.naive_utc(),
+        slot.clone().start.unwrap().date_time.parse().unwrap(),
+    );
 
     let request = tonic::Request::new(CreateBookingRequest {
         slot_id: slot.id.clone(),
@@ -51,7 +59,9 @@ async fn create_booking() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_booking", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
     let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let start = chrono::Utc::now() + chrono::Duration::days(1);
@@ -74,7 +84,10 @@ async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
 
     let slot = event.slots.first().unwrap();
 
-    let datetime = add_time_to_datetime(start.naive_utc(), slot.clone().start.unwrap().date_time.parse().unwrap());
+    let datetime = add_time_to_datetime(
+        start.naive_utc(),
+        slot.clone().start.unwrap().date_time.parse().unwrap(),
+    );
 
     let create_request = tonic::Request::new(CreateBookingRequest {
         slot_id: slot.id.clone(),
@@ -86,9 +99,7 @@ async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
     let create_response = client.create_booking(create_request).await.unwrap();
     let booking_id = create_response.into_inner().booking.unwrap().id;
 
-    let get_request = tonic::Request::new(GetBookingRequest {
-        id: booking_id,
-    });
+    let get_request = tonic::Request::new(GetBookingRequest { id: booking_id });
 
     let get_response = client.get_booking(get_request).await?;
     assert!(get_response.into_inner().booking.is_some());
@@ -102,7 +113,9 @@ async fn get_booking() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_booking", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
     let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let start = chrono::Utc::now() + chrono::Duration::days(1);
@@ -125,7 +138,10 @@ async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
 
     let slot = event.slots.first().unwrap();
 
-    let datetime = add_time_to_datetime(start.naive_utc(), slot.clone().start.unwrap().date_time.parse().unwrap());
+    let datetime = add_time_to_datetime(
+        start.naive_utc(),
+        slot.clone().start.unwrap().date_time.parse().unwrap(),
+    );
 
     let create_request = tonic::Request::new(CreateBookingRequest {
         slot_id: slot.id.clone(),
@@ -137,12 +153,13 @@ async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
     let create_response = client.create_booking(create_request).await.unwrap();
     let booking_id = create_response.into_inner().booking.unwrap().id;
 
-    let delete_request = tonic::Request::new(DeleteBookingRequest {
-        id: booking_id,
-    });
+    let delete_request = tonic::Request::new(DeleteBookingRequest { id: booking_id });
 
     let delete_response = client.delete_booking(delete_request).await?;
-    assert_eq!(delete_response.into_inner().message, "Booking successfully deleted");
+    assert_eq!(
+        delete_response.into_inner().message,
+        "Booking successfully deleted"
+    );
 
     tx.send(()).unwrap();
     jh.await.unwrap();
@@ -153,7 +170,9 @@ async fn delete_booking() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn list_bookings() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("list_bookings", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
     let mut event_client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let start = chrono::Utc::now() + chrono::Duration::days(1);
@@ -176,7 +195,10 @@ async fn list_bookings() -> Result<(), Box<dyn std::error::Error>> {
 
     let slot = event.slots.first().unwrap();
 
-    let datetime = add_time_to_datetime(start.naive_utc(), slot.clone().start.unwrap().date_time.parse().unwrap());
+    let datetime = add_time_to_datetime(
+        start.naive_utc(),
+        slot.clone().start.unwrap().date_time.parse().unwrap(),
+    );
 
     let create_request = tonic::Request::new(CreateBookingRequest {
         slot_id: slot.id.clone(),
@@ -188,7 +210,7 @@ async fn list_bookings() -> Result<(), Box<dyn std::error::Error>> {
     client.create_booking(create_request).await.unwrap();
 
     let list_request = tonic::Request::new(ListBookingsRequest {
-        filters: Some(protos::event::v1::Filters {
+        filters: Some(event_protos::event::v1::Filters {
             organizer_key: "test-organizer".to_string(),
             ..Default::default()
         }),

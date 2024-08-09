@@ -1,16 +1,22 @@
-use std::sync::{Arc};
 use autometrics::autometrics;
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
-use crate::database::{CacheClient, get_connection, PgPool};
+use crate::database::{get_connection, CacheClient, PgPool};
 
-use autometrics::objectives::{
-    Objective, ObjectiveLatency, ObjectivePercentile
+use crate::server::services::v1::event::event_handlers::{
+    cancel_event, create_event, delete_event, get_event_by_id, get_timeline, list_events,
+    update_event,
 };
-use protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, ListEventsRequest, ListEventsResponse, GetTimelineRequest, GetTimelineResponse, UpdateEventRequest, UpdateEventResponse};
-use protos::event::v1::event_service_server::EventService;
-use crate::server::services::v1::event::event_handlers::{cancel_event, create_event, delete_event, get_event_by_id, get_timeline, list_events, update_event};
 use crate::utils::request_wrapper::RequestMetadata;
+use autometrics::objectives::{Objective, ObjectiveLatency, ObjectivePercentile};
+use event_protos::event::v1::event_service_server::EventService;
+use event_protos::event::v1::{
+    CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse,
+    DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetTimelineRequest,
+    GetTimelineResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest,
+    UpdateEventResponse,
+};
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -32,17 +38,17 @@ impl Clone for EventServiceServerImpl {
 
 impl EventServiceServerImpl {
     pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
-        EventServiceServerImpl {
-            pool,
-            cache,
-        }
+        EventServiceServerImpl { pool, cache }
     }
 }
 
 #[tonic::async_trait]
 #[autometrics(objective = API_SLO)]
 impl EventService for EventServiceServerImpl {
-    async fn create_event(&self, request: Request<CreateEventRequest>) -> Result<Response<CreateEventResponse>, Status> {
+    async fn create_event(
+        &self,
+        request: Request<CreateEventRequest>,
+    ) -> Result<Response<CreateEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<CreateEventRequest> = RequestMetadata {
@@ -50,17 +56,26 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        let response = create_event(request_metadata.request, request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)?;
+        let response = create_event(
+            request_metadata.request,
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)?;
 
         let inner_response = response.get_ref();
-        self.cache.invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key).await?;
+        self.cache
+            .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
+            .await?;
 
         Ok(response)
     }
 
-    async fn get_event(&self, request: Request<GetEventRequest>) -> Result<Response<GetEventResponse>, Status> {
+    async fn get_event(
+        &self,
+        request: Request<GetEventRequest>,
+    ) -> Result<Response<GetEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<GetEventRequest> = RequestMetadata {
@@ -68,17 +83,24 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache.handle_cache("get_event", &request_metadata.clone(), || {
-            async move {
-                get_event_by_id(request_metadata.request, request_metadata.metadata, &mut conn)
-                    .await
-                    .map(Response::new)
-                    .map_err(|e| e.into())
-            }
-        }).await
+        self.cache
+            .handle_cache("get_event", &request_metadata.clone(), || async move {
+                get_event_by_id(
+                    request_metadata.request,
+                    request_metadata.metadata,
+                    &mut conn,
+                )
+                .await
+                .map(Response::new)
+                .map_err(|e| e.into())
+            })
+            .await
     }
 
-    async fn list_events(&self, request: Request<ListEventsRequest>) -> Result<Response<ListEventsResponse>, Status> {
+    async fn list_events(
+        &self,
+        request: Request<ListEventsRequest>,
+    ) -> Result<Response<ListEventsResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<ListEventsRequest> = RequestMetadata {
@@ -86,17 +108,24 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache.handle_cache("list_events", &request_metadata.clone(), || {
-            async move {
-                list_events(request_metadata.request, request_metadata.metadata, &mut conn)
-                    .await
-                    .map(Response::new)
-                    .map_err(|e| e.into())
-            }
-        }).await
+        self.cache
+            .handle_cache("list_events", &request_metadata.clone(), || async move {
+                list_events(
+                    request_metadata.request,
+                    request_metadata.metadata,
+                    &mut conn,
+                )
+                .await
+                .map(Response::new)
+                .map_err(|e| e.into())
+            })
+            .await
     }
 
-    async fn update_event(&self, request: Request<UpdateEventRequest>) -> Result<Response<UpdateEventResponse>, Status> {
+    async fn update_event(
+        &self,
+        request: Request<UpdateEventRequest>,
+    ) -> Result<Response<UpdateEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<UpdateEventRequest> = RequestMetadata {
@@ -104,21 +133,35 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        let response = update_event(request_metadata.request.clone(), request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)?;
+        let response = update_event(
+            request_metadata.request.clone(),
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)?;
 
-        self.cache.invalid_cache("get_event", &GetEventRequest {
-            id: request_metadata.request.id.clone(),
-        }).await?;
+        self.cache
+            .invalid_cache(
+                "get_event",
+                &GetEventRequest {
+                    id: request_metadata.request.id.clone(),
+                },
+            )
+            .await?;
 
         let inner_response = response.get_ref();
-        self.cache.invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key).await?;
+        self.cache
+            .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
+            .await?;
 
         Ok(response)
     }
 
-    async fn delete_event(&self, request: Request<DeleteEventRequest>) -> Result<Response<DeleteEventResponse>, Status> {
+    async fn delete_event(
+        &self,
+        request: Request<DeleteEventRequest>,
+    ) -> Result<Response<DeleteEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
         let inner_request = request.into_inner();
 
@@ -133,7 +176,10 @@ impl EventService for EventServiceServerImpl {
         Ok(response)
     }
 
-    async fn cancel_event(&self, request: Request<CancelEventRequest>) -> Result<Response<CancelEventResponse>, Status> {
+    async fn cancel_event(
+        &self,
+        request: Request<CancelEventRequest>,
+    ) -> Result<Response<CancelEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<CancelEventRequest> = RequestMetadata {
@@ -141,21 +187,35 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        let response = cancel_event(request_metadata.request.clone(), request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)?;
+        let response = cancel_event(
+            request_metadata.request.clone(),
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)?;
 
-        self.cache.invalid_cache("get_event", &GetEventRequest {
-            id: request_metadata.request.id.clone(),
-        }).await?;
+        self.cache
+            .invalid_cache(
+                "get_event",
+                &GetEventRequest {
+                    id: request_metadata.request.id.clone(),
+                },
+            )
+            .await?;
 
         let inner_response = response.get_ref();
-        self.cache.invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key).await?;
+        self.cache
+            .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
+            .await?;
 
         Ok(response)
     }
 
-    async fn get_timeline(&self, request: Request<GetTimelineRequest>) -> Result<Response<GetTimelineResponse>, Status> {
+    async fn get_timeline(
+        &self,
+        request: Request<GetTimelineRequest>,
+    ) -> Result<Response<GetTimelineResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<GetTimelineRequest> = RequestMetadata {
@@ -163,13 +223,17 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache.handle_cache("list_events", &request_metadata.clone(), || {
-            async move {
-                get_timeline(request_metadata.request, request_metadata.metadata, &mut conn)
-                    .await
-                    .map(Response::new)
-                    .map_err(|e| e.into())
-            }
-        }).await
+        self.cache
+            .handle_cache("list_events", &request_metadata.clone(), || async move {
+                get_timeline(
+                    request_metadata.request,
+                    request_metadata.metadata,
+                    &mut conn,
+                )
+                .await
+                .map(Response::new)
+                .map_err(|e| e.into())
+            })
+            .await
     }
 }

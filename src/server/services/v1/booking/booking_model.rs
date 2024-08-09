@@ -1,12 +1,12 @@
+use crate::errors::ApiError;
 use uuid::Uuid;
-use crate::errors::{ApiError};
 
+use crate::server::services::v1::slot::slot_model::Slot;
+use crate::utils::filters::{BookingFilters, Filters};
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Tz;
-use protos::event::v1::TimeData;
-use crate::server::services::v1::slot::slot_model::Slot;
-use crate::utils::filters::{BookingFilters, Filters};
+use event_protos::event::v1::TimeData;
 
 /// Defines the full structure of a booking.
 #[derive(Debug, PartialEq)]
@@ -23,8 +23,8 @@ pub struct Booking {
 }
 
 impl Booking {
-    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Booking {
-        let mut proto_booking = protos::event::v1::Booking::default();
+    pub(crate) fn to_response(self, tz: Tz) -> event_protos::event::v1::Booking {
+        let mut proto_booking = event_protos::event::v1::Booking::default();
 
         let offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
 
@@ -33,7 +33,8 @@ impl Booking {
         proto_booking.booking_holder_key = self.booking_holder_key;
         proto_booking.date_time = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.date_time, offset).to_rfc3339()
+            date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.date_time, offset)
+                .to_rfc3339(),
         });
         proto_booking.slot = self.slot.map(|s| s.to_response(Tz::UTC));
         proto_booking.persons = self.persons;
@@ -96,10 +97,7 @@ pub(crate) trait BookingRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the booking already exists, or a failure occurred with the
     /// database.
-    async fn create_booking(
-        &mut self,
-        booking: &BookingInsert,
-    ) -> Result<Booking, ApiError>;
+    async fn create_booking(&mut self, booking: &BookingInsert) -> Result<Booking, ApiError>;
 
     /// Attempts to find a booking by their id.
     ///
@@ -111,10 +109,7 @@ pub(crate) trait BookingRepository: Send + Sync + 'static {
     ///
     /// ## Errors
     /// If the booking does not exist, or a failure occurred with the database.
-    async fn get_booking_by_id(
-        &mut self,
-        slot_id: Uuid,
-    ) -> Result<Booking, ApiError>;
+    async fn get_booking_by_id(&mut self, slot_id: Uuid) -> Result<Booking, ApiError>;
 
     /// Attempts to retrieve a list of bookings with filters.
     ///
@@ -141,10 +136,7 @@ pub(crate) trait BookingRepository: Send + Sync + 'static {
     ///
     /// ## Errors
     /// If the booking does not exist, or a failure occurred with the database.
-    async fn delete_booking(
-        &mut self,
-        slot_id: Uuid,
-    ) -> Result<usize, ApiError>;
+    async fn delete_booking(&mut self, slot_id: Uuid) -> Result<usize, ApiError>;
 
     /// Attempts to retrieve an existing booking by the booking holder and datetime.
     ///

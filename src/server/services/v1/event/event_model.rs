@@ -1,15 +1,17 @@
-use uuid::Uuid;
-use crate::errors::{ApiError};
+use crate::errors::ApiError;
 use num_derive::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
 
+use crate::server::services::v1::slot::slot_model::Slot;
+use crate::utils::filters::{EventFilters, Filters};
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Tz;
+use event_protos::event::v1::{
+    Cancellation, EventStatus as EventStatusProto, EventType as EventTypeProto, TimeData,
+};
 use serde::Serialize;
 use sqlx::postgres::types::PgInterval;
-use protos::event::v1::{Cancellation, EventStatus as EventStatusProto, EventType as EventTypeProto, TimeData};
-use crate::server::services::v1::slot::slot_model::{Slot};
-use crate::utils::filters::{EventFilters, Filters};
 
 /// Defines the supported event status.
 #[derive(Debug, PartialEq, FromPrimitive, ToPrimitive, sqlx::Type, Copy, Clone, Serialize)]
@@ -114,8 +116,8 @@ pub struct Event {
 }
 
 impl Event {
-    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Event {
-        let mut proto_event = protos::event::v1::Event::default();
+    pub(crate) fn to_response(self, tz: Tz) -> event_protos::event::v1::Event {
+        let mut proto_event = event_protos::event::v1::Event::default();
 
         let tz_offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
         let start_datetime = DateTime::<Tz>::from_naive_utc_and_offset(self.start_time, tz_offset);
@@ -127,15 +129,15 @@ impl Event {
         proto_event.set_event_type(self.event_type.as_proto());
         proto_event.slots = match self.slots {
             Some(slots) => slots.into_iter().map(|slot| slot.to_response(tz)).collect(),
-            None => vec![]
+            None => vec![],
         };
         proto_event.start = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: start_datetime.to_rfc3339()
+            date_time: start_datetime.to_rfc3339(),
         });
         proto_event.end = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: end_datetime.to_rfc3339()
+            date_time: end_datetime.to_rfc3339(),
         });
         proto_event.recurrence_rule = self.recurrence_rule.unwrap_or_default();
         proto_event.organizer_key = self.organizer_key;
@@ -145,14 +147,18 @@ impl Event {
                 reason: self.canceled_reason.unwrap_or_default(),
                 created_at: Some(TimeData {
                     timezone: tz.to_string(),
-                    date_time: DateTime::<Tz>::from_naive_utc_and_offset(self.canceled_at.unwrap(), tz_offset).to_rfc3339()
-                })
+                    date_time: DateTime::<Tz>::from_naive_utc_and_offset(
+                        self.canceled_at.unwrap(),
+                        tz_offset,
+                    )
+                    .to_rfc3339(),
+                }),
             }),
-            None => None
+            None => None,
         };
         proto_event.slot_duration = match self.slot_duration {
             Some(interval) => interval.microseconds / 60_000_000,
-            None => 0
+            None => 0,
         };
         proto_event.capacity = self.capacity.unwrap_or_default();
         proto_event.created_at = self.created_at.and_utc().timestamp();
@@ -254,10 +260,7 @@ pub(crate) trait EventRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the event already exists, or a failure occurred with the
     /// database.
-    async fn create_event(
-        &mut self,
-        event: &EventInsert,
-    ) -> Result<Event, ApiError>;
+    async fn create_event(&mut self, event: &EventInsert) -> Result<Event, ApiError>;
 
     /// Attempts to retrieve an event by its id.
     ///
@@ -270,10 +273,7 @@ pub(crate) trait EventRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the event does not exist, or a failure occurred with the
     /// database.
-    async fn get_event_by_id(
-        &mut self,
-        id: Uuid,
-    ) -> Result<Event, ApiError>;
+    async fn get_event_by_id(&mut self, id: Uuid) -> Result<Event, ApiError>;
 
     /// Attempts to retrieve a list of events with filters.
     ///
@@ -287,7 +287,7 @@ pub(crate) trait EventRepository: Send + Sync + 'static {
     /// An error could occur if a failure occurred with the database.
     async fn get_events_with_filter(
         &mut self,
-        filters: &Filters<EventFilters>
+        filters: &Filters<EventFilters>,
     ) -> Result<Vec<Event>, ApiError>;
 
     /// Attempts to update an event by its id.
@@ -302,11 +302,7 @@ pub(crate) trait EventRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the event does not exist, or a failure occurred with the
     /// database.
-    async fn update_event(
-        &mut self,
-        id: Uuid,
-        event: &EventUpdate,
-    ) -> Result<Event, ApiError>;
+    async fn update_event(&mut self, id: Uuid, event: &EventUpdate) -> Result<Event, ApiError>;
 
     /// Attempts to delete an event by its id.
     ///
@@ -319,10 +315,7 @@ pub(crate) trait EventRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the event does not exist, or a failure occurred with the
     /// database.
-    async fn delete_event(
-        &mut self,
-        id: Uuid,
-    ) -> Result<u64, ApiError>;
+    async fn delete_event(&mut self, id: Uuid) -> Result<u64, ApiError>;
 }
 
 #[async_trait]
@@ -338,6 +331,6 @@ pub(crate) trait EventActions: Send + Sync + 'static {
     fn get_available_dates(
         &self,
         start: NaiveDateTime,
-        limit: u16
+        limit: u16,
     ) -> Result<Vec<NaiveDate>, ApiError>;
 }

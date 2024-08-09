@@ -1,6 +1,6 @@
-use protos::event::v1::{CreateEventRequest, EventType, GetEventRequest};
-use protos::event::v1::event_service_client::EventServiceClient;
 use crate::setup_test_context;
+use event_protos::event::v1::event_service_client::EventServiceClient;
+use event_protos::event::v1::{CreateEventRequest, EventType, GetEventRequest};
 
 //
 // validations create event tests
@@ -157,7 +157,8 @@ async fn create_basic_event_invalid_event_type() -> Result<(), Box<dyn std::erro
 
 #[tokio::test]
 async fn create_meeting_event_invalid_slot_duration() -> Result<(), Box<dyn std::error::Error>> {
-    let (ctx, tx, jh) = setup_test_context("create_meeting_event_invalid_slot_duration", 50200).await;
+    let (ctx, tx, jh) =
+        setup_test_context("create_meeting_event_invalid_slot_duration", 50200).await;
     let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
     let request = tonic::Request::new(CreateEventRequest {
@@ -223,9 +224,7 @@ async fn get_event_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_event_invalid_id", 50200).await;
     let mut client = EventServiceClient::connect(ctx.url.clone()).await.unwrap();
 
-    let empty_request = tonic::Request::new(GetEventRequest {
-        id: "".to_string(),
-    });
+    let empty_request = tonic::Request::new(GetEventRequest { id: "".to_string() });
 
     match client.get_event(empty_request).await {
         Ok(_) => panic!("Expected error"),

@@ -1,12 +1,12 @@
+use crate::errors::ApiError;
 use uuid::Uuid;
-use crate::errors::{ApiError};
 
+use crate::add_time_offset;
+use crate::server::services::v1::event::event_model::{DbEvent, Event};
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, NaiveTime};
 use chrono_tz::Tz;
-use protos::event::v1::{SlotStatus, TimeData};
-use crate::add_time_offset;
-use crate::server::services::v1::event::event_model::{DbEvent, Event};
+use event_protos::event::v1::{SlotStatus, TimeData};
 
 /// Defines the full structure of a slot.
 #[derive(Debug, PartialEq, sqlx::FromRow)]
@@ -51,19 +51,19 @@ pub struct Slot {
 }
 
 impl Slot {
-    pub(crate) fn to_response(self, tz: Tz) -> protos::event::v1::Slot {
-        let mut proto_slot = protos::event::v1::Slot::default();
+    pub(crate) fn to_response(self, tz: Tz) -> event_protos::event::v1::Slot {
+        let mut proto_slot = event_protos::event::v1::Slot::default();
 
         proto_slot.id = self.id.to_string();
         proto_slot.event_id = self.event_id.to_string();
         proto_slot.set_status(self.status);
         proto_slot.start = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: add_time_offset(self.start_time, tz).to_string()
+            date_time: add_time_offset(self.start_time, tz).to_string(),
         });
         proto_slot.end = Some(TimeData {
             timezone: tz.to_string(),
-            date_time: add_time_offset(self.end_time, tz).to_string()
+            date_time: add_time_offset(self.end_time, tz).to_string(),
         });
         proto_slot.capacity = self.capacity;
         proto_slot.created_at = self.created_at.and_utc().timestamp();
@@ -95,10 +95,7 @@ pub(crate) trait SlotRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the event already has slots, or a failure occurred with the
     /// database.
-    async fn get_slot_by_id(
-        &mut self,
-        id: Uuid,
-    ) -> Result<Slot, ApiError>;
+    async fn get_slot_by_id(&mut self, id: Uuid) -> Result<Slot, ApiError>;
 
     /// Attempts to retrieve all slots for an event.
     ///
@@ -111,10 +108,7 @@ pub(crate) trait SlotRepository: Send + Sync + 'static {
     /// ## Errors
     /// An error could occur if the event does not exist, or a failure occurred with the
     /// database.
-    async fn find_by_event_id(
-        &mut self,
-        event_id: Uuid,
-    ) -> Result<Vec<Slot>, ApiError>;
+    async fn find_by_event_id(&mut self, event_id: Uuid) -> Result<Vec<Slot>, ApiError>;
 
     /// Generates slots for an event.
     ///
@@ -123,8 +117,5 @@ pub(crate) trait SlotRepository: Send + Sync + 'static {
     ///
     /// ## Success
     /// A list of slots for the event.
-    async fn generate_event_slots(
-        &mut self,
-        event: &DbEvent
-    ) -> Result<Vec<Slot>, ApiError>;
+    async fn generate_event_slots(&mut self, event: &DbEvent) -> Result<Vec<Slot>, ApiError>;
 }

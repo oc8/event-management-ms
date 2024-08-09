@@ -7,7 +7,7 @@ edition = "2021"
 axum = "0.7.5"
 env_logger = "0.11.3"
 log = "0.4.21"
-protos = { path = "libs/gen" }
+event_protos = { path = "libs/gen" }
 tonic-error = { path = "libs/tonic-error" }
 redis = "0.25.3"
 tokio = { version = "1.37.0", features = ["rt", "rt-multi-thread", "macros"] }

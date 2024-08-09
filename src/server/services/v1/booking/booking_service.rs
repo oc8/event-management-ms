@@ -1,16 +1,19 @@
-use std::sync::{Arc};
 use autometrics::autometrics;
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
-use crate::database::{CacheClient, get_connection, PgPool};
+use crate::database::{get_connection, CacheClient, PgPool};
 
-use autometrics::objectives::{
-    Objective, ObjectiveLatency, ObjectivePercentile
+use crate::server::services::v1::booking::booking_handlers::{
+    create_booking, delete_booking, get_booking_by_id, list_bookings,
 };
-use protos::event::v1::booking_service_server::BookingService;
-use protos::event::v1::{CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse, GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse};
-use crate::server::services::v1::booking::booking_handlers::{create_booking, delete_booking, get_booking_by_id, list_bookings};
 use crate::utils::request_wrapper::RequestMetadata;
+use autometrics::objectives::{Objective, ObjectiveLatency, ObjectivePercentile};
+use event_protos::event::v1::booking_service_server::BookingService;
+use event_protos::event::v1::{
+    CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse,
+    GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse,
+};
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
@@ -32,17 +35,17 @@ impl Clone for BookingServiceServerImpl {
 
 impl BookingServiceServerImpl {
     pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
-        BookingServiceServerImpl {
-            pool,
-            cache,
-        }
+        BookingServiceServerImpl { pool, cache }
     }
 }
 
 #[tonic::async_trait]
 #[autometrics(objective = API_SLO)]
 impl BookingService for BookingServiceServerImpl {
-    async fn create_booking(&self, request: Request<CreateBookingRequest>) -> Result<Response<CreateBookingResponse>, Status> {
+    async fn create_booking(
+        &self,
+        request: Request<CreateBookingRequest>,
+    ) -> Result<Response<CreateBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<CreateBookingRequest> = RequestMetadata {
@@ -50,13 +53,20 @@ impl BookingService for BookingServiceServerImpl {
             request: request.into_inner(),
         };
 
-        create_booking(request_metadata.request, request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        create_booking(
+            request_metadata.request,
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)
+        .map_err(|e| e.into())
     }
 
-    async fn get_booking(&self, request: Request<GetBookingRequest>) -> Result<Response<GetBookingResponse>, Status> {
+    async fn get_booking(
+        &self,
+        request: Request<GetBookingRequest>,
+    ) -> Result<Response<GetBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<GetBookingRequest> = RequestMetadata {
@@ -64,13 +74,20 @@ impl BookingService for BookingServiceServerImpl {
             request: request.into_inner(),
         };
 
-        get_booking_by_id(request_metadata.request, request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        get_booking_by_id(
+            request_metadata.request,
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)
+        .map_err(|e| e.into())
     }
 
-    async fn list_bookings(&self, request: Request<ListBookingsRequest>) -> Result<Response<ListBookingsResponse>, Status> {
+    async fn list_bookings(
+        &self,
+        request: Request<ListBookingsRequest>,
+    ) -> Result<Response<ListBookingsResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
         let request_metadata: RequestMetadata<ListBookingsRequest> = RequestMetadata {
@@ -78,13 +95,20 @@ impl BookingService for BookingServiceServerImpl {
             request: request.into_inner(),
         };
 
-        list_bookings(request_metadata.request, request_metadata.metadata, &mut conn)
-            .await
-            .map(Response::new)
-            .map_err(|e| e.into())
+        list_bookings(
+            request_metadata.request,
+            request_metadata.metadata,
+            &mut conn,
+        )
+        .await
+        .map(Response::new)
+        .map_err(|e| e.into())
     }
 
-    async fn delete_booking(&self, request: Request<DeleteBookingRequest>) -> Result<Response<DeleteBookingResponse>, Status> {
+    async fn delete_booking(
+        &self,
+        request: Request<DeleteBookingRequest>,
+    ) -> Result<Response<DeleteBookingResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
         delete_booking(request.into_inner(), &mut conn)
             .await

@@ -1,6 +1,8 @@
-use protos::event::v1::{CreateClosureRequest, DeleteClosureRequest, Filters, ListClosuresRequest, UpdateClosureRequest};
-use protos::event::v1::closure_service_client::ClosureServiceClient;
 use crate::setup_test_context;
+use event_protos::event::v1::closure_service_client::ClosureServiceClient;
+use event_protos::event::v1::{
+    CreateClosureRequest, DeleteClosureRequest, Filters, ListClosuresRequest, UpdateClosureRequest,
+};
 
 //
 // Create closure tests
@@ -8,7 +10,9 @@ use crate::setup_test_context;
 #[tokio::test]
 async fn create_closure() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_closure", 50200).await;
-    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -29,7 +33,9 @@ async fn create_closure() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn update_closure() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_closure", 50200).await;
-    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let create_request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -56,7 +62,9 @@ async fn update_closure() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn update_closure_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("update_closure_not_found", 50200).await;
-    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(UpdateClosureRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
@@ -83,7 +91,9 @@ async fn update_closure_not_found() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn delete_closure() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_closure", 50200).await;
-    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let create_request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -94,12 +104,13 @@ async fn delete_closure() -> Result<(), Box<dyn std::error::Error>> {
     let create_response = client.create_closure(create_request).await.unwrap();
     let closure_id = create_response.into_inner().closure.unwrap().id;
 
-    let delete_request = tonic::Request::new(DeleteClosureRequest {
-        id: closure_id,
-    });
+    let delete_request = tonic::Request::new(DeleteClosureRequest { id: closure_id });
 
     let delete_response = client.delete_closure(delete_request).await.unwrap();
-    assert_eq!(delete_response.into_inner().message, "Closure deleted successfully");
+    assert_eq!(
+        delete_response.into_inner().message,
+        "Closure deleted successfully"
+    );
 
     tx.send(()).unwrap();
     jh.await.unwrap();
@@ -113,7 +124,9 @@ async fn delete_closure() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn list_closures() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("list_closures", 50200).await;
-    let mut client = ClosureServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = ClosureServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let create_request = tonic::Request::new(CreateClosureRequest {
         closing_from: "2024-05-26T09:00:00Z".to_string(),
@@ -129,7 +142,7 @@ async fn list_closures() -> Result<(), Box<dyn std::error::Error>> {
             from: "2024-05-26".to_string(),
             to: "2024-06-26".to_string(),
             ..Default::default()
-        })
+        }),
     });
 
     let list_response = client.list_closures(list_request).await.unwrap();

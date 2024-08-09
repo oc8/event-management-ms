@@ -1,14 +1,16 @@
+use crate::errors::ApiError;
+use crate::server::services::v1::event::event_model::{
+    DbEvent, Event, EventActions, EventInsert, EventRepository, EventStatus, EventType, EventUpdate,
+};
+use crate::server::services::v1::slot::slot_model::{Slot, SlotRepository};
+use crate::utils::filters::{EventFilters, Filters};
+use crate::{format_datetime, naive_datetime_to_rrule_datetime, report_error, truncate_to_minute};
 use async_trait::async_trait;
 use chrono::{NaiveDate, NaiveDateTime};
+use event_protos::event::v1::{EventStatus as EventStatusProto, EventType as EventTypeProto};
 use rrule::RRuleSet;
 use sqlx::{Acquire, PgConnection, Postgres, QueryBuilder};
 use uuid::Uuid;
-use crate::errors::{ApiError};
-use crate::server::services::v1::event::event_model::{DbEvent, Event, EventActions, EventInsert, EventRepository, EventStatus, EventType, EventUpdate};
-use crate::server::services::v1::slot::slot_model::{Slot, SlotRepository};
-use crate::{format_datetime, naive_datetime_to_rrule_datetime, report_error, truncate_to_minute};
-use crate::utils::filters::{EventFilters, Filters};
-use protos::event::v1::{EventStatus as EventStatusProto, EventType as EventTypeProto};
 
 #[async_trait]
 impl EventRepository for PgConnection {
@@ -48,7 +50,7 @@ impl EventRepository for PgConnection {
 
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.generate_event_slots(&event).await?),
-            _ => None
+            _ => None,
         };
 
         Ok(event.into_event(slots))
@@ -74,7 +76,7 @@ impl EventRepository for PgConnection {
 
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.find_by_event_id(id).await?),
-            _ => None
+            _ => None,
         };
 
         Ok(event.into_event(slots))
@@ -125,14 +127,16 @@ impl EventRepository for PgConnection {
 
         log::debug!("Generated SQL Query: {}", query_builder.sql());
 
-        let events = query_builder.build_query_as::<DbEvent>()
-            .fetch_all(&mut *conn).await?;
+        let events = query_builder
+            .build_query_as::<DbEvent>()
+            .fetch_all(&mut *conn)
+            .await?;
 
         let mut result: Vec<Event> = Vec::new();
         for event in events {
             let slots: Option<Vec<Slot>> = match event.event_type {
                 EventType::Meeting => Some(self.find_by_event_id(event.id).await?),
-                _ => None
+                _ => None,
             };
 
             result.push(event.into_event(slots));
@@ -249,13 +253,14 @@ impl EventRepository for PgConnection {
 
         log::debug!("Generated SQL Query: {}", query_builder.sql());
 
-        let event = query_builder.build_query_as::<DbEvent>()
+        let event = query_builder
+            .build_query_as::<DbEvent>()
             .fetch_one(&mut *conn)
             .await?;
 
         let slots: Option<Vec<Slot>> = match event.event_type {
             EventType::Meeting => Some(self.find_by_event_id(id).await?),
-            _ => None
+            _ => None,
         };
 
         Ok(event.into_event(slots))
@@ -269,8 +274,8 @@ impl EventRepository for PgConnection {
             "#,
             id
         )
-            .execute(self)
-            .await?;
+        .execute(self)
+        .await?;
 
         if result.rows_affected() == 0 {
             return Err(ApiError::NotFound("Event not found".to_string()));
@@ -283,12 +288,20 @@ impl EventRepository for PgConnection {
 }
 
 impl EventActions for Event {
-    fn get_available_dates(&self, start: NaiveDateTime, limit: u16) -> Result<Vec<NaiveDate>, ApiError> {
+    fn get_available_dates(
+        &self,
+        start: NaiveDateTime,
+        limit: u16,
+    ) -> Result<Vec<NaiveDate>, ApiError> {
         if self.recurrence_rule.is_none() {
             return Ok(vec![self.start_time.date()]);
         }
 
-        let recurrence_rule = format!("DTSTART:{}\nRRULE:{}", format_datetime(self.start_time), self.recurrence_rule.clone().unwrap());
+        let recurrence_rule = format!(
+            "DTSTART:{}\nRRULE:{}",
+            format_datetime(self.start_time),
+            self.recurrence_rule.clone().unwrap()
+        );
         let recurrence = recurrence_rule.parse::<RRuleSet>();
 
         log::debug!("Recurrence rule: {}", recurrence_rule);
@@ -297,14 +310,18 @@ impl EventActions for Event {
             Ok(recurrence) => {
                 let after = naive_datetime_to_rrule_datetime(start).unwrap();
                 let rrule = recurrence.after(after);
-                Ok(rrule.all(limit).dates
+                Ok(rrule
+                    .all(limit)
+                    .dates
                     .into_iter()
                     .map(|date| date.naive_utc().date())
                     .collect())
-            },
+            }
             Err(e) => {
                 report_error(&e);
-                Err(ApiError::InvalidRequest("Invalid recurrence rule".to_string()))
+                Err(ApiError::InvalidRequest(
+                    "Invalid recurrence rule".to_string(),
+                ))
             }
         }
     }

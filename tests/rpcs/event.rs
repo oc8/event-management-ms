@@ -1,6 +1,9 @@
-use crate::{setup_test_context};
-use protos::event::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, Event, EventStatus, EventType, GetEventRequest, UpdateEventRequest};
-use protos::event::v1::event_service_client::EventServiceClient;
+use crate::setup_test_context;
+use event_protos::event::v1::event_service_client::EventServiceClient;
+use event_protos::event::v1::{
+    CancelEventRequest, CreateEventRequest, DeleteEventRequest, Event, EventStatus, EventType,
+    GetEventRequest, UpdateEventRequest,
+};
 
 fn assert_event_fields(expected: &CreateEventRequest, actual: &Event) {
     assert_eq!(expected.name, actual.name);
@@ -33,7 +36,9 @@ async fn create_basic_event() -> Result<(), Box<dyn std::error::Error>> {
         event_type: EventType::Event as i32,
     };
     let mut request = tonic::Request::new(create_request.clone());
-    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
+    request
+        .metadata_mut()
+        .insert("timezone", "Europe/Paris".parse()?);
     let response = client.create_event(request).await?;
 
     let event = response.into_inner().event.unwrap();
@@ -54,7 +59,6 @@ async fn get_event_not_found() -> Result<(), Box<dyn std::error::Error>> {
     let request = tonic::Request::new(GetEventRequest {
         id: "7454c93b-5468-4658-91c2-f4daf4ba60fa".to_string(),
     });
-
 
     match client.get_event(request).await {
         Ok(_) => panic!("Expected error"),
@@ -90,10 +94,11 @@ async fn get_event() -> Result<(), Box<dyn std::error::Error>> {
     let event = resp.into_inner().event.unwrap();
 
     let mut request = tonic::Request::new(GetEventRequest {
-        id: event.id.clone()
+        id: event.id.clone(),
     });
-    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
-
+    request
+        .metadata_mut()
+        .insert("timezone", "Europe/Paris".parse()?);
 
     let resp = client.get_event(request).await?;
     let client = resp.into_inner().event.unwrap();
@@ -124,7 +129,9 @@ async fn create_recurrent_event() -> Result<(), Box<dyn std::error::Error>> {
         event_type: EventType::Event as i32,
     };
     let mut request = tonic::Request::new(create_request.clone());
-    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
+    request
+        .metadata_mut()
+        .insert("timezone", "Europe/Paris".parse()?);
     let response = client.create_event(request).await?;
 
     let event = response.into_inner().event.unwrap();
@@ -154,7 +161,9 @@ async fn create_meeting_event() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let mut request = tonic::Request::new(create_request.clone());
-    request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
+    request
+        .metadata_mut()
+        .insert("timezone", "Europe/Paris".parse()?);
     let response = client.create_event(request).await?;
 
     let event = response.into_inner().event.unwrap();
@@ -200,13 +209,21 @@ async fn update_event() -> Result<(), Box<dyn std::error::Error>> {
         slot_capacity: 10,
         recurrence_rule: "".to_string(),
     });
-    update_event_request.metadata_mut().insert("timezone", "Europe/Paris".parse()?);
+    update_event_request
+        .metadata_mut()
+        .insert("timezone", "Europe/Paris".parse()?);
     let update_resp = client.update_event(update_event_request).await?;
     let updated_event = update_resp.into_inner().event.unwrap();
 
     assert_eq!(updated_event.name, "updated-event");
-    assert_eq!(updated_event.start.clone().unwrap().date_time, "2024-05-26T12:00:00+02:00");
-    assert_eq!(updated_event.end.unwrap().date_time, "2024-05-26T13:00:00+02:00");
+    assert_eq!(
+        updated_event.start.clone().unwrap().date_time,
+        "2024-05-26T12:00:00+02:00"
+    );
+    assert_eq!(
+        updated_event.end.unwrap().date_time,
+        "2024-05-26T13:00:00+02:00"
+    );
     assert_eq!(updated_event.capacity, 100);
 
     tx.send(()).unwrap();
@@ -269,7 +286,10 @@ async fn delete_event() -> Result<(), Box<dyn std::error::Error>> {
         id: event.id.clone(),
     });
     let delete_resp = client.delete_event(delete_event_request).await?;
-    assert_eq!(delete_resp.into_inner().message, "Event deleted successfully");
+    assert_eq!(
+        delete_resp.into_inner().message,
+        "Event deleted successfully"
+    );
 
     tx.send(()).unwrap();
     jh.await.unwrap();

@@ -1217,12 +1217,12 @@ dependencies = [
  "chrono-tz 0.9.0",
  "dotenvy",
  "env_logger",
+ "event_protos",
  "futures-util",
  "log",
  "num-derive",
  "num-traits",
  "prost",
- "protos",
  "redis",
  "rrule",
  "serde",
@@ -1238,6 +1238,20 @@ dependencies = [
  "uuid",
  "validator",
  "yaml-rust",
+]
+
+[[package]]
+name = "event_protos"
+version = "0.1.0"
+dependencies = [
+ "apistos",
+ "apistos-schemars",
+ "bytes",
+ "pbjson",
+ "pbjson-types",
+ "prost",
+ "serde",
+ "tonic",
 ]
 
 [[package]]
@@ -2614,20 +2628,6 @@ name = "protobuf"
 version = "2.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "106dd99e98437432fed6519dedecfade6a06a73bb7b2a1e019fdd2bee5778d94"
-
-[[package]]
-name = "protos"
-version = "0.1.0"
-dependencies = [
- "apistos",
- "apistos-schemars",
- "bytes",
- "pbjson",
- "pbjson-types",
- "prost",
- "serde",
- "tonic",
-]
 
 [[package]]
 name = "ptr_meta"

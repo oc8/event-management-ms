@@ -1,17 +1,17 @@
 use std::env;
 use std::sync::Arc;
 
-use ::log::{info, warn};
-use tokio::task::JoinHandle;
-use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
-use protos::event::v1::booking_service_server::BookingServiceServer;
-use protos::event::v1::closure_service_server::ClosureServiceServer;
-use protos::event::v1::event_service_server::EventServiceServer;
 use crate::database::{CacheClient, PgPool};
-use crate::{create_socket_addr, report_error};
 use crate::server::services::v1::booking::booking_service::BookingServiceServerImpl;
 use crate::server::services::v1::closure::closure_service::ClosureServiceServerImpl;
 use crate::server::services::v1::event::event_service::EventServiceServerImpl;
+use crate::{create_socket_addr, report_error};
+use ::log::{info, warn};
+use event_protos::event::v1::booking_service_server::BookingServiceServer;
+use event_protos::event::v1::closure_service_server::ClosureServiceServer;
+use event_protos::event::v1::event_service_server::EventServiceServer;
+use tokio::task::JoinHandle;
+use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 
 pub struct TonicServer {
     pub handle: JoinHandle<()>,
@@ -53,7 +53,7 @@ pub fn start_server(
     let grpc_closure_service = ClosureServiceServer::new(closure_service);
 
     let reflect = tonic_reflection::server::Builder::configure()
-        .register_encoded_file_descriptor_set(protos::event::v1::FILE_DESCRIPTOR_SET)
+        .register_encoded_file_descriptor_set(event_protos::event::v1::FILE_DESCRIPTOR_SET)
         .build()
         .unwrap();
 

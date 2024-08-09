@@ -1,7 +1,7 @@
-use chrono::NaiveDateTime;
-use uuid::Uuid;
-use protos::event::v1::{EventStatus, EventType, Filters as FiltersProto};
 use crate::errors::{ValidationErrorKind, ValidationErrorMessage};
+use chrono::NaiveDateTime;
+use event_protos::event::v1::{EventStatus, EventType, Filters as FiltersProto};
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct Filters<T> {
@@ -53,10 +53,7 @@ impl AdditionalFilterFields for EventFilters {
         _: Option<String>,
         _: Option<Uuid>,
     ) -> Self {
-        EventFilters {
-            status,
-            event_type,
-        }
+        EventFilters { status, event_type }
     }
 }
 
@@ -83,7 +80,7 @@ impl AdditionalFilterFields for BookingFilters {
 }
 
 #[derive(Default, Debug, Clone)]
-pub struct ClosureFilters { }
+pub struct ClosureFilters {}
 
 impl AdditionalFilterFields for ClosureFilters {
     type TypeFilters = Self;
@@ -94,36 +91,44 @@ impl AdditionalFilterFields for ClosureFilters {
         _: Option<String>, // Placeholder for BookingFilters fields
         _: Option<Uuid>,
     ) -> Self {
-        ClosureFilters { }
+        ClosureFilters {}
     }
 }
 
 impl<T> From<Option<FiltersProto>> for Filters<T>
-    where
-        T: AdditionalFilterFields<TypeFilters = T>,
-        T::TypeFilters: Default,
+where
+    T: AdditionalFilterFields<TypeFilters = T>,
+    T::TypeFilters: Default,
 {
     fn from(proto: Option<FiltersProto>) -> Self {
         let proto = proto.unwrap();
 
         let from = match proto.from.is_empty() {
             true => chrono::Utc::now().naive_utc(),
-            false => NaiveDateTime::parse_from_str(format!("{}T00:00:00", proto.from).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap()
+            false => NaiveDateTime::parse_from_str(
+                format!("{}T00:00:00", proto.from).as_str(),
+                "%Y-%m-%dT%H:%M:%S",
+            )
+            .unwrap(),
         };
 
         let to = match proto.to.is_empty() {
             true => from + chrono::Duration::days(7),
-            false => NaiveDateTime::parse_from_str(format!("{}T23:59:59", proto.to).as_str(), "%Y-%m-%dT%H:%M:%S").unwrap()
+            false => NaiveDateTime::parse_from_str(
+                format!("{}T23:59:59", proto.to).as_str(),
+                "%Y-%m-%dT%H:%M:%S",
+            )
+            .unwrap(),
         };
 
         let organizer_key = match proto.organizer_key.is_empty() {
             true => None,
-            false => Some(proto.organizer_key)
+            false => Some(proto.organizer_key),
         };
 
         let slot_id = match proto.slot_id.is_empty() {
             true => None,
-            false => Some(Uuid::parse_str(proto.slot_id.as_str()).unwrap())
+            false => Some(Uuid::parse_str(proto.slot_id.as_str()).unwrap()),
         };
 
         let type_filters = T::create_type_filters(
@@ -142,7 +147,9 @@ impl<T> From<Option<FiltersProto>> for Filters<T>
     }
 }
 
-pub fn validate_date_filters(filters: &Option<FiltersProto>) -> Result<(), Vec<ValidationErrorKind>> {
+pub fn validate_date_filters(
+    filters: &Option<FiltersProto>,
+) -> Result<(), Vec<ValidationErrorKind>> {
     if filters.is_none() {
         return Ok(());
     }
@@ -155,7 +162,10 @@ pub fn validate_date_filters(filters: &Option<FiltersProto>) -> Result<(), Vec<V
     if !filters.from.is_empty() {
         match from {
             Ok(_) => (),
-            Err(_) => errors.push(ValidationErrorKind::InvalidFormat("filters.from".to_string(), ValidationErrorMessage::InvalidDateTime()))
+            Err(_) => errors.push(ValidationErrorKind::InvalidFormat(
+                "filters.from".to_string(),
+                ValidationErrorMessage::InvalidDateTime(),
+            )),
         }
     }
 
@@ -163,25 +173,34 @@ pub fn validate_date_filters(filters: &Option<FiltersProto>) -> Result<(), Vec<V
     if !filters.to.is_empty() {
         match to {
             Ok(_) => (),
-            Err(_) => errors.push(ValidationErrorKind::InvalidFormat("filters.to".to_string(), ValidationErrorMessage::InvalidDateTime()))
+            Err(_) => errors.push(ValidationErrorKind::InvalidFormat(
+                "filters.to".to_string(),
+                ValidationErrorMessage::InvalidDateTime(),
+            )),
         }
     }
 
     if !from.is_err() && !to.is_err() {
         if from.unwrap() > to.unwrap() {
-            errors.push(ValidationErrorKind::InvalidDateRange("from, to".to_string(), "from must be before to".to_string()))
+            errors.push(ValidationErrorKind::InvalidDateRange(
+                "from, to".to_string(),
+                "from must be before to".to_string(),
+            ))
         }
     }
 
     if !filters.slot_id.is_empty() {
         match Uuid::parse_str(filters.slot_id.as_str()) {
             Ok(_) => (),
-            Err(_) => errors.push(ValidationErrorKind::InvalidFormat("filters.slot_id".to_string(), ValidationErrorMessage::InvalidUuid()))
+            Err(_) => errors.push(ValidationErrorKind::InvalidFormat(
+                "filters.slot_id".to_string(),
+                ValidationErrorMessage::InvalidUuid(),
+            )),
         }
     }
 
     if !errors.is_empty() {
-        return Err(errors)
+        return Err(errors);
     }
 
     Ok(())

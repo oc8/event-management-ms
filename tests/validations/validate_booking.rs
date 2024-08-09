@@ -1,11 +1,15 @@
-use protos::event::v1::booking_service_client::BookingServiceClient;
-use protos::event::v1::{CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest};
 use crate::setup_test_context;
+use event_protos::event::v1::booking_service_client::BookingServiceClient;
+use event_protos::event::v1::{
+    CreateBookingRequest, DeleteBookingRequest, GetBookingRequest, ListBookingsRequest,
+};
 
 #[tokio::test]
 async fn create_booking_invalid_slot_id() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_booking_invalid_slot_id", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(CreateBookingRequest {
         slot_id: "invalid-slot-id".to_string(),
@@ -30,7 +34,9 @@ async fn create_booking_invalid_slot_id() -> Result<(), Box<dyn std::error::Erro
 #[tokio::test]
 async fn create_booking_invalid_datetime() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_booking_invalid_datetime", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(CreateBookingRequest {
         slot_id: "valid-slot-id".to_string(),
@@ -55,7 +61,9 @@ async fn create_booking_invalid_datetime() -> Result<(), Box<dyn std::error::Err
 #[tokio::test]
 async fn create_booking_invalid_persons_number() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("create_booking_invalid_persons_number", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(CreateBookingRequest {
         slot_id: "valid-slot-id".to_string(),
@@ -80,7 +88,9 @@ async fn create_booking_invalid_persons_number() -> Result<(), Box<dyn std::erro
 #[tokio::test]
 async fn get_booking_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("get_booking_invalid_id", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(GetBookingRequest {
         id: "invalid-id".to_string(),
@@ -102,7 +112,9 @@ async fn get_booking_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn delete_booking_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("delete_booking_invalid_id", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(DeleteBookingRequest {
         id: "invalid-id".to_string(),
@@ -124,10 +136,12 @@ async fn delete_booking_invalid_id() -> Result<(), Box<dyn std::error::Error>> {
 #[tokio::test]
 async fn list_bookings_invalid_filters() -> Result<(), Box<dyn std::error::Error>> {
     let (ctx, tx, jh) = setup_test_context("list_bookings_invalid_filters", 50200).await;
-    let mut client = BookingServiceClient::connect(ctx.url.clone()).await.unwrap();
+    let mut client = BookingServiceClient::connect(ctx.url.clone())
+        .await
+        .unwrap();
 
     let request = tonic::Request::new(ListBookingsRequest {
-        filters: Some(protos::event::v1::Filters {
+        filters: Some(event_protos::event::v1::Filters {
             organizer_key: "".to_string(),
             ..Default::default()
         }),
