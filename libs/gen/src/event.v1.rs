@@ -1,4 +1,8 @@
+use apistos::ApiComponent;
+use schemars::JsonSchema;
+
 // @generated
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TimeData {
@@ -7,6 +11,7 @@ pub struct TimeData {
     #[prost(string, tag="2")]
     pub date_time: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Slot {
@@ -27,6 +32,7 @@ pub struct Slot {
     #[prost(int64, tag="8")]
     pub updated_at: i64,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum SlotStatus {
@@ -59,6 +65,7 @@ impl SlotStatus {
         }
     }
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Filters {
@@ -77,6 +84,7 @@ pub struct Filters {
     #[prost(string, tag="9")]
     pub slot_id: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Event {
@@ -111,6 +119,7 @@ pub struct Event {
     #[prost(int64, tag="15")]
     pub updated_at: i64,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Cancellation {
@@ -121,6 +130,7 @@ pub struct Cancellation {
     #[prost(message, optional, tag="3")]
     pub created_at: ::core::option::Option<TimeData>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateEventRequest {
@@ -143,36 +153,42 @@ pub struct CreateEventRequest {
     #[prost(enumeration="EventType", tag="10")]
     pub event_type: i32,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateEventResponse {
     #[prost(message, optional, tag="1")]
     pub event: ::core::option::Option<Event>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetEventRequest {
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetEventResponse {
     #[prost(message, optional, tag="1")]
     pub event: ::core::option::Option<Event>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListEventsRequest {
     #[prost(message, optional, tag="1")]
     pub filters: ::core::option::Option<Filters>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListEventsResponse {
     #[prost(message, repeated, tag="1")]
     pub events: ::prost::alloc::vec::Vec<Event>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UpdateEventRequest {
@@ -191,24 +207,28 @@ pub struct UpdateEventRequest {
     #[prost(string, tag="9")]
     pub recurrence_rule: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UpdateEventResponse {
     #[prost(message, optional, tag="1")]
     pub event: ::core::option::Option<Event>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteEventRequest {
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteEventResponse {
     #[prost(string, tag="1")]
     pub message: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CancelEventRequest {
@@ -219,24 +239,28 @@ pub struct CancelEventRequest {
     #[prost(string, tag="3")]
     pub reason: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CancelEventResponse {
     #[prost(message, optional, tag="1")]
     pub event: ::core::option::Option<Event>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetTimelineRequest {
     #[prost(message, optional, tag="1")]
     pub filters: ::core::option::Option<Filters>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetTimelineResponse {
     #[prost(message, repeated, tag="1")]
     pub events: ::prost::alloc::vec::Vec<Event>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum EventStatus {
@@ -275,6 +299,7 @@ impl EventStatus {
         }
     }
 }
+#[derive(JsonSchema, ApiComponent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum EventType {
@@ -307,6 +332,7 @@ impl EventType {
         }
     }
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Booking {
@@ -327,6 +353,7 @@ pub struct Booking {
     #[prost(int64, tag="8")]
     pub updated_at: i64,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateBookingRequest {
@@ -339,48 +366,56 @@ pub struct CreateBookingRequest {
     #[prost(int32, tag="4")]
     pub persons: i32,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateBookingResponse {
     #[prost(message, optional, tag="1")]
     pub booking: ::core::option::Option<Booking>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetBookingRequest {
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetBookingResponse {
     #[prost(message, optional, tag="1")]
     pub booking: ::core::option::Option<Booking>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteBookingRequest {
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteBookingResponse {
     #[prost(string, tag="1")]
     pub message: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListBookingsRequest {
     #[prost(message, optional, tag="1")]
     pub filters: ::core::option::Option<Filters>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListBookingsResponse {
     #[prost(message, repeated, tag="1")]
     pub bookings: ::prost::alloc::vec::Vec<Booking>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Closure {
@@ -397,6 +432,7 @@ pub struct Closure {
     #[prost(int64, tag="7")]
     pub updated_at: i64,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateClosureRequest {
@@ -407,12 +443,14 @@ pub struct CreateClosureRequest {
     #[prost(string, tag="3")]
     pub organizer_key: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateClosureResponse {
     #[prost(message, optional, tag="1")]
     pub closure: ::core::option::Option<Closure>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UpdateClosureRequest {
@@ -423,30 +461,35 @@ pub struct UpdateClosureRequest {
     #[prost(string, tag="3")]
     pub closing_to: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UpdateClosureResponse {
     #[prost(message, optional, tag="1")]
     pub closure: ::core::option::Option<Closure>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteClosureRequest {
     #[prost(string, tag="1")]
     pub id: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeleteClosureResponse {
     #[prost(string, tag="1")]
     pub message: ::prost::alloc::string::String,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListClosuresRequest {
     #[prost(message, optional, tag="1")]
     pub filters: ::core::option::Option<Filters>,
 }
+#[derive(JsonSchema, ApiComponent)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListClosuresResponse {
