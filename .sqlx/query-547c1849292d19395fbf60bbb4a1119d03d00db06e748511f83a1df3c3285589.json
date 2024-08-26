@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH RECURSIVE slot_times AS (\n                SELECT\n                $1::TIMESTAMP AS slot_start_time,\n                $1::TIMESTAMP + INTERVAL '1 minute' * $3 AS slot_end_time\n                UNION ALL\n                SELECT\n                slot_end_time,\n                slot_end_time + INTERVAL '1 minute' * $3\n                FROM\n                slot_times\n                WHERE\n                slot_end_time < $2\n            )\n            INSERT INTO event_slot (event_id, start_time, end_time, capacity)\n            SELECT\n            $4 AS event_id,\n            slot_start_time,\n            slot_end_time,\n            $5 AS capacity\n            FROM\n            slot_times\n            RETURNING *;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "event_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "start_time",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 3,
+        "name": "end_time",
+        "type_info": "Time"
+      },
+      {
+        "ordinal": 4,
+        "name": "capacity",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamp",
+        "Timestamp",
+        "Float8",
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "547c1849292d19395fbf60bbb4a1119d03d00db06e748511f83a1df3c3285589"
+}

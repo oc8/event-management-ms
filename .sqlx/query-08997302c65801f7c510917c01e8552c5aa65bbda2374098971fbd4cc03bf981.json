@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT SUM(booking.persons)\n             FROM booking\n             INNER JOIN event_slot ON booking.slot_id = event_slot.id\n             WHERE event_slot.event_id = $1\n               AND booking.date_time >= $2\n               AND booking.date_time <= $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sum",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamp",
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "08997302c65801f7c510917c01e8552c5aa65bbda2374098971fbd4cc03bf981"
+}
