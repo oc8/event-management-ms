@@ -1,7 +1,7 @@
 use crate::errors::ApiError;
 use crate::server::services::v1::booking::booking_model::Booking;
 use crate::server::services::v1::closure::closure_model::Closure;
-use crate::server::services::v1::event::event_model::{Event, EventStatus};
+use crate::server::services::v1::event::event_model::{Event, EventStatus, EventType};
 use crate::{add_time_to_datetime, format_datetime, naive_datetime_to_rrule_datetime};
 use chrono::NaiveDateTime;
 use event_protos::event::v1::SlotStatus;
@@ -51,51 +51,53 @@ impl Timeline {
                     ve.end_time = d.naive_utc() + (ve.end_time - ve.start_time);
                     ve.start_time = d.naive_utc();
 
-                    let mut event_slots = event.clone().slots.unwrap();
-                    if event.slots.is_some() {
-                        event_slots.iter_mut().for_each(|slot| {
-                            let slot_start = add_time_to_datetime(ve.start_time, slot.start_time);
-                            let slot_end = add_time_to_datetime(ve.end_time, slot.end_time);
+                    if event.event_type == EventType::Meeting {
+                        let mut event_slots = event.clone().slots.unwrap();
+                        if event.slots.is_some() {
+                            event_slots.iter_mut().for_each(|slot| {
+                                let slot_start = add_time_to_datetime(ve.start_time, slot.start_time);
+                                let slot_end = add_time_to_datetime(ve.end_time, slot.end_time);
 
-                            if event.status == EventStatus::Canceled
-                                || event.status == EventStatus::Disabled
-                            {
-                                slot.status = SlotStatus::Closed;
-                                return;
-                            }
-
-                            log::debug!("closures: {:?}", self.closures);
-
-                            // Check if the slot is within the closure
-                            let is_closed = self.closures.iter().any(|closure| {
-                                let closure_start = closure.closing_from;
-                                let closure_end = closure.closing_to;
-                                log::debug!(
-                                    "closure_start: {}, closure_end: {}, closed: {}",
-                                    closure.closing_from,
-                                    closure.closing_to,
-                                    slot_start >= closure_start && slot_end <= closure_end
-                                );
-                                slot_start >= closure_start && slot_end <= closure_end
-                            });
-
-                            // Check if slot is fully booked
-                            if !is_closed {
-                                if let Some(booking) =
-                                    self.bookings.iter().find(|b| b.slot_id == slot.id)
+                                if event.status == EventStatus::Canceled
+                                    || event.status == EventStatus::Disabled
                                 {
-                                    let booking_start = booking.date_time;
-                                    if booking_start >= slot_start && booking_start <= slot_end {
-                                        slot.status = SlotStatus::Full;
-                                    }
+                                    slot.status = SlotStatus::Closed;
+                                    return;
                                 }
-                            } else {
-                                slot.status = SlotStatus::Closed;
-                            }
-                        });
-                    }
 
-                    ve.slots = Some(event_slots.clone());
+                                log::debug!("closures: {:?}", self.closures);
+
+                                // Check if the slot is within the closure
+                                let is_closed = self.closures.iter().any(|closure| {
+                                    let closure_start = closure.closing_from;
+                                    let closure_end = closure.closing_to;
+                                    log::debug!(
+                                        "closure_start: {}, closure_end: {}, closed: {}",
+                                        closure.closing_from,
+                                        closure.closing_to,
+                                        slot_start >= closure_start && slot_end <= closure_end
+                                    );
+                                    slot_start >= closure_start && slot_end <= closure_end
+                                });
+
+                                // Check if slot is fully booked
+                                if !is_closed {
+                                    if let Some(booking) =
+                                        self.bookings.iter().find(|b| b.slot_id == slot.id)
+                                    {
+                                        let booking_start = booking.date_time;
+                                        if booking_start >= slot_start && booking_start <= slot_end {
+                                            slot.status = SlotStatus::Full;
+                                        }
+                                    }
+                                } else {
+                                    slot.status = SlotStatus::Closed;
+                                }
+                            });
+                        }
+
+                        ve.slots = Some(event_slots.clone());
+                    }
 
                     let is_closed = self.closures.iter().any(|closure| {
                         let closure_start = closure.closing_from;
