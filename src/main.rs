@@ -24,6 +24,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut cache_client: Option<CacheClient> = None;
 
     if cfg.enable_cache {
+        if cfg.redis_hostname.is_empty() {
+            log::error!("Cache is enabled but no Redis hostname is provided");
+            std::process::exit(1);
+        }
+
         let uri_scheme = match cfg.redis_tls {
             true => "rediss",
             false => "redis",
