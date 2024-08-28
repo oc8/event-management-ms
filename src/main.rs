@@ -1,10 +1,9 @@
-use std::env;
 use std::sync::Arc;
 
 use axum::{routing::get, Router};
 use autometrics::prometheus_exporter;
 use dotenvy::dotenv;
-use event_ms::{create_socket_addr, database, init_service_logging};
+use event_ms::{create_socket_addr, database, init_service_logging, Config};
 use event_ms::database::CacheClient;
 use event_ms::server::start_server;
 
@@ -14,35 +13,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_service_logging();
     prometheus_exporter::init();
 
-    // Set up the database connection
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let cfg = Config::from_env().expect("Failed to load configuration");
 
-    let pool = database::connect(&database_url)
+    // Set up the database connection
+    let pool = database::connect(&cfg)
         .await
         .expect("Couldn't connect to the database");
 
     // Set up the Redis connection
-    let uri_scheme = match env::var("REDIS_TLS").unwrap_or_default().parse::<bool>() {
-        Ok(bool) => if bool { "rediss" } else { "redis" },
-        Err(_) => "redis",
+    let uri_scheme = match cfg.redis_tls {
+        true => "rediss",
+        false => "redis",
     };
 
-    let redis_host = env::var("REDIS_HOSTNAME").expect("REDIS_HOSTNAME must be set");
-    let redis_pass = env::var("REDIS_PASSWORD").unwrap_or_default();
-    let redis_conn_url = format!("{}://:{}@{}", uri_scheme, redis_pass, redis_host);
+    let redis_conn_url = format!("{}://:{}@{}", uri_scheme, cfg.redis_password, cfg.redis_hostname);
+    log::info!("Connecting to Redis at {}", redis_conn_url);
     let r_client = database::connect_redis(redis_conn_url)
         .expect("Couldn't connect to Redis");
 
     // Start the gRPC server
-    let port = env::var("PORT").unwrap_or_else(|_| "50051".to_string()).parse().expect("PORT must be a number");
-    let cache_ttl = env::var("CACHE_TTL").unwrap_or_else(|_| "60".to_string()).parse::<u64>().expect("CACHE_TTL must be a number");
-
-    let cache_client = CacheClient::new(r_client, cache_ttl);
+    let cache_client = CacheClient::new(r_client, cfg.cache_ttl);
 
     let _server = start_server(
+        cfg.clone(),
         Arc::new(pool),
-        cache_client,
-        port
+        cache_client
     );
 
     let app = Router::new().route(
@@ -50,10 +45,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         get(|| async { prometheus_exporter::encode_http_response() }),
     );
 
-    let metrics_port: u16 = env::var("METRICS_PORT").unwrap_or_else(|_| "3000".to_string()).parse().expect("METRICS_PORT must be a number");
-    let metrics_addr = create_socket_addr(metrics_port);
+    let metrics_addr = create_socket_addr(cfg.metrics_port, cfg.enable_ipv6);
     let listener = tokio::net::TcpListener::bind(metrics_addr).await.unwrap();
-    log::info!("Metrics server listening on port {}", metrics_port);
+    log::info!("Metrics server listening on port {}", cfg.metrics_port);
     axum::serve(listener, app).await.unwrap();
 
     // TODO: fix ghost process on mac ctrl+c

@@ -1,11 +1,10 @@
-use std::env;
 use std::sync::Arc;
 
 use crate::database::{CacheClient, PgPool};
 use crate::server::services::v1::booking::booking_service::BookingServiceServerImpl;
 use crate::server::services::v1::closure::closure_service::ClosureServiceServerImpl;
 use crate::server::services::v1::event::event_service::EventServiceServerImpl;
-use crate::{create_socket_addr, report_error};
+use crate::{create_socket_addr, report_error, Config};
 use ::log::{info, warn};
 use event_protos::event::v1::booking_service_server::BookingServiceServer;
 use event_protos::event::v1::closure_service_server::ClosureServiceServer;
@@ -19,15 +18,15 @@ pub struct TonicServer {
 }
 
 pub fn start_server(
+    cfg: Config,
     pool: Arc<PgPool>,
     cache_client: CacheClient,
-    port: u16,
 ) -> Result<TonicServer, Box<dyn std::error::Error>> {
     let booking_service = BookingServiceServerImpl::new(pool.clone(), cache_client.clone());
     let event_service = EventServiceServerImpl::new(pool.clone(), cache_client.clone());
     let closure_service = ClosureServiceServerImpl::new(pool.clone(), cache_client.clone());
 
-    let (mut tonic_server, secure_mode) = match get_tls_config() {
+    let (mut tonic_server, secure_mode) = match get_tls_config(cfg.clone()) {
         Some(tls) => {
             info!("Configuring TLS...");
             match Server::builder().tls_config(tls) {
@@ -64,12 +63,12 @@ pub fn start_server(
         .add_service(grpc_closure_service);
 
     let server = tokio::spawn(async move {
-        let tonic_addr = create_socket_addr(port);
-        info!("Starting server on port {}", port);
+        let tonic_addr = create_socket_addr(cfg.port, cfg.redis_tls);
+        info!("Starting server on port {}", cfg.port);
         match tonic_router.serve(tonic_addr).await {
             Ok(_) => info!("Server finished on {}", tonic_addr),
             Err(e) => {
-                warn!("Unable to start server on port {}", port);
+                warn!("Unable to start server on port {}", cfg.port);
                 report_error(&e);
             }
         };
@@ -82,12 +81,8 @@ pub fn start_server(
     })
 }
 
-fn get_tls_config() -> Option<ServerTlsConfig> {
-    let cert = env::var("TLS_CERT").ok();
-    let key = env::var("TLS_KEY").ok();
-    let ca_cert = env::var("CA_CERT").ok();
-
-    match (cert, key, ca_cert) {
+fn get_tls_config(cfg: Config) -> Option<ServerTlsConfig> {
+    match (cfg.tls_cert, cfg.tls_key, cfg.ca_cert) {
         (Some(cert), Some(key), Some(ca_cert)) => {
             info!("Configuring TLS with custom CA...");
             Some(
