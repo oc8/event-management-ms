@@ -14,28 +14,31 @@ use event_protos::event::v1::{
     CreateBookingRequest, CreateBookingResponse, DeleteBookingRequest, DeleteBookingResponse,
     GetBookingRequest, GetBookingResponse, ListBookingsRequest, ListBookingsResponse,
 };
+use crate::Config;
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
     .latency(ObjectiveLatency::Ms250, ObjectivePercentile::P99);
 
 pub struct BookingServiceServerImpl {
+    pub cfg: Config,
     pub pool: Arc<PgPool>,
-    pub cache: CacheClient,
+    pub cache: Arc<Option<CacheClient>>,
 }
 
 impl Clone for BookingServiceServerImpl {
     fn clone(&self) -> Self {
         BookingServiceServerImpl {
+            cfg: self.cfg.clone(),
             pool: Arc::clone(&self.pool),
-            cache: self.cache.clone(),
+            cache: Arc::clone(&self.cache),
         }
     }
 }
 
 impl BookingServiceServerImpl {
-    pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
-        BookingServiceServerImpl { pool, cache }
+    pub(crate) fn new(cfg: Config, pool: Arc<PgPool>, cache: Arc<Option<CacheClient>>) -> Self {
+        BookingServiceServerImpl { cfg, pool, cache }
     }
 }
 

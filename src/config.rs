@@ -10,6 +10,7 @@ pub struct Config {
     pub redis_hostname: String,
     pub redis_password: String,
     pub redis_tls: bool,
+    pub enable_cache: bool,
     pub cache_ttl: u64,
     pub enable_ipv6: bool,
     pub port: u16,
@@ -32,6 +33,7 @@ impl Config {
             .set_default("database_max_connections", 16).unwrap()
             .set_default("database_max_lifetime", 3600).unwrap()
             .set_default("cache_ttl", 60).unwrap()
+            .set_default("enable_cache", false).unwrap()
             .set_default("enable_ipv6", false).unwrap()
             .set_default("port", 50051).unwrap()
             .set_default("metrics_port", 3000).unwrap()

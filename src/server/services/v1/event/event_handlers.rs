@@ -69,7 +69,7 @@ pub async fn create_event(
 }
 
 pub async fn get_event_by_id(
-    request: GetEventRequest,
+    request: &GetEventRequest,
     meta: &MetadataMap,
     conn: &mut PgPooledConnection,
 ) -> Result<GetEventResponse, ApiError> {

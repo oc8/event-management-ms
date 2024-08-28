@@ -20,11 +20,11 @@ pub struct TonicServer {
 pub fn start_server(
     cfg: Config,
     pool: Arc<PgPool>,
-    cache_client: CacheClient,
+    cache_client: Arc<Option<CacheClient>>,
 ) -> Result<TonicServer, Box<dyn std::error::Error>> {
-    let booking_service = BookingServiceServerImpl::new(pool.clone(), cache_client.clone());
-    let event_service = EventServiceServerImpl::new(pool.clone(), cache_client.clone());
-    let closure_service = ClosureServiceServerImpl::new(pool.clone(), cache_client.clone());
+    let booking_service = BookingServiceServerImpl::new(cfg.clone(), pool.clone(), cache_client.clone());
+    let event_service = EventServiceServerImpl::new(cfg.clone(), pool.clone(), cache_client.clone());
+    let closure_service = ClosureServiceServerImpl::new(cfg.clone(), pool.clone(), cache_client.clone());
 
     let (mut tonic_server, secure_mode) = match get_tls_config(cfg.clone()) {
         Some(tls) => {

@@ -17,28 +17,31 @@ use event_protos::event::v1::{
     GetTimelineResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest,
     UpdateEventResponse,
 };
+use crate::Config;
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
     .latency(ObjectiveLatency::Ms250, ObjectivePercentile::P99);
 
 pub struct EventServiceServerImpl {
+    pub cfg: Config,
     pub pool: Arc<PgPool>,
-    pub cache: CacheClient,
+    pub cache: Arc<Option<CacheClient>>,
 }
 
 impl Clone for EventServiceServerImpl {
     fn clone(&self) -> Self {
         EventServiceServerImpl {
+            cfg: self.cfg.clone(),
             pool: Arc::clone(&self.pool),
-            cache: self.cache.clone(),
+            cache: Arc::clone(&self.cache),
         }
     }
 }
 
 impl EventServiceServerImpl {
-    pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
-        EventServiceServerImpl { pool, cache }
+    pub(crate) fn new(cfg: Config, pool: Arc<PgPool>, cache: Arc<Option<CacheClient>>) -> Self {
+        EventServiceServerImpl { cfg, pool, cache }
     }
 }
 
@@ -61,13 +64,15 @@ impl EventService for EventServiceServerImpl {
             request_metadata.metadata,
             &mut conn,
         )
-        .await
-        .map(Response::new)?;
+            .await
+            .map(Response::new)?;
 
-        let inner_response = response.get_ref();
-        self.cache
-            .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
-            .await?;
+        if let Some(cache) = &*self.cache {
+            let inner_response = response.get_ref();
+            cache
+                .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
+                .await?;
+        }
 
         Ok(response)
     }
@@ -78,23 +83,27 @@ impl EventService for EventServiceServerImpl {
     ) -> Result<Response<GetEventResponse>, Status> {
         let mut conn = get_connection(&self.pool).await?;
 
-        let request_metadata: RequestMetadata<GetEventRequest> = RequestMetadata {
+        let request_metadata = RequestMetadata {
             metadata: &request.metadata().clone(),
             request: request.into_inner(),
         };
 
-        self.cache
-            .handle_cache("get_event", &request_metadata.clone(), || async move {
-                get_event_by_id(
-                    request_metadata.request,
-                    request_metadata.metadata,
-                    &mut conn,
-                )
-                .await
-                .map(Response::new)
-                .map_err(|e| e.into())
-            })
-            .await
+        let fetch_event = {
+            let request_metadata = request_metadata.clone();
+             move || async move {
+                get_event_by_id(&request_metadata.request, &request_metadata.metadata, &mut conn)
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        };
+
+        match &*self.cache {
+            Some(cache) => {
+                cache.handle_cache("get_event", &request_metadata, fetch_event).await
+            }
+            None => fetch_event().await,
+        }
     }
 
     async fn list_events(
@@ -108,18 +117,26 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache
-            .handle_cache("list_events", &request_metadata.clone(), || async move {
+        let list_events = {
+            let request_metadata = request_metadata.clone();
+            move || async move {
                 list_events(
-                    request_metadata.request,
-                    request_metadata.metadata,
-                    &mut conn,
-                )
+                request_metadata.request,
+                request_metadata.metadata,
+                &mut conn,
+            )
                 .await
                 .map(Response::new)
                 .map_err(|e| e.into())
-            })
-            .await
+            }
+        };
+
+        match &*self.cache {
+            Some(cache) => {
+                cache.handle_cache("list_events", &request_metadata, list_events).await
+            }
+            None => list_events().await,
+        }
     }
 
     async fn update_event(
@@ -141,19 +158,21 @@ impl EventService for EventServiceServerImpl {
         .await
         .map(Response::new)?;
 
-        self.cache
-            .invalid_cache(
-                "get_event",
-                &GetEventRequest {
-                    id: request_metadata.request.id.clone(),
-                },
-            )
-            .await?;
+        if let Some(cache) = &*self.cache {
+            cache
+                .invalid_cache(
+                    "get_event",
+                    &GetEventRequest {
+                        id: request_metadata.request.id.clone(),
+                    },
+                )
+                .await?;
 
-        let inner_response = response.get_ref();
-        self.cache
-            .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
-            .await?;
+            let inner_response = response.get_ref();
+            cache
+                .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
+                .await?;
+        }
 
         Ok(response)
     }
@@ -195,19 +214,21 @@ impl EventService for EventServiceServerImpl {
         .await
         .map(Response::new)?;
 
-        self.cache
-            .invalid_cache(
-                "get_event",
-                &GetEventRequest {
-                    id: request_metadata.request.id.clone(),
-                },
-            )
-            .await?;
+        if let Some(cache) = &*self.cache {
+            cache
+                .invalid_cache(
+                    "get_event",
+                    &GetEventRequest {
+                        id: request_metadata.request.id.clone(),
+                    },
+                )
+                .await?;
 
-        let inner_response = response.get_ref();
-        self.cache
-            .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
-            .await?;
+            let inner_response = response.get_ref();
+            cache
+                .invalidate_related_cache_keys(inner_response.clone().event.unwrap().organizer_key)
+                .await?;
+        }
 
         Ok(response)
     }
@@ -223,17 +244,25 @@ impl EventService for EventServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache
-            .handle_cache("list_events", &request_metadata.clone(), || async move {
+        let get_timeline = {
+            let request_metadata = request_metadata.clone();
+            move || async move {
                 get_timeline(
                     request_metadata.request,
                     request_metadata.metadata,
                     &mut conn,
                 )
-                .await
-                .map(Response::new)
-                .map_err(|e| e.into())
-            })
-            .await
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        };
+
+        match &*self.cache {
+            Some(cache) => {
+                cache.handle_cache("get_timeline", &request_metadata, get_timeline).await
+            }
+            None => get_timeline().await,
+        }
     }
 }

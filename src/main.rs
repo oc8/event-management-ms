@@ -21,23 +21,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("Couldn't connect to the database");
 
     // Set up the Redis connection
-    let uri_scheme = match cfg.redis_tls {
-        true => "rediss",
-        false => "redis",
+    let mut cache_client: Option<CacheClient> = None;
+
+    if cfg.enable_cache {
+        let uri_scheme = match cfg.redis_tls {
+            true => "rediss",
+            false => "redis",
+        };
+
+        let redis_conn_url = format!("{}://:{}@{}", uri_scheme, cfg.redis_password, cfg.redis_hostname);
+        log::info!("Connecting to Redis at {}", redis_conn_url);
+        let r_client = database::connect_redis(redis_conn_url)
+            .expect("Couldn't connect to Redis");
+
+        cache_client = Some(CacheClient::new(r_client, cfg.cache_ttl))
     };
 
-    let redis_conn_url = format!("{}://:{}@{}", uri_scheme, cfg.redis_password, cfg.redis_hostname);
-    log::info!("Connecting to Redis at {}", redis_conn_url);
-    let r_client = database::connect_redis(redis_conn_url)
-        .expect("Couldn't connect to Redis");
-
     // Start the gRPC server
-    let cache_client = CacheClient::new(r_client, cfg.cache_ttl);
-
     let _server = start_server(
         cfg.clone(),
         Arc::new(pool),
-        cache_client
+        Arc::new(cache_client)
     );
 
     let app = Router::new().route(

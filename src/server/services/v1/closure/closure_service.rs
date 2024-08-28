@@ -14,28 +14,31 @@ use event_protos::event::v1::{
     CreateClosureRequest, CreateClosureResponse, DeleteClosureRequest, DeleteClosureResponse,
     ListClosuresRequest, ListClosuresResponse, UpdateClosureRequest, UpdateClosureResponse,
 };
+use crate::Config;
 
 const API_SLO: Objective = Objective::new("api")
     .success_rate(ObjectivePercentile::P99_9)
     .latency(ObjectiveLatency::Ms250, ObjectivePercentile::P99);
 
 pub struct ClosureServiceServerImpl {
+    pub cfg: Config,
     pub pool: Arc<PgPool>,
-    pub cache: CacheClient,
+    pub cache: Arc<Option<CacheClient>>
 }
 
 impl Clone for ClosureServiceServerImpl {
     fn clone(&self) -> Self {
         ClosureServiceServerImpl {
+            cfg: self.cfg.clone(),
             pool: Arc::clone(&self.pool),
-            cache: self.cache.clone(),
+            cache: Arc::clone(&self.cache),
         }
     }
 }
 
 impl ClosureServiceServerImpl {
-    pub(crate) fn new(pool: Arc<PgPool>, cache: CacheClient) -> Self {
-        ClosureServiceServerImpl { pool, cache }
+    pub(crate) fn new(cfg: Config, pool: Arc<PgPool>, cache: Arc<Option<CacheClient>>) -> Self {
+        ClosureServiceServerImpl { cfg, pool, cache }
     }
 }
 
@@ -61,10 +64,12 @@ impl ClosureService for ClosureServiceServerImpl {
         .await
         .map(Response::new)?;
 
-        let inner_response = response.get_ref();
-        self.cache
-            .invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key)
-            .await?;
+        if let Some(cache) = &*self.cache {
+            let inner_response = response.get_ref();
+            cache
+                .invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key)
+                .await?;
+        }
 
         Ok(response)
     }
@@ -80,18 +85,26 @@ impl ClosureService for ClosureServiceServerImpl {
             request: request.into_inner(),
         };
 
-        self.cache
-            .handle_cache("list_closures", &request_metadata.clone(), || async move {
+        let list_event = {
+            let request_metadata = request_metadata.clone();
+            move || async move {
                 list_closures(
                     request_metadata.request,
                     request_metadata.metadata,
                     &mut conn,
                 )
-                .await
-                .map(Response::new)
-                .map_err(|e| e.into())
-            })
-            .await
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        };
+
+        match &*self.cache {
+            Some(cache) => {
+                cache.handle_cache("get_event", &request_metadata, list_event).await
+            }
+            None => list_event().await,
+        }
     }
 
     async fn update_closure(
@@ -113,10 +126,13 @@ impl ClosureService for ClosureServiceServerImpl {
         .await
         .map(Response::new)?;
 
-        let inner_response = response.get_ref();
-        self.cache
-            .invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key)
-            .await?;
+        if let Some(cache) = &*self.cache {
+            let inner_response = response.get_ref();
+            cache
+                .invalidate_related_cache_keys(inner_response.clone().closure.unwrap().organizer_key)
+                .await?;
+        }
+
 
         Ok(response)
     }
