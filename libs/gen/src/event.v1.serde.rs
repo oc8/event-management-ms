@@ -36,27 +36,27 @@ impl serde::Serialize for Booking {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if !self.booking_holder_key.is_empty() {
-            struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
+            struct_ser.serialize_field("booking_holder_key", &self.booking_holder_key)?;
         }
         if !self.slot_id.is_empty() {
-            struct_ser.serialize_field("slotId", &self.slot_id)?;
+            struct_ser.serialize_field("slot_id", &self.slot_id)?;
         }
         if let Some(v) = self.slot.as_ref() {
             struct_ser.serialize_field("slot", v)?;
         }
         if let Some(v) = self.date_time.as_ref() {
-            struct_ser.serialize_field("dateTime", v)?;
+            struct_ser.serialize_field("date_time", v)?;
         }
         if self.persons != 0 {
             struct_ser.serialize_field("persons", &self.persons)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("createdAt", ToString::to_string(&self.created_at).as_str())?;
+            struct_ser.serialize_field("created_at", ToString::to_string(&self.created_at).as_str())?;
         }
         if self.updated_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("updatedAt", ToString::to_string(&self.updated_at).as_str())?;
+            struct_ser.serialize_field("updated_at", ToString::to_string(&self.updated_at).as_str())?;
         }
         struct_ser.end()
     }
@@ -244,7 +244,7 @@ impl serde::Serialize for CancelEventRequest {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if !self.canceled_by.is_empty() {
-            struct_ser.serialize_field("canceledBy", &self.canceled_by)?;
+            struct_ser.serialize_field("canceled_by", &self.canceled_by)?;
         }
         if !self.reason.is_empty() {
             struct_ser.serialize_field("reason", &self.reason)?;
@@ -458,13 +458,13 @@ impl serde::Serialize for Cancellation {
         }
         let mut struct_ser = serializer.serialize_struct("event.v1.Cancellation", len)?;
         if !self.canceled_by.is_empty() {
-            struct_ser.serialize_field("canceledBy", &self.canceled_by)?;
+            struct_ser.serialize_field("canceled_by", &self.canceled_by)?;
         }
         if !self.reason.is_empty() {
             struct_ser.serialize_field("reason", &self.reason)?;
         }
         if let Some(v) = self.created_at.as_ref() {
-            struct_ser.serialize_field("createdAt", v)?;
+            struct_ser.serialize_field("created_at", v)?;
         }
         struct_ser.end()
     }
@@ -597,21 +597,21 @@ impl serde::Serialize for Closure {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if let Some(v) = self.closing_from.as_ref() {
-            struct_ser.serialize_field("closingFrom", v)?;
+            struct_ser.serialize_field("closing_from", v)?;
         }
         if let Some(v) = self.closing_to.as_ref() {
-            struct_ser.serialize_field("closingTo", v)?;
+            struct_ser.serialize_field("closing_to", v)?;
         }
         if !self.organizer_key.is_empty() {
-            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+            struct_ser.serialize_field("organizer_key", &self.organizer_key)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("createdAt", ToString::to_string(&self.created_at).as_str())?;
+            struct_ser.serialize_field("created_at", ToString::to_string(&self.created_at).as_str())?;
         }
         if self.updated_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("updatedAt", ToString::to_string(&self.updated_at).as_str())?;
+            struct_ser.serialize_field("updated_at", ToString::to_string(&self.updated_at).as_str())?;
         }
         struct_ser.end()
     }
@@ -775,13 +775,13 @@ impl serde::Serialize for CreateBookingRequest {
         }
         let mut struct_ser = serializer.serialize_struct("event.v1.CreateBookingRequest", len)?;
         if !self.booking_holder_key.is_empty() {
-            struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
+            struct_ser.serialize_field("booking_holder_key", &self.booking_holder_key)?;
         }
         if !self.slot_id.is_empty() {
-            struct_ser.serialize_field("slotId", &self.slot_id)?;
+            struct_ser.serialize_field("slot_id", &self.slot_id)?;
         }
         if !self.date_time.is_empty() {
-            struct_ser.serialize_field("dateTime", &self.date_time)?;
+            struct_ser.serialize_field("date_time", &self.date_time)?;
         }
         if self.persons != 0 {
             struct_ser.serialize_field("persons", &self.persons)?;
@@ -1010,13 +1010,13 @@ impl serde::Serialize for CreateClosureRequest {
         }
         let mut struct_ser = serializer.serialize_struct("event.v1.CreateClosureRequest", len)?;
         if !self.closing_from.is_empty() {
-            struct_ser.serialize_field("closingFrom", &self.closing_from)?;
+            struct_ser.serialize_field("closing_from", &self.closing_from)?;
         }
         if !self.closing_to.is_empty() {
-            struct_ser.serialize_field("closingTo", &self.closing_to)?;
+            struct_ser.serialize_field("closing_to", &self.closing_to)?;
         }
         if !self.organizer_key.is_empty() {
-            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+            struct_ser.serialize_field("organizer_key", &self.organizer_key)?;
         }
         struct_ser.end()
     }
@@ -1256,25 +1256,25 @@ impl serde::Serialize for CreateEventRequest {
             struct_ser.serialize_field("end", &self.end)?;
         }
         if !self.organizer_key.is_empty() {
-            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+            struct_ser.serialize_field("organizer_key", &self.organizer_key)?;
         }
         if self.slot_duration != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
+            struct_ser.serialize_field("slot_duration", ToString::to_string(&self.slot_duration).as_str())?;
         }
         if self.capacity != 0 {
             struct_ser.serialize_field("capacity", &self.capacity)?;
         }
         if self.slot_capacity != 0 {
-            struct_ser.serialize_field("slotCapacity", &self.slot_capacity)?;
+            struct_ser.serialize_field("slot_capacity", &self.slot_capacity)?;
         }
         if !self.recurrence_rule.is_empty() {
-            struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
+            struct_ser.serialize_field("recurrence_rule", &self.recurrence_rule)?;
         }
         if self.event_type != 0 {
             let v = EventType::try_from(self.event_type)
                 .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.event_type)))?;
-            struct_ser.serialize_field("eventType", &v)?;
+            struct_ser.serialize_field("event_type", &v)?;
         }
         struct_ser.end()
     }
@@ -2151,7 +2151,7 @@ impl serde::Serialize for Event {
         if self.event_type != 0 {
             let v = EventType::try_from(self.event_type)
                 .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.event_type)))?;
-            struct_ser.serialize_field("eventType", &v)?;
+            struct_ser.serialize_field("event_type", &v)?;
         }
         if self.status != 0 {
             let v = EventStatus::try_from(self.status)
@@ -2165,10 +2165,10 @@ impl serde::Serialize for Event {
             struct_ser.serialize_field("end", v)?;
         }
         if !self.recurrence_rule.is_empty() {
-            struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
+            struct_ser.serialize_field("recurrence_rule", &self.recurrence_rule)?;
         }
         if !self.organizer_key.is_empty() {
-            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+            struct_ser.serialize_field("organizer_key", &self.organizer_key)?;
         }
         if let Some(v) = self.cancellation.as_ref() {
             struct_ser.serialize_field("cancellation", v)?;
@@ -2181,18 +2181,18 @@ impl serde::Serialize for Event {
         }
         if self.slot_duration != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("slotDuration", ToString::to_string(&self.slot_duration).as_str())?;
+            struct_ser.serialize_field("slot_duration", ToString::to_string(&self.slot_duration).as_str())?;
         }
         if self.capacity != 0 {
             struct_ser.serialize_field("capacity", &self.capacity)?;
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("createdAt", ToString::to_string(&self.created_at).as_str())?;
+            struct_ser.serialize_field("created_at", ToString::to_string(&self.created_at).as_str())?;
         }
         if self.updated_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("updatedAt", ToString::to_string(&self.updated_at).as_str())?;
+            struct_ser.serialize_field("updated_at", ToString::to_string(&self.updated_at).as_str())?;
         }
         struct_ser.end()
     }
@@ -2635,7 +2635,7 @@ impl serde::Serialize for Filters {
             struct_ser.serialize_field("to", &self.to)?;
         }
         if !self.organizer_key.is_empty() {
-            struct_ser.serialize_field("organizerKey", &self.organizer_key)?;
+            struct_ser.serialize_field("organizer_key", &self.organizer_key)?;
         }
         if self.status != 0 {
             let v = EventStatus::try_from(self.status)
@@ -2645,13 +2645,13 @@ impl serde::Serialize for Filters {
         if self.event_type != 0 {
             let v = EventType::try_from(self.event_type)
                 .map_err(|_| serde::ser::Error::custom(format!("Invalid variant {}", self.event_type)))?;
-            struct_ser.serialize_field("eventType", &v)?;
+            struct_ser.serialize_field("event_type", &v)?;
         }
         if !self.booking_holder_key.is_empty() {
-            struct_ser.serialize_field("bookingHolderKey", &self.booking_holder_key)?;
+            struct_ser.serialize_field("booking_holder_key", &self.booking_holder_key)?;
         }
         if !self.slot_id.is_empty() {
-            struct_ser.serialize_field("slotId", &self.slot_id)?;
+            struct_ser.serialize_field("slot_id", &self.slot_id)?;
         }
         struct_ser.end()
     }
@@ -3928,7 +3928,7 @@ impl serde::Serialize for Slot {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if !self.event_id.is_empty() {
-            struct_ser.serialize_field("eventId", &self.event_id)?;
+            struct_ser.serialize_field("event_id", &self.event_id)?;
         }
         if let Some(v) = self.start.as_ref() {
             struct_ser.serialize_field("start", v)?;
@@ -3946,11 +3946,11 @@ impl serde::Serialize for Slot {
         }
         if self.created_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("createdAt", ToString::to_string(&self.created_at).as_str())?;
+            struct_ser.serialize_field("created_at", ToString::to_string(&self.created_at).as_str())?;
         }
         if self.updated_at != 0 {
             #[allow(clippy::needless_borrow)]
-            struct_ser.serialize_field("updatedAt", ToString::to_string(&self.updated_at).as_str())?;
+            struct_ser.serialize_field("updated_at", ToString::to_string(&self.updated_at).as_str())?;
         }
         struct_ser.end()
     }
@@ -4210,7 +4210,7 @@ impl serde::Serialize for TimeData {
             struct_ser.serialize_field("timezone", &self.timezone)?;
         }
         if !self.date_time.is_empty() {
-            struct_ser.serialize_field("dateTime", &self.date_time)?;
+            struct_ser.serialize_field("date_time", &self.date_time)?;
         }
         struct_ser.end()
     }
@@ -4322,10 +4322,10 @@ impl serde::Serialize for UpdateClosureRequest {
             struct_ser.serialize_field("id", &self.id)?;
         }
         if !self.closing_from.is_empty() {
-            struct_ser.serialize_field("closingFrom", &self.closing_from)?;
+            struct_ser.serialize_field("closing_from", &self.closing_from)?;
         }
         if !self.closing_to.is_empty() {
-            struct_ser.serialize_field("closingTo", &self.closing_to)?;
+            struct_ser.serialize_field("closing_to", &self.closing_to)?;
         }
         struct_ser.end()
     }
@@ -4564,10 +4564,10 @@ impl serde::Serialize for UpdateEventRequest {
             struct_ser.serialize_field("capacity", &self.capacity)?;
         }
         if self.slot_capacity != 0 {
-            struct_ser.serialize_field("slotCapacity", &self.slot_capacity)?;
+            struct_ser.serialize_field("slot_capacity", &self.slot_capacity)?;
         }
         if !self.recurrence_rule.is_empty() {
-            struct_ser.serialize_field("recurrenceRule", &self.recurrence_rule)?;
+            struct_ser.serialize_field("recurrence_rule", &self.recurrence_rule)?;
         }
         struct_ser.end()
     }

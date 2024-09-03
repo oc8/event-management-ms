@@ -12,6 +12,8 @@ plugins:
       - type_attribute=.=#[derive(JsonSchema\, ApiComponent)]
   - plugin: buf.build/community/neoeinstein-prost-serde:v0.3.0
     out: libs/gen/src
+    opt:
+      - preserve_proto_field_names=true
   - plugin: buf.build/community/neoeinstein-tonic:v0.4.0
     out: libs/gen/src
     opt:
