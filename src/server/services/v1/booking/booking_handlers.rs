@@ -35,9 +35,12 @@ pub async fn create_booking(
 
     let event = slot.event.unwrap();
 
-    let available_dates = event.get_available_dates(date_time, 1)?;
+    let available_dates = event.get_available_dates(date_time.date().and_hms(0, 0, 0), 1)?;
 
     log::debug!("available dates: {:?}", available_dates);
+    log::debug!("booking date: {:?}", date_time.date());
+    log::debug!("booking time: {:?}", date_time.time());
+    log::debug!("slot start time: {:?}", slot.start_time);
 
     if date_time.time() != slot.start_time
         || (event.recurrence_rule.is_some() && !available_dates.contains(&date_time.date()))

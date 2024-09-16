@@ -128,7 +128,7 @@ impl Event {
         proto_event.set_status(self.status.as_proto());
         proto_event.set_event_type(self.event_type.as_proto());
         proto_event.slots = match self.slots {
-            Some(slots) => slots.into_iter().map(|slot| slot.to_response(tz)).collect(),
+            Some(slots) => slots.into_iter().map(|slot| slot.to_response_with_event_time(self.start_time, tz)).collect(),
             None => vec![],
         };
         proto_event.start = Some(TimeData {

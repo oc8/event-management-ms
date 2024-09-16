@@ -1298,7 +1298,7 @@ dependencies = [
 
 [[package]]
 name = "event_protos"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "apistos",
  "apistos-schemars",

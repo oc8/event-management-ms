@@ -1,10 +1,10 @@
 use crate::errors::ApiError;
 use uuid::Uuid;
 
-use crate::add_time_offset;
+use crate::{add_time_offset, add_time_to_datetime};
 use crate::server::services::v1::event::event_model::{DbEvent, Event};
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, NaiveTime};
+use chrono::{DateTime, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use chrono_tz::Tz;
 use event_protos::event::v1::{SlotStatus, TimeData};
 
@@ -64,6 +64,31 @@ impl Slot {
         proto_slot.end = Some(TimeData {
             timezone: tz.to_string(),
             date_time: add_time_offset(self.end_time, tz).to_string(),
+        });
+        proto_slot.capacity = self.capacity;
+        proto_slot.created_at = self.created_at.and_utc().timestamp();
+        proto_slot.updated_at = self.updated_at.and_utc().timestamp();
+
+        proto_slot
+    }
+
+    pub(crate) fn to_response_with_event_time(self, event_datetime: NaiveDateTime, tz: Tz) -> event_protos::event::v1::Slot {
+        let mut proto_slot = event_protos::event::v1::Slot::default();
+
+        let tz_offset = tz.offset_from_utc_datetime(&Utc::now().naive_utc());
+        let start_datetime = DateTime::<Tz>::from_naive_utc_and_offset(add_time_to_datetime(event_datetime, self.start_time), tz_offset);
+        let end_datetime = DateTime::<Tz>::from_naive_utc_and_offset(add_time_to_datetime(event_datetime, self.end_time), tz_offset);
+
+        proto_slot.id = self.id.to_string();
+        proto_slot.event_id = self.event_id.to_string();
+        proto_slot.set_status(self.status);
+        proto_slot.start = Some(TimeData {
+            timezone: tz.to_string(),
+            date_time: start_datetime.to_rfc3339(),
+        });
+        proto_slot.end = Some(TimeData {
+            timezone: tz.to_string(),
+            date_time: end_datetime.to_rfc3339(),
         });
         proto_slot.capacity = self.capacity;
         proto_slot.created_at = self.created_at.and_utc().timestamp();
