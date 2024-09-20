@@ -62,10 +62,10 @@ impl ClosureRepository for PgConnection {
             query_builder.push(" AND closing_from >= ");
             query_builder.push_bind(closing_from);
         }
-        if let Some(ref closing_to) = filters.to {
-            query_builder.push(" AND closing_to <= ");
-            query_builder.push_bind(closing_to);
-        }
+        // if let Some(ref closing_to) = filters.to {
+        //     query_builder.push(" AND closing_to <= ");
+        //     query_builder.push_bind(closing_to);
+        // }
 
         log::debug!("Generated SQL Query: {}", query_builder.sql());
 
