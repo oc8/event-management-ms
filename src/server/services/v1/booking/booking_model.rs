@@ -40,6 +40,7 @@ impl Booking {
         proto_booking.persons = self.persons;
         proto_booking.created_at = self.created_at.and_utc().timestamp();
         proto_booking.updated_at = self.updated_at.and_utc().timestamp();
+        proto_booking.organizer_key = self.organizer_key;
 
         proto_booking
     }

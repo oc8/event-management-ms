@@ -31,6 +31,9 @@ impl serde::Serialize for Booking {
         if self.updated_at != 0 {
             len += 1;
         }
+        if !self.organizer_key.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("event.v1.Booking", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -58,6 +61,9 @@ impl serde::Serialize for Booking {
             #[allow(clippy::needless_borrow)]
             struct_ser.serialize_field("updated_at", ToString::to_string(&self.updated_at).as_str())?;
         }
+        if !self.organizer_key.is_empty() {
+            struct_ser.serialize_field("organizer_key", &self.organizer_key)?;
+        }
         struct_ser.end()
     }
 }
@@ -81,6 +87,8 @@ impl<'de> serde::Deserialize<'de> for Booking {
             "createdAt",
             "updated_at",
             "updatedAt",
+            "organizer_key",
+            "organizerKey",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -93,6 +101,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
             Persons,
             CreatedAt,
             UpdatedAt,
+            OrganizerKey,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -122,6 +131,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                             "persons" => Ok(GeneratedField::Persons),
                             "createdAt" | "created_at" => Ok(GeneratedField::CreatedAt),
                             "updatedAt" | "updated_at" => Ok(GeneratedField::UpdatedAt),
+                            "organizerKey" | "organizer_key" => Ok(GeneratedField::OrganizerKey),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -149,6 +159,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                 let mut persons__ = None;
                 let mut created_at__ = None;
                 let mut updated_at__ = None;
+                let mut organizer_key__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -205,6 +216,12 @@ impl<'de> serde::Deserialize<'de> for Booking {
                                 Some(map_.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::OrganizerKey => {
+                            if organizer_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("organizerKey"));
+                            }
+                            organizer_key__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(Booking {
@@ -216,6 +233,7 @@ impl<'de> serde::Deserialize<'de> for Booking {
                     persons: persons__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
+                    organizer_key: organizer_key__.unwrap_or_default(),
                 })
             }
         }

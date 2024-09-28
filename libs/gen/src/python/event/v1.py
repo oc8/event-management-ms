@@ -182,6 +182,7 @@ class Booking(betterproto.Message):
     persons: int = betterproto.int32_field(6)
     created_at: int = betterproto.int64_field(7)
     updated_at: int = betterproto.int64_field(8)
+    organizer_key: str = betterproto.string_field(9)
 
 
 @dataclass

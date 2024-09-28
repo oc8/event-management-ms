@@ -21,6 +21,7 @@ message Booking {
   int32 persons = 6;
   int64 created_at = 7;
   int64 updated_at = 8;
+  string organizer_key = 9;
 }
 
 message CreateBookingRequest {
