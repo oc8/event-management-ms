@@ -2817,6 +2817,188 @@ impl<'de> serde::Deserialize<'de> for Filters {
         deserializer.deserialize_struct("event.v1.Filters", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for GetAvailableDatesRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.filters.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("event.v1.GetAvailableDatesRequest", len)?;
+        if let Some(v) = self.filters.as_ref() {
+            struct_ser.serialize_field("filters", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetAvailableDatesRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "filters",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Filters,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "filters" => Ok(GeneratedField::Filters),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetAvailableDatesRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct event.v1.GetAvailableDatesRequest")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetAvailableDatesRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut filters__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Filters => {
+                            if filters__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("filters"));
+                            }
+                            filters__ = map_.next_value()?;
+                        }
+                    }
+                }
+                Ok(GetAvailableDatesRequest {
+                    filters: filters__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("event.v1.GetAvailableDatesRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for GetAvailableDatesResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.dates.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("event.v1.GetAvailableDatesResponse", len)?;
+        if !self.dates.is_empty() {
+            struct_ser.serialize_field("dates", &self.dates)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetAvailableDatesResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "dates",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Dates,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "dates" => Ok(GeneratedField::Dates),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetAvailableDatesResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct event.v1.GetAvailableDatesResponse")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<GetAvailableDatesResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut dates__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Dates => {
+                            if dates__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("dates"));
+                            }
+                            dates__ = Some(map_.next_value()?);
+                        }
+                    }
+                }
+                Ok(GetAvailableDatesResponse {
+                    dates: dates__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("event.v1.GetAvailableDatesResponse", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for GetBookingRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>

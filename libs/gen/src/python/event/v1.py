@@ -173,6 +173,16 @@ class GetTimelineResponse(betterproto.Message):
 
 
 @dataclass
+class GetAvailableDatesRequest(betterproto.Message):
+    filters: "Filters" = betterproto.message_field(1)
+
+
+@dataclass
+class GetAvailableDatesResponse(betterproto.Message):
+    dates: List[str] = betterproto.string_field(1)
+
+
+@dataclass
 class Booking(betterproto.Message):
     id: str = betterproto.string_field(1)
     booking_holder_key: str = betterproto.string_field(2)
@@ -397,6 +407,19 @@ class EventServiceStub(betterproto.ServiceStub):
             "/event.v1.EventService/GetTimeline",
             request,
             GetTimelineResponse,
+        )
+
+    async def get_available_dates(
+        self, *, filters: Optional["Filters"] = None
+    ) -> GetAvailableDatesResponse:
+        request = GetAvailableDatesRequest()
+        if filters is not None:
+            request.filters = filters
+
+        return await self._unary_unary(
+            "/event.v1.EventService/GetAvailableDates",
+            request,
+            GetAvailableDatesResponse,
         )
 
 

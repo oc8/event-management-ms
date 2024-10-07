@@ -259,6 +259,31 @@ pub mod event_service_client {
                 .insert(GrpcMethod::new("event.v1.EventService", "GetTimeline"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn get_available_dates(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetAvailableDatesRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetAvailableDatesResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/event.v1.EventService/GetAvailableDates",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("event.v1.EventService", "GetAvailableDates"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -315,6 +340,13 @@ pub mod event_service_server {
             request: tonic::Request<super::GetTimelineRequest>,
         ) -> std::result::Result<
             tonic::Response<super::GetTimelineResponse>,
+            tonic::Status,
+        >;
+        async fn get_available_dates(
+            &self,
+            request: tonic::Request<super::GetAvailableDatesRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetAvailableDatesResponse>,
             tonic::Status,
         >;
     }
@@ -704,6 +736,53 @@ pub mod event_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = GetTimelineSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/event.v1.EventService/GetAvailableDates" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetAvailableDatesSvc<T: EventService>(pub Arc<T>);
+                    impl<
+                        T: EventService,
+                    > tonic::server::UnaryService<super::GetAvailableDatesRequest>
+                    for GetAvailableDatesSvc<T> {
+                        type Response = super::GetAvailableDatesResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetAvailableDatesRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as EventService>::get_available_dates(&inner, request)
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetAvailableDatesSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

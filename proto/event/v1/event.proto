@@ -12,6 +12,7 @@ service EventService {
   rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
   rpc CancelEvent(CancelEventRequest) returns (CancelEventResponse);
   rpc GetTimeline(GetTimelineRequest) returns (GetTimelineResponse);
+  rpc GetAvailableDates(GetAvailableDatesRequest) returns (GetAvailableDatesResponse);
 }
 
 message Filters {
@@ -134,4 +135,12 @@ message GetTimelineRequest {
 
 message GetTimelineResponse {
   repeated Event events = 1;
+}
+
+message GetAvailableDatesRequest {
+  Filters filters = 1;
+}
+
+message GetAvailableDatesResponse {
+  repeated string dates = 1;
 }

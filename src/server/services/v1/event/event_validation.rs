@@ -3,10 +3,7 @@ use crate::errors::{ApiError, List, ValidationErrorKind, ValidationErrorMessage}
 use crate::utils::filters::validate_date_filters;
 use crate::utils::validation::ValidateRequest;
 use chrono::DateTime;
-use event_protos::event::v1::{
-    CancelEventRequest, CreateEventRequest, DeleteEventRequest, EventType, GetEventRequest,
-    GetTimelineRequest, ListEventsRequest, UpdateEventRequest,
-};
+use event_protos::event::v1::{CancelEventRequest, CreateEventRequest, DeleteEventRequest, EventType, GetAvailableDatesRequest, GetEventRequest, GetTimelineRequest, ListEventsRequest, UpdateEventRequest};
 use rrule::ParseError::MissingStartDate;
 use rrule::RRuleSet;
 use uuid::Uuid;
@@ -270,6 +267,43 @@ impl ValidateRequest for CancelEventRequest {
 }
 
 impl ValidateRequest for GetTimelineRequest {
+    fn validate(&self) -> Result<(), ApiError> {
+        let mut errors = Vec::new();
+
+        if self.filters.is_none() {
+            return Err(ValidationError(List(vec![
+                ValidationErrorKind::MissingField("filters".to_string()),
+            ])));
+        }
+
+        match validate_date_filters(&self.filters) {
+            Ok(_) => (),
+            Err(mut e) => errors.append(&mut e),
+        }
+
+        if !self
+            .filters
+            .as_ref()
+            .unwrap()
+            .organizer_key
+            .validate_length(Some(1), Some(100), None)
+        {
+            errors.push(ValidationErrorKind::InvalidLength(
+                "filters.organizer_key".to_string(),
+                1,
+                100,
+            ))
+        }
+
+        if !errors.is_empty() {
+            return Err(ValidationError(List::<ValidationErrorKind>(errors)));
+        }
+
+        Ok(())
+    }
+}
+
+impl ValidateRequest for GetAvailableDatesRequest {
     fn validate(&self) -> Result<(), ApiError> {
         let mut errors = Vec::new();
 

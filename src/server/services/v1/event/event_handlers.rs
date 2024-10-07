@@ -10,12 +10,7 @@ use crate::utils::filters::{BookingFilters, ClosureFilters, EventFilters, Filter
 use crate::utils::validation::ValidateRequest;
 use crate::{get_meta_timezone, truncate_to_minute};
 use chrono::DateTime;
-use event_protos::event::v1::{
-    CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse,
-    DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetTimelineRequest,
-    GetTimelineResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest,
-    UpdateEventResponse,
-};
+use event_protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetAvailableDatesRequest, GetAvailableDatesResponse, GetEventRequest, GetEventResponse, GetTimelineRequest, GetTimelineResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse};
 use sqlx::postgres::types::PgInterval;
 use tonic::metadata::MetadataMap;
 use uuid::Uuid;
@@ -211,5 +206,32 @@ pub async fn get_timeline(
             .into_iter()
             .map(|e| e.to_response(get_meta_timezone(meta)))
             .collect(),
+    })
+}
+
+pub async fn get_available_dates(
+    request: GetAvailableDatesRequest,
+    meta: &MetadataMap,
+    conn: &mut PgPooledConnection,
+) -> Result<GetAvailableDatesResponse, ApiError> {
+    request.validate()?;
+
+    let event_filters: Filters<EventFilters> = request.filters.clone().into();
+    let closure_filters: Filters<ClosureFilters> = request.filters.clone().into();
+    let booking_filters: Filters<BookingFilters> = request.filters.clone().into();
+
+    let mut events = conn.get_events_with_filter(&event_filters).await?;
+    let closures = conn.get_closures_with_filters(&closure_filters).await?;
+    let bookings = conn.get_bookings_with_filters(&booking_filters).await?;
+
+    let mut timeline = Timeline::new(events.clone(), closures.clone(), bookings);
+
+    events = timeline.included(event_filters.from.unwrap(), event_filters.to.unwrap())?.iter().filter(|e| e.status == EventStatus::Active).cloned().collect();
+
+    Ok(GetAvailableDatesResponse {
+        dates: events
+            .into_iter()
+            .map(|e| e.start_time.date().to_string())
+            .collect()
     })
 }

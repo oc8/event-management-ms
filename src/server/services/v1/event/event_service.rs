@@ -4,10 +4,7 @@ use tonic::{Request, Response, Status};
 
 use crate::database::{get_connection, CacheClient, PgPool};
 
-use crate::server::services::v1::event::event_handlers::{
-    cancel_event, create_event, delete_event, get_event_by_id, get_timeline, list_events,
-    update_event,
-};
+use crate::server::services::v1::event::event_handlers::{cancel_event, create_event, delete_event, get_available_dates, get_event_by_id, get_timeline, list_events, update_event};
 use crate::utils::request_wrapper::RequestMetadata;
 use autometrics::objectives::{Objective, ObjectiveLatency, ObjectivePercentile};
 use event_protos::event::v1::event_service_server::EventService;
@@ -15,7 +12,7 @@ use event_protos::event::v1::{
     CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse,
     DeleteEventRequest, DeleteEventResponse, GetEventRequest, GetEventResponse, GetTimelineRequest,
     GetTimelineResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest,
-    UpdateEventResponse,
+    UpdateEventResponse, GetAvailableDatesRequest, GetAvailableDatesResponse
 };
 use crate::Config;
 
@@ -261,6 +258,39 @@ impl EventService for EventServiceServerImpl {
         match &*self.cache {
             Some(cache) => {
                 cache.handle_cache("get_timeline", &request_metadata, get_timeline).await
+            }
+            None => get_timeline().await,
+        }
+    }
+
+    async fn get_available_dates(
+        &self,
+        request: Request<GetAvailableDatesRequest>,
+    ) -> Result<Response<GetAvailableDatesResponse>, Status> {
+        let mut conn = get_connection(&self.pool).await?;
+
+        let request_metadata: RequestMetadata<GetAvailableDatesRequest> = RequestMetadata {
+            metadata: &request.metadata().clone(),
+            request: request.into_inner(),
+        };
+
+        let get_timeline = {
+            let request_metadata = request_metadata.clone();
+            move || async move {
+                get_available_dates(
+                    request_metadata.request,
+                    request_metadata.metadata,
+                    &mut conn,
+                )
+                    .await
+                    .map(Response::new)
+                    .map_err(|e| e.into())
+            }
+        };
+
+        match &*self.cache {
+            Some(cache) => {
+                cache.handle_cache("get_available_dates", &request_metadata, get_timeline).await
             }
             None => get_timeline().await,
         }
