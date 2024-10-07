@@ -42,7 +42,7 @@ impl Timeline {
             let rrule = rrule.after(after).before(before);
 
             let events = rrule
-                .all(100)
+                .all(std::env::var("MAX_GEN_EVENTS").unwrap_or("100".to_string()).parse::<u16>().unwrap_or(100))
                 .dates
                 .iter()
                 .map(|d| {

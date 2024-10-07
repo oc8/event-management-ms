@@ -18,6 +18,7 @@ pub struct Config {
     pub tls_cert: Option<String>,
     pub tls_key: Option<String>,
     pub ca_cert: Option<String>,
+    pub max_gen_events: u32,
 }
 
 impl Config {
@@ -43,6 +44,7 @@ impl Config {
             .set_default("tls_cert", None::<String>).unwrap()
             .set_default("tls_key", None::<String>).unwrap()
             .set_default("ca_cert", None::<String>).unwrap()
+            .set_default("max_gen_events", 100).unwrap()
             .build()?;
 
         let cfg: Config = config.try_deserialize()?;
