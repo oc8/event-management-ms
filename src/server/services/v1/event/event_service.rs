@@ -16,7 +16,7 @@ use event_protos::event::v1::{
 };
 use crate::Config;
 
-const API_SLO: Objective = Objective::new("api")
+const API_SLO: Objective = Objective::new("event_service_event_api")
     .success_rate(ObjectivePercentile::P99_9)
     .latency(ObjectiveLatency::Ms250, ObjectivePercentile::P99);
 
