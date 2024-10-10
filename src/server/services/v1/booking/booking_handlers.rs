@@ -28,9 +28,7 @@ pub async fn create_booking(
     let date_time = DateTime::parse_from_rfc3339(&request.date_time)?.naive_utc();
 
     if date_time < chrono::Utc::now().naive_utc() {
-        return Err(ApiError::InvalidRequest(
-            "booking date time cannot be in the past".to_string(),
-        ));
+        return Err(ApiError::BookingInPast);
     }
 
     let event = slot.event.unwrap();
@@ -45,9 +43,7 @@ pub async fn create_booking(
     if date_time.time() != slot.start_time
         || (event.recurrence_rule.is_some() && !available_dates.contains(&date_time.date()))
     {
-        return Err(ApiError::InvalidRequest(
-            "booking date time does not match slot datetime".to_string(),
-        ));
+        return Err(ApiError::InvalidBookingDatetime);
     }
 
     match event.capacity {
@@ -61,7 +57,7 @@ pub async fn create_booking(
                 .await?;
 
             if sum_persons + request.persons > capacity {
-                return Err(ApiError::InvalidRequest("event capacity full".to_string()));
+                return Err(ApiError::EventCapacityFull);
             }
         }
         // Check capacity by slot
@@ -69,7 +65,7 @@ pub async fn create_booking(
             let sum_persons = conn.sum_persons_by_datetime(slot.id, date_time).await?;
 
             if sum_persons + request.persons >= slot.capacity {
-                return Err(ApiError::InvalidRequest("slot capacity full".to_string()));
+                return Err(ApiError::SlotCapacityFull);
             }
         }
     }
@@ -80,9 +76,7 @@ pub async fn create_booking(
 
     match booking {
         Ok(_) => {
-            return Err(ApiError::InvalidRequest(
-                "booking holder already has a booking for this slot".to_string(),
-            ))
+            return Err(ApiError::BookingAlreadyExists)
         }
         Err(e) => {
             if e != ApiError::NotFound("".to_string()) {
@@ -94,6 +88,7 @@ pub async fn create_booking(
     let booking = conn
         .create_booking(&BookingInsert {
             slot_id,
+            event_id: event.id,
             booking_holder_key: request.booking_holder_key,
             organizer_key: event.organizer_key,
             date_time,

@@ -59,7 +59,7 @@ impl<T> fmt::Display for List<T>
 pub enum ApiError {
     #[error("internal server error")]
     InternalServerError,
-    #[error("the request was invalid: {0}")]
+    #[error("{0}")]
     InvalidRequest(String),
     #[error("redis connection failure")]
     RedisConnectionFailure,
@@ -67,14 +67,24 @@ pub enum ApiError {
     CacheError,
     #[error("database connection failure")]
     DatabaseConnectionFailure,
-    #[error("database error: {0}")]
+    #[error("{0}")]
     DatabaseError(String),
-    #[error("already exists: {0}")]
+    #[error("{0}")]
     AlreadyExists(String),
-    #[error("not found {0}")]
+    #[error("{0}")]
     NotFound(String),
-    #[error("parsing error: {0}")]
+    #[error("{0}")]
     ParsingError(String),
+    #[error("booking cannot be in past")]
+    BookingInPast,
+    #[error("booking datetime does not match slot datetime")]
+    InvalidBookingDatetime,
+    #[error("event capacity full")]
+    EventCapacityFull,
+    #[error("slot capacity full")]
+    SlotCapacityFull,
+    #[error("booking already exists for the same slot")]
+    BookingAlreadyExists,
     #[error("validation error: {0}")]
     ValidationError(List<ValidationErrorKind>),
 }
@@ -82,14 +92,18 @@ pub enum ApiError {
 impl ApiError {
     pub fn code(&self) -> tonic::Code {
         match self {
-            ApiError::InvalidRequest(_) => tonic::Code::InvalidArgument,
-            ApiError::RedisConnectionFailure => tonic::Code::Unavailable,
-            ApiError::CacheError => tonic::Code::Unavailable,
-            ApiError::DatabaseConnectionFailure => tonic::Code::Unavailable,
+            ApiError::CacheError
+            | ApiError::RedisConnectionFailure
+            | ApiError::DatabaseConnectionFailure => tonic::Code::Unavailable,
             ApiError::DatabaseError(_) => tonic::Code::Internal,
             ApiError::AlreadyExists(_) => tonic::Code::AlreadyExists,
             ApiError::NotFound(_) => tonic::Code::NotFound,
-            ApiError::ValidationError(_) => tonic::Code::InvalidArgument,
+            ApiError::ValidationError(_)
+            | ApiError::InvalidBookingDatetime
+            | ApiError::BookingInPast
+            | ApiError::EventCapacityFull
+            | ApiError::SlotCapacityFull
+            | ApiError::InvalidRequest(_) => tonic::Code::InvalidArgument,
             _ => tonic::Code::Internal,
         }
     }

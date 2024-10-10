@@ -50,6 +50,7 @@ impl Timeline {
 
                     ve.end_time = d.naive_utc() + (ve.end_time - ve.start_time);
                     ve.start_time = d.naive_utc();
+                    let event_bookings: Vec<&Booking> = self.bookings.iter().filter(|b| b.event_id == ve.id).collect();
 
                     if event.event_type == EventType::Meeting {
                         let mut event_slots = event.clone().slots.unwrap();
@@ -107,6 +108,11 @@ impl Timeline {
 
                     if is_closed {
                         ve.status = EventStatus::Closed;
+                    } else {
+                        if let Some(capacity) = ve.capacity {
+
+                            ve.capacity = Some(capacity - event_bookings.len() as i32);
+                        }
                     }
 
                     ve

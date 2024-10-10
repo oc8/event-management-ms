@@ -18,11 +18,12 @@ impl BookingRepository for PgConnection {
         let new_booking = sqlx::query_as!(
             DbBooking,
             r#"
-            INSERT INTO booking (slot_id, date_time, organizer_key, persons, booking_holder_key)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO booking (slot_id, event_id, date_time, organizer_key, persons, booking_holder_key)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
             "#,
             booking.slot_id,
+            booking.event_id,
             booking.date_time,
             booking.organizer_key,
             booking.persons,

@@ -13,6 +13,7 @@ use event_protos::event::v1::TimeData;
 pub struct Booking {
     pub id: Uuid,
     pub slot_id: Uuid,
+    pub event_id: Uuid,
     pub slot: Option<Slot>,
     pub booking_holder_key: String,
     pub organizer_key: String,
@@ -53,6 +54,7 @@ pub struct DbBooking {
     pub booking_holder_key: String,
     pub organizer_key: String,
     pub slot_id: Uuid,
+    pub event_id: Uuid,
     pub date_time: NaiveDateTime,
     pub persons: i32,
     pub created_at: NaiveDateTime,
@@ -64,6 +66,7 @@ impl DbBooking {
         Booking {
             id: self.id,
             slot_id: self.slot_id,
+            event_id: self.event_id,
             slot,
             booking_holder_key: self.booking_holder_key,
             organizer_key: self.organizer_key,
@@ -79,6 +82,7 @@ impl DbBooking {
 #[derive(Debug, PartialEq)]
 pub(crate) struct BookingInsert {
     pub slot_id: Uuid,
+    pub event_id: Uuid,
     pub booking_holder_key: String,
     pub organizer_key: String,
     pub date_time: NaiveDateTime,

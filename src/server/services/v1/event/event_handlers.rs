@@ -74,6 +74,8 @@ pub async fn get_event_by_id(
         .get_event_by_id(Uuid::parse_str(&request.id).unwrap())
         .await?;
 
+    // TODO: set correct capacity
+
     Ok(GetEventResponse {
         event: Some(event.to_response(get_meta_timezone(meta))),
     })
@@ -89,6 +91,8 @@ pub async fn list_events(
     let filters: Filters<EventFilters> = request.filters.into();
 
     let events = conn.get_events_with_filter(&filters).await?;
+
+    // TODO: set correct capacity
 
     Ok(ListEventsResponse {
         events: events
