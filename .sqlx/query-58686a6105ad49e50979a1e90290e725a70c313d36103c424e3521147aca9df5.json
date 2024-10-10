@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO booking (slot_id, date_time, organizer_key, persons, booking_holder_key)\n            VALUES ($1, $2, $3, $4, $5)\n            RETURNING *\n            ",
+  "query": "\n            INSERT INTO booking (slot_id, event_id, date_time, organizer_key, persons, booking_holder_key)\n            VALUES ($1, $2, $3, $4, $5, $6)\n            RETURNING *\n            ",
   "describe": {
     "columns": [
       {
@@ -25,27 +25,33 @@
       },
       {
         "ordinal": 4,
+        "name": "event_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 5,
         "name": "date_time",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "persons",
         "type_info": "Int4"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "created_at",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "updated_at",
         "type_info": "Timestamp"
       }
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid",
         "Timestamp",
         "Varchar",
@@ -61,8 +67,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "7e46cdea590c1848b0ff31cba68594f981c0323e34f167c00772df019ae3a30d"
+  "hash": "58686a6105ad49e50979a1e90290e725a70c313d36103c424e3521147aca9df5"
 }
