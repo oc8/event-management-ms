@@ -10,7 +10,6 @@ use chrono::{NaiveDate, NaiveDateTime};
 use event_protos::event::v1::{EventStatus as EventStatusProto, EventType as EventTypeProto};
 use rrule::RRuleSet;
 use sqlx::{Acquire, PgConnection, Postgres, QueryBuilder};
-use std::collections::HashSet;
 use uuid::Uuid;
 
 #[async_trait]
@@ -316,8 +315,6 @@ impl EventActions for Event {
                     .dates
                     .into_iter()
                     .map(|date| date.naive_utc().date())
-                    .collect::<HashSet<_>>()
-                    .into_iter()
                     .collect())
             }
             Err(e) => {

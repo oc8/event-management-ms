@@ -10,8 +10,14 @@ use crate::utils::filters::{BookingFilters, ClosureFilters, EventFilters, Filter
 use crate::utils::validation::ValidateRequest;
 use crate::{get_meta_timezone, truncate_to_minute};
 use chrono::DateTime;
-use event_protos::event::v1::{CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse, DeleteEventRequest, DeleteEventResponse, GetAvailableDatesRequest, GetAvailableDatesResponse, GetEventRequest, GetEventResponse, GetTimelineRequest, GetTimelineResponse, ListEventsRequest, ListEventsResponse, UpdateEventRequest, UpdateEventResponse};
+use event_protos::event::v1::{
+    CancelEventRequest, CancelEventResponse, CreateEventRequest, CreateEventResponse,
+    DeleteEventRequest, DeleteEventResponse, GetAvailableDatesRequest, GetAvailableDatesResponse,
+    GetEventRequest, GetEventResponse, GetTimelineRequest, GetTimelineResponse, ListEventsRequest,
+    ListEventsResponse, UpdateEventRequest, UpdateEventResponse,
+};
 use sqlx::postgres::types::PgInterval;
+use std::collections::HashSet;
 use tonic::metadata::MetadataMap;
 use uuid::Uuid;
 
@@ -230,12 +236,19 @@ pub async fn get_available_dates(
 
     let mut timeline = Timeline::new(events.clone(), closures.clone(), bookings);
 
-    events = timeline.included(event_filters.from.unwrap(), event_filters.to.unwrap())?.iter().filter(|e| e.status == EventStatus::Active).cloned().collect();
+    events = timeline
+        .included(event_filters.from.unwrap(), event_filters.to.unwrap())?
+        .iter()
+        .filter(|e| e.status == EventStatus::Active)
+        .cloned()
+        .collect();
 
     Ok(GetAvailableDatesResponse {
         dates: events
             .into_iter()
             .map(|e| e.start_time.date().to_string())
-            .collect()
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect(),
     })
 }
