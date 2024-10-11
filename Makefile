@@ -19,7 +19,7 @@ endif
 build:
 	cargo build $(release)
 
-dev:
+dev: db_run db_migration
 	RUST_LOG=$(rust_log) cargo watch -x "run -- $(prog) $(ARGS)"
 
 test:
@@ -28,10 +28,19 @@ test:
 protos:
 	buf generate && bash ./scripts/imports.sh
 
-migration:
+db_run:
+	docker-compose up -d
+
+db_down:
+	docker-compose down
+
+db_migration:
 	sqlx migrate run
 
 all: protos test build
 
 help:
 	@echo "usage: make $(prog) [debug=1]"
+
+
+.DEFAULT_GOAL := dev
