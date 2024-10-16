@@ -1,5 +1,5 @@
 use crate::errors::{ValidationErrorKind, ValidationErrorMessage};
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, NaiveTime};
 use event_protos::event::v1::{EventStatus, EventType, Filters as FiltersProto};
 use uuid::Uuid;
 
@@ -104,7 +104,7 @@ where
         let proto = proto.unwrap();
 
         let from = match proto.from.is_empty() {
-            true => chrono::Utc::now().naive_utc(),
+            true => chrono::Utc::now().naive_utc().date().and_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap()),
             false => NaiveDateTime::parse_from_str(
                 format!("{}T00:00:00", proto.from).as_str(),
                 "%Y-%m-%dT%H:%M:%S",
@@ -113,7 +113,7 @@ where
         };
 
         let to = match proto.to.is_empty() {
-            true => from + chrono::Duration::days(7),
+            true => (from + chrono::Duration::days(7)).date().and_time(NaiveTime::from_hms_opt(23, 59, 59).unwrap()),
             false => NaiveDateTime::parse_from_str(
                 format!("{}T23:59:59", proto.to).as_str(),
                 "%Y-%m-%dT%H:%M:%S",
