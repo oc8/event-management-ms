@@ -17,7 +17,7 @@ use event_protos::event::v1::{
     ListEventsResponse, UpdateEventRequest, UpdateEventResponse,
 };
 use sqlx::postgres::types::PgInterval;
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use tonic::metadata::MetadataMap;
 use uuid::Uuid;
 
@@ -247,7 +247,7 @@ pub async fn get_available_dates(
         dates: events
             .into_iter()
             .map(|e| e.start_time.date().to_string())
-            .collect::<HashSet<_>>()
+            .collect::<BTreeSet<_>>()
             .into_iter()
             .collect(),
     })
